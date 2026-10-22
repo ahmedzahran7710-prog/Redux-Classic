@@ -1,0 +1,26 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+packages/
+*.user
+*.suo
+.vs/
+
+# Runtime / logs
+CrashLog.txt
+*.log
+
+# Local config & secrets
+Redux/*.config.local
+Config.txt
+ServerInfo.ini
+appsettings.local.json
+
+# Runtime assets pulled separately (see docs)
+Redux/bin/
+Redux/map/
+*.TinyMap
+
+# OS
+Thumbs.db
+.DS_Store
