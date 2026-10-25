@@ -104,5 +104,16 @@ namespace Comet.Account
                 Console.WriteLine(e);
             }
         }
+
+        /// <summary>
+        /// Invoked by the server listener's Disconnecting method to dispose of the actor's
+        /// resources and release its packet processor partition weight.
+        /// </summary>
+        /// <param name="actor">Server actor that represents the remote client</param>
+        protected override void Disconnected(Client actor)
+        {
+            if (actor == null) return;
+            this.Processor.DeselectPartition(actor.Partition);
+        }
     }
 }

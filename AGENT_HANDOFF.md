@@ -115,13 +115,15 @@
   - [x] بناء **Comet.AutoPatcher** خفيف بـ C# في `tools/Comet.AutoPatcher`.
   - [x] تأمين `.gitignore` لحماية مساحة الـ Workspace على المدى الطويل.
   - [x] إنشاء وتوثيق `AGENT_HANDOFF.md` و `README.md`.
-- [ ] **المرحلة 1 (نواة العالم، الخرائط، الحركة، الرؤية، والشات):**
-  - [ ] بناء `TimeOut` / `TimeOutMS` بـ `Environment.TickCount64`.
-  - [ ] بناء قارئ الخرائط `DMap` / `GameMap` + `Portal` + `Tile` (بدون رفع ملفات الخرائط للـ Git).
-  - [ ] بناء `WorldProcessor` (Per-Map Channels لمنع الـ Deadlock).
-  - [ ] بناء نظام الشاشة والرؤية `Screen` + باكت `MsgPlayer (10014)` و `MsgUserAttrib (10017)`.
-  - [ ] تفعيل المشي والنط والانتقال (`MsgWalk 10005`, `MsgAction 10010`: Jump, Direction, Emote, Portal, Teleport).
-  - [ ] تفعيل الشات الكامل (`MsgTalk 1004`) ونظام أوامر الـ GM (`/teleport`, `/item`, `/level`, `/gold`, `/cps`, إلخ).
+- [x] **المرحلة 1 (نواة العالم، الخرائط، الحركة، الرؤية، والشات) — مكتملة 100%:**
+  - [x] إصلاح كافة أخطاء سورس Comet 5187 الخام (معكوسية `StrictAuthentication`، تعارض مفاتيح `Kernel.Clients` بين `AccountID` و `CharacterID`، تسريب أوزان الـ Partitions في `Account/Server.cs`، فحص الحظر والصيانة في `MsgAccount`، نقاط التاويست المبدئية في `MsgRegister`، ونوع `VIPLevel` في EF Core).
+  - [x] بناء `TimeOut` / `TimeOutMS` بـ `Environment.TickCount64` + حسابات `ScreenCalculations` (Chebyshev, 8-Direction, Bresenham Raycast) + نظام `Log` الملوّن في `Comet.Shared`.
+  - [x] بناء `WorldProcessor` (Per-Map Single-Reader Channels لمنع الـ Deadlock: `0`=NoMap, `1`=PvP, `2..N`=Normal) + `WorldTimerService` (نبضة عالم 500ms بدون تراكم).
+  - [x] بناء نظام الخرائط الرسمي الكامل: `Tile`, `GameBlock` (18x18), `GameMapData` (`ini/GameMap.dat` + `.DMap` غير مضغوط + `.scn` مع دعم المسارات غير الحساسة لحالة الأحرف وشبكة احتياطية آمنة عند غياب الملفات), `Weather`, `GameMap`, `MapManager`.
+  - [x] تزويد `sql/comet.game.sql` ببيانات كونكر الرسمية الأصيلة لباتش 5187 (273 خريطة `cq_map` بأسماء إنجليزية نظيفة، 347 ممر `cq_passway`، 322 بوابة `cq_portal`، 26 منطقة `cq_region`، 139 مستوى خبرة `cq_levexp`، و600 صف توزيع نقاط تلقائي `cq_point_allot` للـ 5 فئات الأساسية حتى النينجا) + نماذج ومستودعات EF Core مطابقة 100%.
+  - [x] بناء `Role`, `Character`, `RoleManager`, `ExperienceManager` ونظام الرؤية ثنائي الاتجاه `Screen` (`VIEW_SIZE = 18`) + باكت `MsgPlayer (10014)` و `MsgUserAttrib (10017)` و `MsgMapInfo (1110)` و `MsgWeather (1016)` و `MsgData (1033)` و `MsgPing (1037)` و `MsgName (1015)` و `MsgAllot (1024)`.
+  - [x] تفعيل المشي خطوة وخطوتين (`RunDir0..7`) والنط المفحوص بالارتفاع (`<= 210`) والانتقال عبر البوابات (`MsgWalk 10005`, `MsgAction 10010`: LoginSpawn, Jump, Direction, Emote, Portal, PkMode, Observation, Away, ChangeFace).
+  - [x] تفعيل الشات الكامل (`MsgTalk 1004`) ونظام `CommandManager` لأوامر اللاعبين والـ GM (`/help`, `/chgmap`, `/tc`..`/gw`, `/move`, `/goto`, `/bring`, `/level`, `/exp`, `/pro`, `/reborn`, `/money`, `/cps`, `/str`..`/points`, `/heal`, `/pk`, `/vip`, `/hair`, `/avatar`, `/body`, `/weather`, `/bc`, `/kick`, `/where`, `/online`, `/dc`).
 - [ ] **المرحلة 2 (نظام الأيتمات والشنطة والمعدات والشوبات):**
   - [ ] جدول `item` في SQL + قارئ `itemtype.txt` و `ItemAdd.ini` و `Shop.dat`.
   - [ ] باكتات الأيتمات (`MsgItemInfo 1008`, `MsgItem 1009`, `MsgPackage 1102`, `MsgGemEmbed 1027`, `MsgDataArray 2036`).
@@ -164,3 +166,12 @@
   * إنشاء مشروع **Comet.AutoPatcher** بـ C# في `tools/Comet.AutoPatcher/`.
   * تحديث `.gitignore` لحماية مساحة الـ Workspace من الملفات التنفيذية والأرشيفات الضخمة.
   * إنشاء `AGENT_HANDOFF.md` وتحديث `README.md` والرفع على GitHub فرع `arena/3db48bb9-redux-classic`.
+* **2026-10-25 (المرحلة 1 — نواة العالم والخرائط والحركة والرؤية والشات):**
+  * توحيد إصدار لغة C# إلى `LangVersion 10` عبر جميع مشاريع `.NET 6.0` وإضافة `Comet.Shared/Log.cs` واختبارات الوحدات في `Comet.Core.Tests`.
+  * إصلاح ثغرات وأخطاء الهيكل الخام في `Comet.Account` (`Server.Disconnected`, `MsgAccount` فحص الحظر والصيانة وتسجيل `LoginsRepository`) و `Comet.Game` (`MsgConnect` شرط الـ IP، نقل إدارة الجلسات إلى `RoleManager`، وتصحيح إنشاء التاويست والولادة في قرية الميلاد `1010: 61, 109` في `MsgRegister`).
+  * إضافة `TimeOut`, `TimeOutMS` بـ `Environment.TickCount64` و `ScreenCalculations` في `Comet.Core`.
+  * بناء محرك المعالجة المتوازي الخالي من الأقفال `WorldProcessor` وخدمة التوقيت `WorldTimerService`.
+  * بناء منظومة الخرائط الرسمية (`Tile`, `GameMapData`, `GameBlock`, `Weather`, `GameMap`, `Screen`, `MapManager`, `ExperienceManager`) مع داتا كونكر الرسمية في `sql/comet.game.sql` ونماذج EF Core (`DbMap`, `DbPassway`, `DbPortal`, `DbRegion`, `DbLevExp`, `DbPointAllot`).
+  * بناء الكيانات (`Role`, `Character`) وكافة باكتات العالم والحركة لباتش 5187 بدقة البايت (`MsgPlayer 10014`, `MsgWalk 10005`, `MsgAction 10010`, `MsgUserAttrib 10017`, `MsgMapInfo 1110`, `MsgWeather 1016`, `MsgData 1033`, `MsgPing 1037`, `MsgName 1015`, `MsgAllot 1024`, `MsgTalk 1004`) ونظام الأوامر `CommandManager`.
+  * فحص شامل لكامل شجرة الـ AST والربط ومطابقة أنواع SQL/EF Core لـ 105 ملف C# بنتيجة **0 أخطاء**.
+

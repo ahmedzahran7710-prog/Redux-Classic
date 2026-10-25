@@ -8,13 +8,11 @@ namespace Comet.Game.Packets
 
     /// <remarks>Packet Type 1006</remarks>
     /// <summary>
-    /// Message defining character information, used to initialize the client interface
-    /// and game state. Character information is loaded from the game database on login
-    /// if a character exists.
+    /// Message defining character information, used to initialize the Patch 5187 client interface
+    /// and game state upon login.
     /// </summary>
     public sealed class MsgUserInfo : MsgBase<Client>
     {
-        // Packet Properties
         public uint CharacterID { get; set; }
         public uint Mesh { get; set; }
         public ushort Hairstyle { get; set; }
@@ -40,16 +38,40 @@ namespace Comet.Game.Packets
         public string CharacterName { get; set; }
         public string SpouseName { get; set; }
 
-        /// <summary>
-        /// Instantiates a new instance of <see cref="MsgUserInfo"/> using data fetched
-        /// from the database and stored in <see cref="DbCharacter"/>.
-        /// </summary>
-        /// <param name="character">Character info from the database</param>
+        public MsgUserInfo(Character character)
+        {
+            this.Type = PacketType.MsgUserInfo;
+            this.CharacterID = character.Identity;
+            this.Mesh = character.Mesh;
+            this.Hairstyle = character.Hairstyle;
+            this.Silver = character.Silver;
+            this.Jewels = character.ConquerPoints;
+            this.Experience = character.Experience;
+            this.Strength = character.Strength;
+            this.Agility = character.Agility;
+            this.Vitality = character.Vitality;
+            this.Spirit = character.Spirit;
+            this.AttributePoints = character.AttributePoints;
+            this.HealthPoints = (ushort)character.Life;
+            this.ManaPoints = (ushort)character.Mana;
+            this.KillPoints = character.PkPoints;
+            this.Level = character.Level;
+            this.CurrentClass = character.Profession;
+            this.PreviousClass = character.PreviousProfession;
+            this.AncestorClass = character.FirstProfession;
+            this.Rebirths = character.Metempsychosis;
+            this.EnlightenPoints = character.EnlightenPoints;
+            this.QuizPoints = character.QuizPoints;
+            this.VIPLevel = character.VipLevel;
+            this.CharacterName = character.Name;
+            this.SpouseName = character.MateName;
+        }
+
         public MsgUserInfo(DbCharacter character)
         {
-            base.Type = PacketType.MsgUserInfo;
+            this.Type = PacketType.MsgUserInfo;
             this.CharacterID = character.CharacterID;
-            this.Mesh = (uint)(character.Mesh + (character.Avatar * 10000));
+            this.Mesh = character.Mesh + (uint)(character.Avatar * 10000);
             this.Hairstyle = character.Hairstyle;
             this.Silver = character.Silver;
             this.Jewels = character.Jewels;
@@ -71,28 +93,22 @@ namespace Comet.Game.Packets
             this.QuizPoints = character.QuizPoints;
             this.VIPLevel = character.VIPLevel;
             this.CharacterName = character.Name;
-            this.SpouseName = "None";
+            this.SpouseName = string.IsNullOrWhiteSpace(character.MateName) ? "None" : character.MateName;
         }
 
-        /// <summary>
-        /// Encodes the packet structure defined by this message class into a byte packet
-        /// that can be sent to the client. Invoked automatically by the client's send 
-        /// method. Encodes using byte ordering rules interoperable with the game client.
-        /// </summary>
-        /// <returns>Returns a byte packet of the encoded packet.</returns>
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)base.Type);
+            writer.Write((ushort)this.Type);
             writer.Write(this.CharacterID);
             writer.Write(this.Mesh);
             writer.Write(this.Hairstyle);
             writer.Write(this.Silver);
             writer.Write(this.Jewels);
             writer.Write(this.Experience);
-            writer.Write((ulong)0);
-            writer.Write((ulong)0);
-            writer.Write((uint)0);
+            writer.Write(0UL);
+            writer.Write(0UL);
+            writer.Write(0U);
             writer.Write(this.Strength);
             writer.Write(this.Agility);
             writer.Write(this.Vitality);
@@ -109,10 +125,11 @@ namespace Comet.Game.Packets
             writer.Write(this.QuizPoints);
             writer.Write(this.EnlightenPoints);
             writer.BaseStream.Seek(8, SeekOrigin.Current);
-            writer.Write((uint)this.VIPLevel);
-            writer.Write(new List<string>{
-                this.CharacterName,
-                this.SpouseName
+            writer.Write(this.VIPLevel);
+            writer.Write(new List<string>
+            {
+                this.CharacterName ?? string.Empty,
+                this.SpouseName ?? "None"
             });
             return writer.ToArray();
         }

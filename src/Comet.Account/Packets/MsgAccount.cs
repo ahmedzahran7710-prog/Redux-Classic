@@ -43,11 +43,34 @@ namespace Comet.Account.Packets
                 return;
             }
 
+            // Enforce account ban / lock status (from account_status table)
+            if (client.Account.StatusID == 5)
+            {
+                await client.SendAsync(new MsgConnectEx(RejectionCode.AccountBanned));
+                client.Socket.Disconnect(false);
+                return;
+            }
+
+            if (client.Account.StatusID == 4)
+            {
+                await client.SendAsync(new MsgConnectEx(RejectionCode.AccountLocked));
+                client.Socket.Disconnect(false);
+                return;
+            }
+
             // Connect to the game server
             Database.Models.DbRealm server;
             if (!Kernel.Realms.TryGetValue(this.Realm, out server) || !server.Rpc.Online)
             {
                 await client.SendAsync(new MsgConnectEx(RejectionCode.ServerDown));
+                client.Socket.Disconnect(false);
+                return;
+            }
+
+            // Enforce realm minimum authority level (e.g. GM-only maintenance mode)
+            if (client.Account.AuthorityID < server.AuthorityID)
+            {
+                await client.SendAsync(new MsgConnectEx(RejectionCode.ServerLocked));
                 client.Socket.Disconnect(false);
                 return;
             }
@@ -60,6 +83,7 @@ namespace Comet.Account.Packets
             args.IPAddress = client.IPAddress;
 
             ulong token = await server.Rpc.CallAsync<ulong>("TransferAuth", args);
+            await LoginsRepository.RecordAsync(client.Account.AccountID, client.IPAddress);
             await client.SendAsync(new MsgConnectEx(server.GameIPAddress, server.GamePort, token));
         }
 

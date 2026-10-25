@@ -1,4 +1,4 @@
-﻿namespace Comet.Game
+namespace Comet.Game
 {
     using System;
     using System.Collections.Generic;
@@ -6,69 +6,107 @@
     using System.Threading.Tasks;
     using Comet.Game.Database;
     using Comet.Game.Packets;
+    using Comet.Game.States;
+    using Comet.Game.World.Managers;
+    using Comet.Game.World.Threading;
     using Comet.Network.RPC;
-    using Comet.Network.Security;
+    using Comet.Shared;
 
     /// <summary>
-    /// The game server listens for authentication players with a valid access token from
-    /// the account server, and hosts the game world. The game world in this project has 
-    /// been simplified into a single server executable. For an n-server distributed 
-    /// systems implementation of a Conquer Online server, see Chimera. 
+    /// Entry point for the Conquer Online Patch 5187 Game Server (`Comet.Game`).
     /// </summary>
     internal static class Program
     {
         private static async Task Main(string[] args)
         {
-            // Copyright notice may not be commented out. If adding your own copyright or
-            // claim of ownership, you may include a second copyright above the existing
-            // copyright. Do not remove completely to comply with software license. The
-            // project name and version may be removed or changed.
-            Console.Title = "Comet, Game Server";
+            Log.DefaultFileName = "GameServer";
+
+            Console.Title = "Comet - Conquer Online 5187 Game Server";
             Console.WriteLine();
-            Console.WriteLine("  Comet: Game Server");
-            Console.WriteLine("  Spirited (C) All Rights Reserved");
-            Console.WriteLine("  Patch 5187");
+            await Log.WriteLogAsync(LogLevel.Info, "Comet: Game Server (Patch 5187 - Retail Classic)");
+            await Log.WriteLogAsync(LogLevel.Info, $"Copyright 2018-{DateTime.Now:yyyy} Gareth Jensen \"Spirited\" | Redux-Classic");
             Console.WriteLine();
 
             // Read configuration file and command-line arguments
             var config = new ServerConfiguration(args);
-            if (!config.Valid) 
+            if (!config.Valid)
             {
-                Console.WriteLine("Invalid server configuration file");
+                await Log.WriteLogAsync(LogLevel.Error, "Invalid server configuration file (Comet.Game.config)!");
                 return;
             }
 
-            // Initialize the database
-            Console.WriteLine("Initializing server...");
+            Kernel.Configuration = config;
             MsgConnect.StrictAuthentication = config.Authentication.StrictAuthPass;
+
+            // Initialize the database
+            await Log.WriteLogAsync(LogLevel.Info, "Initializing MySQL database connection...");
             ServerDbContext.Configuration = config.Database;
             if (!ServerDbContext.Ping())
             {
-                Console.WriteLine("Invalid database configuration");
+                await Log.WriteLogAsync(LogLevel.Error, "Invalid database configuration! Cannot connect to MySQL.");
                 return;
             }
 
-            // Start background services
-            var tasks = new List<Task>();
-            tasks.Add(Kernel.Services.Randomness.StartAsync(CancellationToken.None));
-            tasks.Add(DiffieHellman.ProbablePrimes.StartAsync(CancellationToken.None));
-            await Task.WhenAll(tasks.ToArray());
-            
-            // Start the RPC server listener
-            Console.WriteLine("Launching server listeners...");
-            var rpcServer = new RpcServerListener(new Remote());
-            var rpcServerTask = rpcServer.StartAsync(config.RpcNetwork.Port, config.RpcNetwork.IPAddress);
+            // Start background services & per-map WorldProcessor channels
+            await Log.WriteLogAsync(LogLevel.Info, "Starting world processor channels & randomness services...");
+            using var shutdownCts = new CancellationTokenSource();
 
-            // Start the game server listener
+            Kernel.Services.Processor = new WorldProcessor(config.World.MapProcessors, shutdownCts.Token);
+            var backgroundTasks = new List<Task>
+            {
+                Kernel.Services.Randomness.StartAsync(shutdownCts.Token),
+                Kernel.Services.Processor.StartAsync(shutdownCts.Token)
+            };
+
+            // Load retail progression curves, maps, portals, and DMaps
+            await ExperienceManager.InitializeAsync();
+            await MapManager.InitializeAsync(config.World.GameDataPath);
+
+            // Start periodic world timer heartbeat
+            backgroundTasks.Add(Kernel.Services.WorldTimer.StartAsync(shutdownCts.Token));
+
+            // Start the RPC server listener (Account <-> Game auth bridge on Port 5817)
+            await Log.WriteLogAsync(LogLevel.Info, $"Launching RPC listener on {config.RpcNetwork.IPAddress}:{config.RpcNetwork.Port}...");
+            var rpcServer = new RpcServerListener(new Remote());
+            _ = rpcServer.StartAsync(config.RpcNetwork.Port, config.RpcNetwork.IPAddress);
+
+            // Start the Game TCP listener (Port 5816)
+            await Log.WriteLogAsync(LogLevel.Info, $"Launching Game listener on {config.GameNetwork.IPAddress}:{config.GameNetwork.Port}...");
             var server = new Server(config);
             var serverTask = server.StartAsync(config.GameNetwork.Port, config.GameNetwork.IPAddress);
 
-            // Output all clear and wait for user input
-            Console.WriteLine("Listening for new connections");
-            Console.WriteLine();
-            
-            await rpcServerTask;
-            await serverTask;
+            Console.CancelKeyPress += (_, eventArgs) =>
+            {
+                eventArgs.Cancel = true;
+                shutdownCts.Cancel();
+            };
+
+            await Log.WriteLogAsync(LogLevel.Info, "Game Server is online and ready for Patch 5187 connections.");
+
+            try
+            {
+                await Task.WhenAny(serverTask, Task.Delay(Timeout.Infinite, shutdownCts.Token));
+            }
+            catch (OperationCanceledException)
+            {
+                // Normal Ctrl+C shutdown
+            }
+
+            // Save all online characters cleanly before exit
+            await Log.WriteLogAsync(LogLevel.Info, "Saving online characters before shutdown...");
+            foreach (Character user in RoleManager.QueryUserSet())
+            {
+                try
+                {
+                    await user.SaveAsync();
+                }
+                catch (Exception ex)
+                {
+                    await Log.WriteLogAsync(LogLevel.Error, $"Failed saving {user.Name} on shutdown: {ex.Message}");
+                }
+            }
+
+            await Log.WriteLogAsync(LogLevel.Info, "Shutdown complete.");
         }
     }
 }

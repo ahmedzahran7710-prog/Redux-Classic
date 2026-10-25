@@ -3,20 +3,95 @@ namespace Comet.Game.Packets
     using System;
     using System.Threading.Tasks;
     using Comet.Game.States;
+    using Comet.Game.World.Managers;
+    using Comet.Game.World.Maps;
     using Comet.Network.Packets;
 
-    /// <remarks>Packet Type 1010</remarks>
+    /// <remarks>Packet Type 10010</remarks>
     /// <summary>
-    /// Message containing a general action being performed by the client. Commonly used
-    /// as a request-response protocol for question and answer like exchanges. For example,
-    /// walk requests are responded to with an answer as to if the step is legal or not.
+    /// Patch 5187 general world action packet (<c>MsgAction</c>) handling login handshake steps,
+    /// map portals, isometric jumping, directions, emotes/poses, PK mode switching, away status,
+    /// and entity observation.
     /// </summary>
     public sealed class MsgAction : MsgBase<Client>
     {
-        // Packet Properties
-        public uint CharacterID { get; set; }
+        public enum ActionType : ushort
+        {
+            LoginSpawn = 74,
+            LoginInventory = 75,
+            LoginRelationships = 76,
+            LoginProficiencies = 77,
+            LoginSpells = 78,
+            CharacterDirection = 79,
+            CharacterEmote = 81,
+            MapPortal = 85,
+            MapTeleport = 86,
+            CharacterLevelUp = 92,
+            CharacterXpClear = 93,
+            CharacterRevive = 94,
+            CharacterDelete = 95,
+            CharacterPkMode = 96,
+            LoginGuild = 97,
+            MapMine = 99,
+            StarArrow = 100,
+            MapTeamLeaderStar = 101,
+            MapQuery = 102,
+            MapARGB = 104,
+            MapTeamMemberStar = 106,
+            Kickback = 108,
+            SpellRemove = 109,
+            ProficiencyRemove = 110,
+            BoothSpawn = 111,
+            BoothSuspend = 112,
+            BoothResume = 113,
+            BoothLeave = 114,
+            ClientCommand = 116,
+            CharacterObservation = 117,
+            SpellAbortXp = 118,
+            SpellAbortFlight = 120,
+            GoldPickedUp = 121,
+            EnemyInfo = 123,
+            ClientDialog = 126,
+            LoginComplete = 132,
+            MapEffect = 134,
+            RemoveEntity = 135,
+            MapJump = 137,
+            Ghost = 145,
+            FriendInfo = 148,
+            ChangeFace = 151,
+            ItemsDetained = 155,
+            NinjaStep = 156,
+            HideInterface = 158,
+            OpenUpgrade = 160,
+            Away = 161,
+            PathFinding = 162,
+            DragonBallDropped = 165,
+            TableState = 233,
+            TablePot = 234,
+            TablePlayerCount = 235,
+            QueryFriends = 240,
+            QueryStatInfo = 408
+        }
+
+        public MsgAction()
+        {
+            this.Type = PacketType.MsgAction;
+            this.Timestamp = (uint)Environment.TickCount;
+        }
+
+        public uint Identity { get; set; }
         public uint Command { get; set; }
-        public ushort[] Arguments { get; set; }
+        public ushort CommandX
+        {
+            get => (ushort)(this.Command & 0xFFFF);
+            set => this.Command = (this.Command & 0xFFFF0000) | value;
+        }
+        public ushort CommandY
+        {
+            get => (ushort)(this.Command >> 16);
+            set => this.Command = ((uint)value << 16) | (this.Command & 0xFFFF);
+        }
+        public uint Argument { get; set; }
         public uint Timestamp { get; set; }
         public ActionType Action { get; set; }
         public ushort Direction { get; set; }
@@ -25,22 +100,14 @@ namespace Comet.Game.Packets
         public uint Map { get; set; }
         public uint Color { get; set; }
 
-        /// <summary>
-        /// Decodes a byte packet into the packet structure defined by this message class. 
-        /// Should be invoked to structure data from the client for processing. Decoding
-        /// follows TQ Digital's byte ordering rules for an all-binary protocol.
-        /// </summary>
-        /// <param name="bytes">Bytes from the packet processor or client socket</param>
         public override void Decode(byte[] bytes)
         {
             var reader = new PacketReader(bytes);
             this.Length = reader.ReadUInt16();
             this.Type = (PacketType)reader.ReadUInt16();
-            this.CharacterID = reader.ReadUInt32();
+            this.Identity = reader.ReadUInt32();
             this.Command = reader.ReadUInt32();
-            this.Arguments = new ushort[2];
-            for (int i = 0; i < this.Arguments.Length; i++)
-                this.Arguments[i] = reader.ReadUInt16();
+            this.Argument = reader.ReadUInt32();
             this.Timestamp = reader.ReadUInt32();
             this.Action = (ActionType)reader.ReadUInt16();
             this.Direction = reader.ReadUInt16();
@@ -50,20 +117,13 @@ namespace Comet.Game.Packets
             this.Color = reader.ReadUInt32();
         }
 
-        /// <summary>
-        /// Encodes the packet structure defined by this message class into a byte packet
-        /// that can be sent to the client. Invoked automatically by the client's send 
-        /// method. Encodes using byte ordering rules interoperable with the game client.
-        /// </summary>
-        /// <returns>Returns a byte packet of the encoded packet.</returns>
         public override byte[] Encode()
         {
             var writer = new PacketWriter();
-            writer.Write((ushort)base.Type);
-            writer.Write(this.CharacterID);
+            writer.Write((ushort)this.Type);
+            writer.Write(this.Identity);
             writer.Write(this.Command);
-            for (int i = 0; i < this.Arguments.Length; i++)
-                writer.Write(this.Arguments[i]);
+            writer.Write(this.Argument);
             writer.Write(this.Timestamp);
             writer.Write((ushort)this.Action);
             writer.Write(this.Direction);
@@ -74,94 +134,163 @@ namespace Comet.Game.Packets
             return writer.ToArray();
         }
 
-        /// <summary>
-        /// Process can be invoked by a packet after decode has been called to structure
-        /// packet fields and properties. For the server implementations, this is called
-        /// in the packet handler after the message has been dequeued from the server's
-        /// <see cref="PacketProcessor"/>.
-        /// </summary>
-        /// <param name="client">Client requesting packet processing</param>
         public override async Task ProcessAsync(Client client)
         {
+            Character user = client?.Character;
+            if (user == null)
+                return;
+
             switch (this.Action)
             {
-                case ActionType.LoginSpawn:
-                    this.CharacterID = client.ID;
-                    this.Command = client.Character.MapID;
-                    this.X = client.Character.X;
-                    this.Y = client.Character.Y;
-                    await client.SendAsync(this);
-                    break;
+                case ActionType.LoginSpawn: // 74 - Enter initial map
+                {
+                    GameMap targetMap = MapManager.GetMap(user.MapIdentity)
+                                        ?? MapManager.GetMap(user.RecordMapIdentity)
+                                        ?? MapManager.GetMap(1002u);
 
-                case ActionType.LoginComplete:
-                    await client.SendAsync(this);
+                    if (targetMap != null)
+                    {
+                        Kernel.Services.Processor.Queue((int)targetMap.Partition, async () =>
+                        {
+                            await user.EnterMapAsync();
+
+                            var attrib = new MsgUserAttrib(user.Identity, ClientUpdateType.Stamina, user.Energy);
+                            attrib.Append(ClientUpdateType.MaxHitpoints, user.MaxLife);
+                            attrib.Append(ClientUpdateType.Hitpoints, user.Life);
+                            attrib.Append(ClientUpdateType.MaxMana, user.MaxMana);
+                            attrib.Append(ClientUpdateType.Mana, user.Mana);
+                            attrib.Append(ClientUpdateType.VipLevel, user.VipLevel);
+                            if (user.IsBlessed)
+                                attrib.Append(ClientUpdateType.HeavensBlessing, user.HeavenBlessingSeconds);
+                            if (user.StatusFlag != 0)
+                                attrib.Append(ClientUpdateType.StatusEffect, user.StatusFlag);
+                            await user.SendAsync(attrib);
+
+                            await user.SendAsync(new MsgAction
+                            {
+                                Identity = user.Identity,
+                                Command = (uint)user.PkMode,
+                                Action = ActionType.CharacterPkMode
+                            });
+                        });
+                    }
                     break;
+                }
+
+                case ActionType.LoginInventory:     // 75 (Phase 2 hook)
+                case ActionType.LoginRelationships: // 76 (Phase 5 hook)
+                case ActionType.LoginProficiencies: // 77 (Phase 3 hook)
+                case ActionType.LoginSpells:        // 78 (Phase 3 hook)
+                case ActionType.LoginGuild:         // 97 (Phase 5 hook)
+                case ActionType.LoginComplete:      // 132
+                case ActionType.QueryFriends:       // 240
+                {
+                    await user.SendAsync(this);
+                    break;
+                }
+
+                case ActionType.MapJump: // 137 - Isometric jump
+                {
+                    if (this.Identity != user.Identity)
+                        return;
+
+                    await user.JumpPosAsync(this.CommandX, this.CommandY);
+                    break;
+                }
+
+                case ActionType.MapPortal: // 85 - Step onto blue map portal
+                {
+                    if (user.Map == null)
+                        return;
+
+                    int checkX = this.CommandX != 0 ? this.CommandX : user.MapX;
+                    int checkY = this.CommandY != 0 ? this.CommandY : user.MapY;
+
+                    if ((user.Map.QueryPortal(checkX, checkY, out uint destMap, out ushort destX, out ushort destY) ||
+                         user.Map.QueryPortal(user.MapX, user.MapY, out destMap, out destX, out destY)) &&
+                        await user.FlyMapAsync(destMap, destX, destY))
+                    {
+                        return;
+                    }
+
+                    // Prevent client from getting stuck in an unlinked portal swirl
+                    await user.KickbackAsync();
+                    break;
+                }
+
+                case ActionType.CharacterDirection: // 79 - Turn facing direction
+                {
+                    user.Direction = (FacingDirection)(this.Direction % 8);
+                    await user.BroadcastRoomMsgAsync(this, includeSelf: true);
+                    break;
+                }
+
+                case ActionType.CharacterEmote: // 81 - Sit, Stand, Dance, Bow, Wave, Kneel, Cool...
+                {
+                    user.Action = (EntityAction)this.Command;
+                    user.Direction = (FacingDirection)(this.Direction % 8);
+                    await user.BroadcastRoomMsgAsync(this, includeSelf: true);
+                    break;
+                }
+
+                case ActionType.CharacterPkMode: // 96 - Switch PK Mode (Free, Peace, Team, Capture)
+                {
+                    if (this.Command <= 3)
+                        user.PkMode = (PkModeType)this.Command;
+                    this.Command = (uint)user.PkMode;
+                    await user.SendAsync(this);
+                    break;
+                }
+
+                case ActionType.MapQuery: // 102 - Client requests unknown entity on screen
+                {
+                    Role target = RoleManager.GetRole(this.Command);
+                    if (target != null && target.Map == user.Map && user.GetDistance(target) <= Screen.BROADCAST_SIZE)
+                    {
+                        await target.SendSpawnToAsync(user);
+                    }
+                    break;
+                }
+
+                case ActionType.CharacterObservation: // 117 - View player equipment window
+                {
+                    Character observed = RoleManager.GetUser(this.Command);
+                    if (observed != null)
+                    {
+                        await user.SendAsync(new MsgPlayer(observed, windowSpawn: true));
+                        await observed.SendTalkAsync(
+                            $"{user.Name} is observing your gear carefully.",
+                            MsgTalk.TalkChannel.System);
+                    }
+                    break;
+                }
+
+                case ActionType.Away: // 161 - Toggle AFK status
+                {
+                    user.IsAway = this.Command != 0;
+                    await user.BroadcastRoomMsgAsync(this, includeSelf: true);
+                    await user.BroadcastSpawnAsync();
+                    break;
+                }
+
+                case ActionType.ChangeFace: // 151 - Change face avatar (500 silver retail fee in Phase 2/4)
+                {
+                    if (this.Command > 0 && this.Command < 500)
+                    {
+                        user.Avatar = (ushort)this.Command;
+                        await user.BroadcastRoomMsgAsync(
+                            new MsgUserAttrib(user.Identity, ClientUpdateType.Mesh, user.Mesh),
+                            includeSelf: true);
+                        await user.SendAsync(this);
+                        await user.SaveAsync();
+                    }
+                    break;
+                }
 
                 default:
-                    await client.SendAsync(this);
-                    await client.SendAsync(new MsgTalk(client.ID, MsgTalk.TalkChannel.Service,
-                        String.Format("Missing packet {0}, Action {1}, Length {2}",
-                        this.Type, this.Action, this.Length)));
-                    Console.WriteLine(
-                        "Missing packet {0}, Action {1}, Length {2}\n{3}", 
-                        this.Type, this.Action, this.Length, PacketDump.Hex(this.Encode()));
+                    // Echo non-critical UI state queries cleanly without disconnecting client
                     break;
             }
-        }
-
-        /// <summary>
-        /// Defines actions that may be requested by the user, or given to by the server.
-        /// Allows for action handling as a packet subtype. Enums should be named by the 
-        /// action they provide to a system in the context of the player actor.
-        /// </summary>
-        public enum ActionType
-        {
-            LoginSpawn = 74,
-            LoginInventory,
-            LoginRelationships,
-            LoginProficiencies,
-            LoginSpells,
-            CharacterDirection,
-            CharacterEmote = 81,
-            MapPortal = 85,
-            MapTeleport,
-            CharacterLevelUp = 92,
-            SpellAbortXp,
-            CharacterRevive,
-            CharacterDelete,
-            CharacterPkMode,
-            LoginGuild,
-            MapMine = 99,
-            MapTeamLeaderStar = 101,
-            MapQuery,
-            MapSkyColor = 104,
-            MapTeamMemberStar = 106,
-            MapKickBack = 108,
-            SpellRemove,
-            ProficiencyRemove,
-            BoothSpawn,
-            BoothSuspend,
-            BoothResume,
-            BoothLeave,
-            ClientCommand = 116,
-            CharacterObservation,
-            SpellAbortTransform,
-            SpellAbortFlight = 120,
-            MapGold,
-            RelationshipsEnemy = 123,
-            ClientDialog = 126,
-            LoginComplete = 132,
-            MapEffect,
-            LoginOfflineMessages,
-            MapRemoveSpawn = 135,
-            MapJump = 137,
-            CharacterDead = 145,
-            MapTeleportEnd = 146,
-            RelationshipsFriend = 148,
-            CharacterAvatar = 151,
-            CharacterPartnerInfo,
-            CharacterAway = 161,
-            MapPathfinding
         }
     }
 }

@@ -73,7 +73,7 @@ namespace Comet.Game.Packets
 
                 default:
                     await client.SendAsync(this);
-                    await client.SendAsync(new MsgTalk(client.ID, MsgTalk.TalkChannel.Service,
+                    await client.SendAsync(new MsgTalk(client.Identity, MsgTalk.TalkChannel.Service,
                         String.Format("Missing packet {0}, Action {1}, Length {2}",
                         this.Type, this.Action, this.Length)));
                     Console.WriteLine(

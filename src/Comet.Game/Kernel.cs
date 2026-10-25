@@ -1,40 +1,59 @@
 namespace Comet.Game
 {
-    using Comet.Game.States;
-    using Comet.Network.Services;
     using System.Collections.Generic;
-    using System.Collections.Concurrent;
     using System.Runtime.Caching;
+    using System.Threading;
     using System.Threading.Tasks;
+    using Comet.Game.Database;
+    using Comet.Game.World.Threading;
+    using Comet.Network.Services;
 
     /// <summary>
-    /// Kernel for the server, acting as a central core for pools of models and states
-    /// initialized by the server. Used in database repositories to load data into memory
-    /// from essential tables or tables which require heavy post-processing. Used in the
-    /// server packet process methods for tracking client and world states.
+    /// Central core state &amp; background service registry for the Game Server.
     /// </summary>
     public static class Kernel
     {
-        // State caches
-        public static ConcurrentDictionary<uint, Client> Clients = new ConcurrentDictionary<uint, Client>();
+        public static ServerConfiguration Configuration;
         public static MemoryCache Logins = MemoryCache.Default;
-        public static List<uint> Registration = new List<uint>();
+        public static List<uint> Registration = new();
+        public static NetworkTrafficMonitor NetworkMonitor = new();
 
-        // Background services
         public static class Services
         {
-            public static RandomnessService Randomness = new RandomnessService();
+            public static RandomnessService Randomness = new();
+            public static WorldProcessor Processor;
+            public static WorldTimerService WorldTimer = new();
         }
 
-        /// <summary>Returns the next random number from the generator.</summary>
-        /// <param name="minValue">The least legal value for the Random number.</param>
-        /// <param name="maxValue">One greater than the greatest legal return value.</param>
-        public static Task<int> NextAsync(int minValue, int maxValue) => 
+        public static Task<int> NextAsync(int minValue, int maxValue) =>
             Services.Randomness.NextAsync(minValue, maxValue);
 
-        /// <summary>Writes random numbers from the generator to a buffer.</summary>
-        /// <param name="buffer">Buffer to write bytes to.</param>
         public static Task NextBytesAsync(byte[] buffer) =>
             Services.Randomness.NextBytesAsync(buffer);
+    }
+
+    public sealed class NetworkTrafficMonitor
+    {
+        private long m_bytesSent;
+        private long m_bytesReceived;
+        private long m_packetsSent;
+        private long m_packetsReceived;
+
+        public long BytesSent => Interlocked.Read(ref this.m_bytesSent);
+        public long BytesReceived => Interlocked.Read(ref this.m_bytesReceived);
+        public long PacketsSent => Interlocked.Read(ref this.m_packetsSent);
+        public long PacketsReceived => Interlocked.Read(ref this.m_packetsReceived);
+
+        public void Send(int numBytes)
+        {
+            Interlocked.Add(ref this.m_bytesSent, numBytes);
+            Interlocked.Increment(ref this.m_packetsSent);
+        }
+
+        public void Receive(int numBytes)
+        {
+            Interlocked.Add(ref this.m_bytesReceived, numBytes);
+            Interlocked.Increment(ref this.m_packetsReceived);
+        }
     }
 }

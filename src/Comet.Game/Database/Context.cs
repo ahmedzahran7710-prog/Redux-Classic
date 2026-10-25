@@ -1,7 +1,7 @@
 namespace Comet.Game.Database
 {
-    using Microsoft.EntityFrameworkCore;
     using Comet.Game.Database.Models;
+    using Microsoft.EntityFrameworkCore;
 
     /// <summary>
     /// Server database client context implemented using Entity Framework Core, an open
@@ -15,34 +15,40 @@ namespace Comet.Game.Database
 
         // Table Definitions
         public virtual DbSet<DbCharacter> Characters { get; set; }
+        public virtual DbSet<DbMap> Maps { get; set; }
+        public virtual DbSet<DbPassway> Passways { get; set; }
+        public virtual DbSet<DbPortal> Portals { get; set; }
+        public virtual DbSet<DbRegion> Regions { get; set; }
+        public virtual DbSet<DbLevExp> LevelExperiences { get; set; }
+        public virtual DbSet<DbPointAllot> PointAllots { get; set; }
 
         /// <summary>
         /// Configures the database to be used for this context. This method is called
-        /// for each instance of the context that is created. For this project, the MySQL
-        /// connector will be initialized with a connection string from the server's
-        /// configuration file.
+        /// for each instance of the context that is created.
         /// </summary>
-        /// <param name="options">Builder to create the context</param>
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
             options.UseLazyLoadingProxies(false);
             options.UseMySql(string.Format("server={0};database={1};user={2};password={3}",
-                ServerDbContext.Configuration.Hostname, 
+                ServerDbContext.Configuration.Hostname,
                 ServerDbContext.Configuration.Schema,
-                ServerDbContext.Configuration.Username, 
+                ServerDbContext.Configuration.Username,
                 ServerDbContext.Configuration.Password),
                 MySqlServerVersion.LatestSupportedServerVersion);
         }
 
         /// <summary>
-        /// Typically called only once when the first instance of the context is created.
-        /// Allows for model building before the context is fully initialized, and used
-        /// to initialize composite keys and relationships.
+        /// Configures entity keys and indexes before the context is initialized.
         /// </summary>
-        /// <param name="builder">Builder for creating models in the context</param>
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<DbCharacter>(e => e.HasKey(x => x.CharacterID));
+            builder.Entity<DbMap>(e => e.HasKey(x => x.Identity));
+            builder.Entity<DbPassway>(e => e.HasKey(x => x.Identity));
+            builder.Entity<DbPortal>(e => e.HasKey(x => x.Identity));
+            builder.Entity<DbRegion>(e => e.HasKey(x => x.Identity));
+            builder.Entity<DbLevExp>(e => e.HasKey(x => x.Level));
+            builder.Entity<DbPointAllot>(e => e.HasKey(x => x.Identity));
         }
 
         /// <summary>
@@ -50,12 +56,15 @@ namespace Comet.Game.Database
         /// </summary>
         public static bool Ping()
         {
-            try 
+            try
             {
                 using ServerDbContext ctx = new ServerDbContext();
                 return ctx.Database.CanConnect();
             }
-            catch { return false; }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

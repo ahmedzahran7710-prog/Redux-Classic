@@ -2,37 +2,58 @@ namespace Comet.Game.States
 {
     using System;
     using System.Net.Sockets;
+    using System.Threading.Tasks;
+    using Comet.Game.World.Threading;
     using Comet.Network.Security;
     using Comet.Network.Sockets;
 
     /// <summary>
-    /// Client encapsules the accepted client socket's actor and game server state.
-    /// The class should be initialized by the server's Accepted method and returned
-    /// to be passed along to the Receive loop and kept alive. Contains all world
-    /// interactions with the player.
+    /// Client encapsulates a player's socket session, DH + Cast5 cipher state, account authority,
+    /// and active in-world <see cref="States.Character"/>.
     /// </summary>
     public sealed class Client : TcpServerActor
     {
-        // Fields and Properties 
-        public Character Character = null;
-        public Creation Creation = null;
-        public DiffieHellman DiffieHellman = null;
+        // Fields and Properties
+        public Character Character;
+        public Creation Creation;
+        public DiffieHellman DiffieHellman;
 
-        // Client unique identifier
-        public uint ID => Character?.CharacterID ?? 0;
+        public uint AccountIdentity { get; set; }
+        public ushort AuthorityLevel { get; set; }
 
         /// <summary>
-        /// Instantiates a new instance of <see cref="Client"/> using the Accepted event's
-        /// resulting socket and preallocated buffer. Initializes all account server
-        /// states, such as the cipher used to decrypt and encrypt data.
+        /// Character Unique ID (or 0 prior to login).
         /// </summary>
-        /// <param name="socket">Accepted remote client socket</param>
-        /// <param name="buffer">Preallocated buffer from the server listener</param>
-        /// <param name="partition">Packet processing partition</param>
-        public Client(Socket socket, Memory<byte> buffer, uint partition) 
-            : base(socket, buffer, new BlowfishCipher(BlowfishCipher.Default), partition, "TQServer")
+        public uint Identity => this.Character?.Identity ?? 0;
+        public uint ID => this.Identity;
+
+        /// <summary>
+        /// Current <see cref="WorldProcessor"/> channel partition handling this client's world actions.
+        /// Defaults to <see cref="WorldProcessor.NO_MAP_GROUP"/> (0) until the character enters a map.
+        /// </summary>
+        public int WorldPartition => this.Character?.Map != null
+            ? (int)this.Character.Map.Partition
+            : WorldProcessor.NO_MAP_GROUP;
+
+        public Client(Socket socket, Memory<byte> buffer, uint partition)
+            : base(socket, buffer, new BlowfishCipher(), partition, "TQServer")
         {
             this.DiffieHellman = new DiffieHellman();
         }
+
+        public override Task SendAsync(byte[] packet)
+        {
+            Kernel.NetworkMonitor.Send(packet.Length + this.PacketFooter.Length);
+            return base.SendAsync(packet);
+        }
+    }
+
+    /// <summary>
+    /// Record of character registration token and pending state.
+    /// </summary>
+    public sealed class Creation
+    {
+        public uint AccountID;
+        public uint Token;
     }
 }

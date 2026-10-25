@@ -24,6 +24,7 @@ namespace Comet.Network.Packets
         MsgGemEmbed,
         MsgFuse,
         MsgTeamAward,
+        MsgData = 1033,
         MsgGodExp = 1036,
         MsgPing,
         MsgEnemyList = 1041,
