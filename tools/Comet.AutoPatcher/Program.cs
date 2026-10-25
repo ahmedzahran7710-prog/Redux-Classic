@@ -7,7 +7,7 @@ namespace Comet.AutoPatcher;
 
 public sealed class PatcherConfig
 {
-    public string ServerName { get; set; } = "Comet 5187";
+    public string ServerName { get; set; } = "Mystic-Realms";
     public string PatchManifestUrl { get; set; } = "http://127.0.0.1:8080/patches/patches.json";
     public bool EnableAutoPatch { get; set; } = false;
     public string ClientDirectory { get; set; } = ".";
@@ -48,7 +48,7 @@ public static class Program
             return GenerateManifest(folder, baseUrl);
         }
 
-        Console.Title = "Comet 5187 - AutoPatcher & Launcher";
+        Console.Title = "Mystic-Realms (5187) - AutoPatcher & Launcher";
         PatcherConfig config = LoadConfig();
         Console.WriteLine($"=== {config.ServerName} Launcher ===");
 

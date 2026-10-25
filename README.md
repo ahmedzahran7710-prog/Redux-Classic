@@ -1,6 +1,6 @@
-# Comet 5187 — Conquer Online Server (Classic Ninja Edition)
+# Mystic-Realms (Patch 5187) — Conquer Online Classic Server
 
-مشروع سيرفر **Conquer Online — Patch 5187** مبني من الصفر بنظافة كاملة على معمارية **Comet** الحديثة (`.NET 6` / Async Sockets / Channels / RPC)، ويستهدف إصدار **5187** الكلاسيكي المتوازن (6 شخصيات حتى الـ **Ninja**).
+مشروع سيرفر **Mystic-Realms (Conquer Online — Patch 5187)** مبني من الصفر بنظافة كاملة على معمارية **Comet** الحديثة (`.NET 6` / Async Sockets / Channels / RPC)، ويستهدف إصدار **5187** الكلاسيكي المتوازن (6 شخصيات حتى الـ **Ninja**).
 
 > 📌 **للمطورين وأي AI Agent:** اقرأ ملف **[`AGENT_HANDOFF.md`](./AGENT_HANDOFF.md)** أولاً — يحتوي على المعمارية الكاملة، القواعد الصارمة لمنع الـ Deadlocks، أرقام الباكتات الخاصة بإصدار 5187، وخارطة الطريق المحدثة خطوة بخطوة.
 

@@ -8,6 +8,7 @@ namespace Comet.Game.Packets
     using Comet.Game.States.Items;
     using Comet.Game.World.Managers;
     using Comet.Network.Packets;
+    using Comet.Shared;
 
     /// <remarks>Packet Type 2036</remarks>
     /// <summary>
@@ -198,7 +199,7 @@ namespace Comet.Game.Packets
             if (target.Plus > oldPlus && target.Plus >= 6)
             {
                 await RoleManager.BroadcastTalkAsync(
-                    $"Congratulations! {user.Name} has composed {target.Name} to +{target.Plus}!",
+                    $"[{GameBranding.GameName}] Congratulations! {user.Name} has composed {target.Name} to +{target.Plus}!",
                     MsgTalk.TalkChannel.TopLeft,
                     Color.Red);
             }

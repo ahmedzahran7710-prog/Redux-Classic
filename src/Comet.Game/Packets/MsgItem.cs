@@ -6,6 +6,7 @@ namespace Comet.Game.Packets
     using Comet.Game.Database.Models;
     using Comet.Game.States;
     using Comet.Game.States.Items;
+    using Comet.Game.States.NPCs;
     using Comet.Game.World.Managers;
     using Comet.Network.Packets;
 
@@ -572,6 +573,42 @@ namespace Comet.Game.Packets
 
                     await talisman.SaveAsync();
                     await user.SendAsync(new MsgItemInfo(talisman, MsgItemInfo.ItemMode.Update));
+                    break;
+                }
+
+                case ItemActionType.BoothQuery: // 21 - Inspect items on a Player Market Booth
+                {
+                    if (RoleManager.GetRole(this.Identity) is BoothNpc booth)
+                        await booth.SendItemsToBuyerAsync(user);
+                    break;
+                }
+
+                case ItemActionType.BoothSell:       // 22 - Add item to Booth for Silver
+                case ItemActionType.BoothSellPoints: // 29 - Add item to Booth for Conquer Points
+                {
+                    if (user.Booth == null)
+                        return;
+
+                    Item item = user.UserPackage.FindInventoryItem(this.Identity);
+                    bool isSilver = this.Action == ItemActionType.BoothSell;
+                    if (user.Booth.AddItem(item, this.Command, isSilver))
+                        await user.SendAsync(this);
+                    else
+                        await user.SendTalkAsync("Cannot list that item on your booth (bound, locked, invalid price, or booth full).");
+                    break;
+                }
+
+                case ItemActionType.BoothRemove: // 23 - Delist item from own Booth
+                {
+                    if (user.Booth != null && user.Booth.RemoveItem(this.Identity))
+                        await user.SendAsync(this);
+                    break;
+                }
+
+                case ItemActionType.BoothPurchase: // 24 - Buy item from another player's Booth
+                {
+                    if (RoleManager.GetRole(this.Command) is BoothNpc sellerBooth)
+                        await sellerBooth.BuyItemAsync(user, this.Identity);
                     break;
                 }
             }

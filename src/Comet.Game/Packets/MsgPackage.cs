@@ -210,7 +210,7 @@ namespace Comet.Game.Packets
             };
         }
 
-        private static WarehouseItem ToWarehouseEntry(Item item) =>
+        public static WarehouseItem ToWarehouseEntry(Item item) =>
             new()
             {
                 Identity = item.Identity,

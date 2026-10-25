@@ -9,7 +9,8 @@
 ---
 
 ## 1. هوية المشروع والهدف الأساسي
-* **اسم المشروع:** Comet 5187 — Conquer Online Server (Built Cleanly from Scratch).
+* **اسم اللعبة الرسمي (Game Brand):** **`Mystic-Realms`** (موحّد بالكامل عبر `src/Comet.Shared/GameBranding.cs`، الداتابيز، اللانشر، رسائل السيرفر، وجميع محادثات الـ NPCs).
+* **اسم المشروع التقني:** Mystic-Realms — Comet 5187 Server (Built Cleanly from Scratch).
 * **الإصدار المستهدف:** **Patch 5187** (آخر إصدار 2D كلاسيك متوازن يقف عند شخصية الـ **Ninja** بدون Monk/Pirate وبدون Chi/JiangHu/3D).
 * **الأساس البرمجي:** سورس **Comet** الخام (`net6.0` / C#) من تطوير *Gareth Jensen (Spirited)*.
 * **أسلوب العمل الحالي:** المالك يعمل حالياً من الهاتف، لذلك نقوم ببناء وتجهيز ومراجعة كافة الأنظمة برمجياً بهدوء ونظافة تامة هنا على المستودع قبل مرحلة التجربة والتشغيل الفعلي على الكمبيوتر/VPS.
@@ -149,10 +150,12 @@
   - [x] باكتات المهارات الكاملة لباتش 5187 (`MsgMagicInfo 1103`, `MsgWeaponSkill 1025`, `MsgFlushExp 1104`, `MsgMagicEffect 1105`) وربط خطوتي الدخول `LoginProficiencies (77)` و `LoginSpells (78)` في `MsgAction`.
   - [x] نظام الحالات والبافات الكامل `StatusSet` (`1UL << (statusId - 1)`) شاملاً دائرة الـ XP التلقائية (`START_XP`), `Cyclone`, `Superman`, `Stigma`, `Shield / MagicShield`, `StarOfAccuracy`, `Invisibility`, `Fly`, `Intensify`, وحالات النينجا (`PoisonStar` المانعة للجرعات، `ToxicFog` الدورية، `ShurikenVortex`، و `FatalStrike`) مع تمديد وقت الـ KO عند قتل الوحوش.
   - [x] محرك `MagicData` الشامل لكل عائلات المهارات للـ 6 كلاسات حتى النينجا (`FastBlade / ScentSword` بخوارزمية Bresenham، `Scatter`، `Hercules`، `Dash`، `Roar`، `Cure / HealingRain / Revive / Pray / Meditation`، `Tornado / FireMeteor / FireOfHell`، `TwofoldBlades / ToxicFog / PoisonStar / Counter-Kill / ArcherBane / ShurikenVortex / FatalStrike`) + خبرة إتقان الأسلحة من 1 إلى 20 ومهارات الأسلحة التلقائية (`Phoenix, Snow, Boreas, Rage, Celestial, Earthquake, Seizer, Penetration...`) + كتب المهارات وأوامر `/skill`, `/allskills`, `/wskill`, `/xp`.
-- [ ] **المرحلة 5 (نظام الـ NPCs، التجارة، الفريق، العلاقات):**
-  - [ ] جداول `npc` + باكتات `MsgNpcInfo (2030)`, `MsgNpc (2031)`, `MsgTaskDialog (2032)`.
-  - [ ] محرك `NpcScriptEngine` بـ C# لكتابة أي NPC أو كويست بسهولة ونظافة فائقة.
-  - [ ] نظام التجارة (`MsgTrade 1056`)، البوثات/الفيندور، الفريق (`MsgTeam 1023`, `MsgTeamMember 1026`)، الأصدقاء والأعداء (`MsgFriend 1019`)، والـ Mentor (`MsgGuide`).
+- [x] **المرحلة 5 (نظام الـ NPCs، التجارة، البوثات، الفريق، الأصدقاء/الأعداء، وتوحيد هوية `Mystic-Realms`) — مكتملة 100%:**
+  - [x] توحيد اسم وهوية اللعبة بالكامل إلى **`Mystic-Realms`** في `GameBranding.cs`، `sql/comet.account.sql` (`realm`)، `Comet.Account`، `Comet.Game`، `Comet.AutoPatcher`، رسائل الدخول والإعلانات، وكافة حوارات الـ NPCs + ضبط `Dragon.Module.Connect.json` (`enable_redirect: true`).
+  - [x] جداول `cq_npc` (458 NPC رسمي لباتش 5187 بعد التنقية وإضافة `MysticGuide` في قرية الميلاد والتاون سيتي + `MarketEscort`)، `cq_dynanpc`، `cq_friend`، و `cq_enemy` في `sql/comet.game.sql` (21 جدولاً إجمالاً) + نماذج ومستودعات EF Core مطابقة 100%.
+  - [x] الكيانات `Npc`, `DynamicNpc`, `BoothNpc`, `NpcManager` والباكتات `MsgNpcInfo (2030)`, `MsgNpcInfoEx (1109)`, `MsgNpc (2031)`, `MsgTaskDialog (2032)` مع حماية كاملة ضد تزوير أرقام الاختيارات (`Option Spoofing Protection`).
+  - [x] محرك `NpcScriptEngine` بـ C# (`[NpcScript]` + `NpcDialog`) شاملاً مرشدي `MysticGuide`، محولات المدن والماركت (`Conductress` مع حفظ نقطة العودة من الماركت)، مدربي الترقيات والمهارات للـ 6 كلاسات حتى النينجا، أساتذة الريبورن الأول والثاني، حدادي السوكت والتطوير، البنوك، الحلاق، ومأمور السجن.
+  - [x] نظام التجارة الآمنة (`Trade.cs` + `MsgTrade 1056` للفضة والـ CPs والأيتمات)، بوثات الماركت (`BoothNpc.cs` + `MsgItemInfoEx 1108` للفضة والـ CPs ونداء البائع)، البارتي (`Team.cs` + `MsgTeam 1023` + `MsgTeamMember 1026` + نجمة القائد ومشاركة الخبرة)، ونظام الأصدقاء والأعداء التلقائي عند الـ PK (`RelationshipManager.cs` + `MsgFriend 1019`).
 - [ ] **المرحلة 6 (النقابات، الأرسنال، العائلات، التوب، والأرينا):**
   - [ ] نظام الـ **Nobility / Peerage** (`MsgPeerage 2064` — King, Prince, Duke, Earl).
   - [ ] نظام الـ **Syndicates / Guilds** كامل (`MsgSyndicate 1107`) + الـ **Totem Pole / Arsenal** (`MsgTotemPole 2201-2203`) + حرب النقابات **Guild War** (`MsgNpcInfoEx` للأبواب والعمود).
@@ -198,4 +201,9 @@
   * بناء `StatusSet` (حالات 5187 بقاعدة `1UL << (id - 1)` شاملة البافات والسموم الدورية ودائرة `START_XP` وتمديد وقت الـ KO)، `MagicManager` (قارئ مزدوج لـ `ini/magictype.dat` + `cq_magictype`)، و `MagicData` (كافة مهارات الكلاسات الـ 6 حتى النينجا شاملة `TwofoldBlades`, `ToxicFog`, `PoisonStar` المانعة للجرعات، `Counter-Kill`, `ArcherBane`, `ShurikenVortex`, `FatalStrike`, `FastBlade/ScentSword`, `Scatter`, `Fly`, `Intensify`, `Revive`, `Pray`, `Stigma`, `Cyclone`, `Superman`, وخبرة ومهارات الأسلحة التلقائية).
   * دعم كتب المهارات في `ItemScriptEngine` وإضافة أوامر `/skill`, `/allskills`, `/wskill`, `/xp` في `CommandManager`.
   * توثيق المرحلة 4 في `قسم معلومات التعديلات/` وفحص شامل لـ 150 ملف C# و17 جدول SQL بنتيجة **0 أخطاء**.
+* **2026-10-25 (المرحلة 5 — الـ NPCs، محرك الحوارات، التجارة، البوثات، البارتي، الأصدقاء/الأعداء، وتوحيد هوية `Mystic-Realms`):**
+  * إنشاء `Comet.Shared/GameBranding.cs` وتغيير هوية السيرفر بالكامل والـ `realm` في `sql/comet.account.sql` والأوتوباتشر وكافة رسائل السيرفر وحوارات الـ NPCs إلى **`Mystic-Realms`**.
+  * إضافة جداول `cq_npc` (458 صف رسمي لباتش 5187)، `cq_dynanpc`، `cq_friend`، و `cq_enemy` إلى `sql/comet.game.sql` (`665 KB` إجمالاً، 21 جدولاً) + نماذج ومستودعات EF Core وتسجيلها في `ServerDbContext`.
+  * بناء `Npc`, `DynamicNpc`, `BoothNpc`, `NpcManager`, `NpcScriptEngine` (`NpcDialog` + `[NpcScript]`), `Trade`, `Team`, `RelationshipManager` والباكتات الـ 9 (`MsgNpcInfo 2030`, `MsgNpcInfoEx 1109`, `MsgNpc 2031`, `MsgTaskDialog 2032`, `MsgTrade 1056`, `MsgTeam 1023`, `MsgTeamMember 1026`, `MsgFriend 1019`, `MsgItemInfoEx 1108`) وربطها بالكامل في `Character`, `Monster`, `MsgAction`, `MsgItem`, `MsgTalk`, `Server`, `Program`.
+  * توثيق المرحلة 5 ودليل تغيير اسم اللعبة في الكلينت داخل `قسم معلومات التعديلات/`، وفحص شامل لـ 176 ملف C# و21 جدول SQL بنتيجة **0 أخطاء**.
 

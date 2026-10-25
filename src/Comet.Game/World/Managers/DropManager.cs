@@ -10,6 +10,7 @@ namespace Comet.Game.World.Managers
     using Comet.Game.States;
     using Comet.Game.States.Items;
     using Comet.Game.World.Maps;
+    using Comet.Shared;
 
     /// <summary>
     /// Retail Conquer Online Patch 5187 Monster Drop Engine.
@@ -56,7 +57,7 @@ namespace Comet.Game.World.Managers
                 if (killer != null)
                 {
                     await RoleManager.BroadcastTalkAsync(
-                        $"{killer.Name} was lucky enough to find a DragonBall from {monster.Name}!",
+                        $"[{GameBranding.GameName}] {killer.Name} was lucky enough to find a DragonBall from {monster.Name}!",
                         MsgTalk.TalkChannel.TopLeft,
                         Color.Yellow);
                 }
