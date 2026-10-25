@@ -1,0 +1,12 @@
+{
+  "account_server": {
+    "enable_redirect": true,
+    "ip": "127.0.0.1",
+    "port": 9960
+  },
+  "game_server": {
+    "enable_redirect": false,
+    "ip": "127.0.0.1",
+    "port": 5816
+  }
+}

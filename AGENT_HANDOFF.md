@@ -1,0 +1,166 @@
+# 📘 AGENT_HANDOFF.md — المرجع الشامل وذاكرة المشروع (Comet 5187)
+
+> **تعليمات لأي AI Agent مستقبلي يقرأ هذا الملف:**
+> هذا الملف هو **الذاكرة المركزية الموثقة (Single Source of Truth)** لمشروع تطوير سيرفر **Conquer Online — Patch 5187 (Classic + Ninja)** المبني من الصفر على سورس **Comet** الأصلي لـ *Spirited*.
+> 1. اقرأ هذا الملف بالكامل قبل إجراء أي تعديل برمجي.
+> 2. التزم بجميع القواعد المعمارية وقواعد حماية مساحة الـ Workspace المذكورة بالأسفل.
+> 3. **حدّث قسم سجل التقدم (Progress Checklist & Changelog) في هذا الملف بعد الانتهاء من كل مرحلة أو مهمة برمجية.**
+
+---
+
+## 1. هوية المشروع والهدف الأساسي
+* **اسم المشروع:** Comet 5187 — Conquer Online Server (Built Cleanly from Scratch).
+* **الإصدار المستهدف:** **Patch 5187** (آخر إصدار 2D كلاسيك متوازن يقف عند شخصية الـ **Ninja** بدون Monk/Pirate وبدون Chi/JiangHu/3D).
+* **الأساس البرمجي:** سورس **Comet** الخام (`net6.0` / C#) من تطوير *Gareth Jensen (Spirited)*.
+* **أسلوب العمل الحالي:** المالك يعمل حالياً من الهاتف، لذلك نقوم ببناء وتجهيز ومراجعة كافة الأنظمة برمجياً بهدوء ونظافة تامة هنا على المستودع قبل مرحلة التجربة والتشغيل الفعلي على الكمبيوتر/VPS.
+
+---
+
+## 2. هيكل المشروع والملفات (Repository Structure)
+
+```text
+/
+├── AGENT_HANDOFF.md              # هذا الملف (المرجع الشامل وذاكرة المشروع لأي إيجنت)
+├── README.md                     # دليل المشروع والتشغيل السريع
+├── Comet.sln                     # ملف الـ Solution الرئيسي للسيرفر
+├── sql/
+│   ├── comet.account.sql         # قاعدة بيانات الحسابات والـ Realms + Trigger التشفير
+│   ├── comet.game.sql            # قاعدة بيانات الجيم (تبدأ بجدول character وتُوسّع مع كل مرحلة)
+│   └── upgrades/                 # سكريبتات الترقية المرجعية
+├── src/
+│   ├── Comet.Account/            # سيرفر تسجيل الدخول (Port 9960)
+│   ├── Comet.Game/               # سيرفر العالم واللعب (Game Port 5816 / RPC Port 5817)
+│   ├── Comet.Network/            # طبقة الشبكة (Async Sockets, Channels, RPC, Ciphers)
+│   ├── Comet.Core/               # دوال مساعدة ورياضيات أساسية
+│   └── Comet.Shared/             # نماذج البيانات المشتركة بين Account و Game عبر RPC
+├── tests/                        # اختبارات الوحدات (Account, Core, Network)
+└── tools/
+    ├── DragonLauncher/           # كود اللودر الرسمي (C++ Win32) لتوجيه الـ IP وحل مشكلة الفلاش
+    └── Comet.AutoPatcher/        # أوتوباتشر ولانشر خفيف بـ C# لتحديث الكلينت وتشغيل اللودر
+```
+
+---
+
+## 3. المواصفات التقنية الدقيقة لباتش 5187
+
+### أ) البورتات والشبكة (Network & Ports)
+| الخدمة | البورت الافتراضي | ملف الإعدادات | الوظيفة |
+|---|---|---|---|
+| **Comet.Account** | `9960` | `src/Comet.Account/Comet.Account.config` | استقبال اتصال الكلينت الأول والتحقق من الحساب |
+| **Comet.Game (Client)** | `5816` | `src/Comet.Game/Comet.Game.config` | اتصال اللاعب بعالم اللعبة |
+| **Comet.Game (RPC)** | `5817` | `src/Comet.Game/Comet.Game.config` | قناة اتصال داخلية بين `Account` و `Game` لنقل التوكن |
+
+> **ملاحظة مهمة عند التشغيل الفعلي:** في جدول `realm` داخل قاعدة بيانات `comet.account`، الحقل `GameIPAddress` يجب أن يكون IP الشبكة المحلي (`192.168.x.x`) أو الـ Public IP للـ VPS (كلينت كونكر العادي يرفض `127.0.0.1` في `MsgConnectEx` إلا إذا تم تفعيل `game_server.enable_redirect: true` في `Dragon.Module.Connect.json`).
+
+### ب) التشفير وتسلسل الدخول (Encryption & Login Flow - Patch 5187)
+1. يتصل الكلينت بـ `Comet.Account` (تشفير الباكتات `TQCipher`)، فيرسل السيرفر `MsgEncryptCode (1059)` وبداخله `Seed` عشوائي.
+2. يرد الكلينت بـ `MsgAccount (1086)` وبداخله الاسم والباسورد مشفراً بـ **RC5 + ScanCodeCipher**.
+3. يتحقق `Comet.Account` من الباسورد في جدول `account` (`SHA1(Password + Salt)`), ثم يرسل طلب RPC إلى `Comet.Game` لحجز Token الدخول، ويرد على الكلينت بـ `MsgConnectEx (1055)`.
+4. يتصل الكلينت بـ `Comet.Game`، فيبدأ تبادل مفاتيح **Diffie-Hellman (`MsgHandshake`)** لتوليد مفتاح **Blowfish CFB64** مع ختم `TQServer` / `TQClient` (8 بايت في نهاية كل باكت).
+5. يرسل الكلينت `MsgConnect (1052)`، فإما يرد السيرفر بـ `"NEW_ROLE"` لفتح شاشة إنشاء الشخصية (`MsgRegister 1001`)، أو يرد بـ `"ANSWER_OK"` متبوعاً بـ `MsgUserInfo (1006)` وسلسلة `MsgAction (10010)`.
+
+### ج) تحذير هام جداً في أرقام باكتات 5187!
+في إصدار **5187** قامت شركة TQ بتغيير أرقام 4 باكتات أساسية إلى فئة `10000+` (موجودة بالفعل في `src/Comet.Network/Packets/PacketTypes.cs`):
+* `MsgWalk` = **`10005`** (وليس 1005)
+* `MsgAction` = **`10010`** (وليس 1010)
+* `MsgPlayer` = **`10014`** (وليس 1014)
+* `MsgUserAttrib` = **`10017`** (وليس 1017)
+
+### د) الشخصيات المعتمدة في السورس (6 شخصيات حتى النينجا فقط)
+1. **Trojan:** `10 -> 15` (Trojan Master)
+2. **Warrior:** `20 -> 25` (Warrior Master)
+3. **Archer:** `40 -> 45` (Archer Master)
+4. **Ninja:** `50 -> 55` (Ninja Master)
+5. **Water Taoist:** `100 -> 132 -> 135` (Water Saint)
+6. **Fire Taoist:** `100 -> 142 -> 145` (Fire Saint)
+
+---
+
+## 4. القواعد المعمارية الصارمة (Mandatory Architecture Rules)
+
+لتجنب كافة الأخطاء الشهيرة في سورسات كونكر الأخرى (مثل World Conquer v1 أو Redux):
+
+1. **منع الـ Deadlock والـ Race Conditions نهائياً (Per-Map Channel Design):**
+   * `PacketProcessor<Client>` يعالج الباكتات على عدة Partitions بالتوازي.
+   * عند بناء نظام الخرائط والقتال في المرحلة 1 وما بعدها، يُمنع تعديل حالة الخريطة أو الوحوش أو صحة اللاعبين مباشرة من خيوط متفرقة بدون تزامن.
+   * **الحل المعتمد:** إنشاء `WorldProcessor` يحتوي على `Channel` مستقل لكل خريطة (أو مجموعة خرائط متجاورة غير متداخلة + فصل خرائط الـ PvP عن خرائط الوحوش) بحيث تُنفَّذ أوامر الحركة، الهجوم، الدروب، والتجارة داخل الخريطة الواحدة بالتسلسل (`Single-Reader Channel`) بدون الحاجة إلى `lock` متداخلة تسبب تجميد السيرفر.
+2. **استخدام مؤقتات 64-بت دائماً (`Environment.TickCount64`):**
+   * يُمنع استخدام `Environment.TickCount` (32-bit) لأنه ينقلب لرقم سالب بعد 24.8 يوم من عمل نظام التشغيل ويوقف التايمرات؛ يُستخدم دائماً `Environment.TickCount64`.
+3. **نظام سكريبتات C# نظيف للـ NPCs والأيتمات والإيفنتات:**
+   * بدلاً من تعقيد جداول `cq_action` الطويلة في الداتابيز، نبني نظام `INpcScript` / `IItemScript` نظيف بالـ Attributes (مثل `[NpcScript(10003)]`) مع إمكانية دعم الحوارات والـ Tasks بمرونة وسهولة قراءة 100%.
+4. **حماية مساحة الـ Workspace ومستودع Git (قاعدة قصوى):**
+   * الحد التراكمي للـ Snapshots في البيئة السحابية ~128 MB وحد الملف الواحد على GitHub هو 100 MB.
+   * **ممنوع منعاً باتاً** وضع الكلينت أو ملفات مضغوطة كبيرة (`*.zip`, `*.rar`, `*.7z`) أو ملفات `bin/` و `obj/` أو ملفات `.dmap` الضخمة داخل Git.
+   * المستودع يحتوي فقط على الكود المصدري النظيف، ملفات SQL، ملفات الإعدادات، وأدوات اللودر والأوتوباتشر الخفيفة.
+   * أما ملفات الداتا الخاصة بالكلينت (`ini/` و `map/*.dmap`) فتُقرأ وقت التشغيل من مسار الكلينت أو مجلد خارجي مُستثنى في `.gitignore`.
+
+---
+
+## 5. متطلبات الكلينت واللودر والأوتوباتش (عند التجربة على الكمبيوتر)
+
+1. **الكلينت المطلوب:** كلينت **Conquer Online v5187 الخام (Unmodified Clean Client)**.
+2. **هل يحتاج باتش حالياً؟** لا يحتاج أي باتش مخصص في البداية (فقط التأكد من وجود ملف `Flash.ocx` القديم الخاص بواجهة إنشاء الشخصية أو استخدام موديول `Dragon.Module.Flash` المرفق، وحذف مجلد حماية TQ القديم إن وُجد). نستخدم الباتشات المخصصة فقط لاحقاً لو أضفنا جيرمنتات/خرائط/تعديلات واجهة خاصة بنا.
+3. **اللودر (متوفر خياران):**
+   * **الخيار الأول (مرفوع معنا في المستودع):** `tools/DragonLauncher` — يُبنى بـ Visual Studio (وضعية `Win32 / x86`) ويُعدّل ملف `Dragon.Module.Connect.json` بالـ IP والبورت `9960`، ويشمل حل الفلاش تلقائياً.
+   * **الخيار الثاني (جاهز بدون بناء C++):** استخدام **ConquerLoader** المفتوح المصدر (`OpenConquerOrg/ConquerLoader`) مع ضبط البورت `9960` وإصدار `5187`.
+4. **الأوتوباتشر:** مرفوع ومجهز في `tools/Comet.AutoPatcher` بـ C# وجاهز للربط بأي استضافة ويب لرفع تحديثات `.zip` تلقائياً للاعبين وقت الافتتاح.
+
+---
+
+## 6. خارطة طريق التطوير من الصفر (Development Roadmap)
+
+- [x] **المرحلة 0 (التأسيس والرفع):**
+  - [x] تحميل سورس **Comet 5187** الخام النظيف ورفعه للمستودع.
+  - [x] إضافة كود **Dragon Launcher** في `tools/DragonLauncher`.
+  - [x] بناء **Comet.AutoPatcher** خفيف بـ C# في `tools/Comet.AutoPatcher`.
+  - [x] تأمين `.gitignore` لحماية مساحة الـ Workspace على المدى الطويل.
+  - [x] إنشاء وتوثيق `AGENT_HANDOFF.md` و `README.md`.
+- [ ] **المرحلة 1 (نواة العالم، الخرائط، الحركة، الرؤية، والشات):**
+  - [ ] بناء `TimeOut` / `TimeOutMS` بـ `Environment.TickCount64`.
+  - [ ] بناء قارئ الخرائط `DMap` / `GameMap` + `Portal` + `Tile` (بدون رفع ملفات الخرائط للـ Git).
+  - [ ] بناء `WorldProcessor` (Per-Map Channels لمنع الـ Deadlock).
+  - [ ] بناء نظام الشاشة والرؤية `Screen` + باكت `MsgPlayer (10014)` و `MsgUserAttrib (10017)`.
+  - [ ] تفعيل المشي والنط والانتقال (`MsgWalk 10005`, `MsgAction 10010`: Jump, Direction, Emote, Portal, Teleport).
+  - [ ] تفعيل الشات الكامل (`MsgTalk 1004`) ونظام أوامر الـ GM (`/teleport`, `/item`, `/level`, `/gold`, `/cps`, إلخ).
+- [ ] **المرحلة 2 (نظام الأيتمات والشنطة والمعدات والشوبات):**
+  - [ ] جدول `item` في SQL + قارئ `itemtype.txt` و `ItemAdd.ini` و `Shop.dat`.
+  - [ ] باكتات الأيتمات (`MsgItemInfo 1008`, `MsgItem 1009`, `MsgPackage 1102`, `MsgGemEmbed 1027`, `MsgDataArray 2036`).
+  - [ ] اللبس والخلع، الشنطة، البنوك (Warehouses)، الشراء والبيع، التصليح، رمي والتقاط الأيتمات (`MsgMapItem 1101`).
+  - [ ] التطوير (+1 إلى +12)، السوكتات والـ Gems، الـ Bless، التليزمانات (Fan/Tower/Crop)، والحصنة (`Steeds`)، وقفل الأيتمات (`MsgEquipLock`).
+  - [ ] نظام سكريبتات الأيتمات بـ C# (`IItemScript` للفافات، الجرعات، الصناديق، كرات الخبرة، الـ DB/Met scrolls).
+- [ ] **المرحلة 3 (الوحوش، الذكاء الاصطناعي، الدروب، اللفلفة والريبورن):**
+  - [ ] جداول `monstertype` و `generator` (الـ Spawns) و `levexp` و `rebirth`.
+  - [ ] كلاس `Monster` + حركة الوحوش والـ AI داخل `WorldProcessor` + نظام الدروب المتوازن (ذهب، أيتمات، ميتور، دراجون بول، CPs).
+  - [ ] نظام الخبرة، توزيع النقاط (`MsgAllot 1024`)، الـ 1st Reborn والـ 2nd Reborn و الـ Enlightenment.
+- [ ] **المرحلة 4 (نظام القتال، الـ Battle Power، ومهارات الـ 6 شخصيات حتى النينجا):**
+  - [ ] قارئ `MagicType.dat` + جداول `magic` و `weapon_skill` (`MsgMagicInfo 1103`, `MsgWeaponSkill 1025`, `MsgFlushExp 1104`).
+  - [ ] معادلات الضرر الدقيقة لـ 5187 (Physical, Magic, Archer, Battle Power Bonus, Dodge, Bless, Tortoise Gem) في `MsgInteract (1022)` و `MsgMagicEffect (1105)`.
+  - [ ] تنفيذ كافة السكيلات والـ Status Flags لجميع الكلاسات الـ 6:
+    - Trojan (Cyclone, FastBlade/ScentSword, SpiritHealing, Hercules...)
+    - Warrior (Superman, Shield, Accuracy, Roar, FlyingMoon, Dash...)
+    - Archer (Scatter, RapidFire, Fly, Intensify, ArrowRain...)
+    - Water & Fire Taoist (Stigma, StarOfAccuracy, MagicShield, Revive, Pray, Tornado, FireCircle, FireMeteor, FireOfHell...)
+    - **Ninja** (TwofoldBlades, ToxicFog, PoisonStar, ShurikenVortex, FatalStrike, ArcherBane...)
+- [ ] **المرحلة 5 (نظام الـ NPCs، التجارة، الفريق، العلاقات):**
+  - [ ] جداول `npc` + باكتات `MsgNpcInfo (2030)`, `MsgNpc (2031)`, `MsgTaskDialog (2032)`.
+  - [ ] محرك `NpcScriptEngine` بـ C# لكتابة أي NPC أو كويست بسهولة ونظافة فائقة.
+  - [ ] نظام التجارة (`MsgTrade 1056`)، البوثات/الفيندور، الفريق (`MsgTeam 1023`, `MsgTeamMember 1026`)، الأصدقاء والأعداء (`MsgFriend 1019`)، والـ Mentor (`MsgGuide`).
+- [ ] **المرحلة 6 (النقابات، الأرسنال، العائلات، التوب، والأرينا):**
+  - [ ] نظام الـ **Nobility / Peerage** (`MsgPeerage 2064` — King, Prince, Duke, Earl).
+  - [ ] نظام الـ **Syndicates / Guilds** كامل (`MsgSyndicate 1107`) + الـ **Totem Pole / Arsenal** (`MsgTotemPole 2201-2203`) + حرب النقابات **Guild War** (`MsgNpcInfoEx` للأبواب والعمود).
+  - [ ] نظام الـ **Clans / Families** (`MsgFamily 1312`, `MsgFamilyOccupy 1313`).
+  - [ ] نظام الـ **Arena Qualifier 1v1** (`MsgQualifying* 2205-2211`).
+  - [ ] الـ Quiz Show، الـ Flowers، الـ Offline TG، والـ Broadcast/Pigeon (`MsgPigeon 2050`).
+- [ ] **المرحلة 7 (المراجعة النهائية، الحماية، وتجهيز الداتابيز للافتتاح):**
+  - [ ] مراجعة شاملة ضد ثغرات الباكتات والتدبيل (Anti-Exploit & Validation).
+  - [ ] تجهيز ملفات SQL الأساسية وأدوات الإدارة والتجربة الفعلية على الكلينت.
+
+---
+
+## 7. سجل التعديلات (Session Changelog)
+* **2026-10-25 (المرحلة 0):**
+  * تهيئة المستودع بسورس **Comet 5187** الخام النظيف (`Comet.Account`, `Comet.Game`, `Comet.Network`, `Comet.Core`, `Comet.Shared`, `sql/`, `tests/`).
+  * إضافة كود **Dragon Launcher** في `tools/DragonLauncher/` (لتوجيه اتصال الكلينت وحل مشكلة الفلاش).
+  * إنشاء مشروع **Comet.AutoPatcher** بـ C# في `tools/Comet.AutoPatcher/`.
+  * تحديث `.gitignore` لحماية مساحة الـ Workspace من الملفات التنفيذية والأرشيفات الضخمة.
+  * إنشاء `AGENT_HANDOFF.md` وتحديث `README.md` والرفع على GitHub فرع `arena/3db48bb9-redux-classic`.
