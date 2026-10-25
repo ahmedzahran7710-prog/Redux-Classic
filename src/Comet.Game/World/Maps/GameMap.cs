@@ -90,6 +90,7 @@ namespace Comet.Game.World.Maps
         public List<Passway> Passways { get; } = new();
         public List<DbPortal> Portals { get; } = new();
         public List<DbRegion> Regions { get; } = new();
+        public List<World.Generator> Generators { get; } = new();
 
         public bool IsActive => !this.Users.IsEmpty;
         public bool IsPkDisable => this.Flag.HasFlag(MapTypeFlags.PkDisable);
@@ -405,10 +406,19 @@ namespace Comet.Game.World.Maps
 
             foreach (Role role in this.Roles.Values.ToArray())
             {
-                if (role is States.Items.MapItem drop && drop.IsExpired)
+                if (role is Monster mob)
+                {
+                    await mob.OnTimerAsync();
+                }
+                else if (role is States.Items.MapItem drop && drop.IsExpired)
                 {
                     await drop.DisappearAsync();
                 }
+            }
+
+            foreach (World.Generator gen in this.Generators)
+            {
+                await gen.OnTimerAsync();
             }
         }
     }

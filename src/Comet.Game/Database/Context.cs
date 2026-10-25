@@ -25,6 +25,9 @@ namespace Comet.Game.Database
         public virtual DbSet<DbItemtype> Itemtypes { get; set; }
         public virtual DbSet<DbItemAddition> ItemAdditions { get; set; }
         public virtual DbSet<DbGoods> Goods { get; set; }
+        public virtual DbSet<DbMonstertype> Monstertypes { get; set; }
+        public virtual DbSet<DbGenerator> Generators { get; set; }
+        public virtual DbSet<DbRebirth> Rebirths { get; set; }
 
         /// <summary>
         /// Configures the database to be used for this context. This method is called
@@ -57,6 +60,9 @@ namespace Comet.Game.Database
             builder.Entity<DbItemtype>(e => e.HasKey(x => x.Type));
             builder.Entity<DbItemAddition>(e => e.HasKey(x => x.Identity));
             builder.Entity<DbGoods>(e => e.HasKey(x => x.Identity));
+            builder.Entity<DbMonstertype>(e => e.HasKey(x => x.Id));
+            builder.Entity<DbGenerator>(e => e.HasKey(x => x.Id));
+            builder.Entity<DbRebirth>(e => e.HasKey(x => x.Identity));
         }
 
         /// <summary>

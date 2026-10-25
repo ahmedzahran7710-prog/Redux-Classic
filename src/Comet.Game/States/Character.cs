@@ -35,6 +35,11 @@ namespace Comet.Game.States
 
         private int m_equipBonusLife;
         private int m_equipBonusMana;
+        private uint m_autoAttackTargetId;
+        private bool m_autoAttackIsBow;
+        private readonly TimeOutMS m_attackCooldown = new(800);
+        private readonly TimeOut m_reviveCooldown = new(18);
+        private readonly TimeOut m_blueNameTimer = new(30);
 
         public Character(Client client, DbCharacter dbCharacter)
         {
@@ -588,6 +593,7 @@ namespace Comet.Game.States
             this.Direction = (FacingDirection)finalDir;
             this.Action = EntityAction.Stand;
             this.IsAway = false;
+            this.ClearAutoAttack();
             this.Map.EnterBlock(this, newX, newY, oldX, oldY);
             this.MapX = newX;
             this.MapY = newY;
@@ -631,6 +637,7 @@ namespace Comet.Game.States
             this.Direction = (FacingDirection)ScreenCalculations.GetDirectionSector(oldX, oldY, newX, newY);
             this.Action = EntityAction.Stand;
             this.IsAway = false;
+            this.ClearAutoAttack();
             this.Map.EnterBlock(this, newX, newY, oldX, oldY);
             this.MapX = (ushort)newX;
             this.MapY = (ushort)newY;
@@ -834,6 +841,409 @@ namespace Comet.Game.States
 
         #endregion
 
+        #region Physical / Bow Combat, Damage, Death & Revival (Phase 3 + Phase 4 Hook)
+
+        public void SetAutoAttackTarget(uint targetId, bool isBow)
+        {
+            this.m_autoAttackTargetId = targetId;
+            this.m_autoAttackIsBow = isBow;
+        }
+
+        public void ClearAutoAttack()
+        {
+            this.m_autoAttackTargetId = 0;
+        }
+
+        public int CalculateMinAttack()
+        {
+            int atk = this.Strength;
+            foreach (Item eq in this.UserPackage.GetEquipmentItems())
+            {
+                if (eq.Durability == 0 && eq.MaximumDurability > 0) continue;
+                if (eq.Position == Item.ItemPosition.LeftHand && eq.IsWeaponOneHand())
+                    atk += eq.MinAttack / 2;
+                else
+                    atk += eq.MinAttack;
+            }
+            return (int)(atk * this.GetDragonGemMultiplier());
+        }
+
+        public int CalculateMaxAttack()
+        {
+            int atk = this.Strength;
+            foreach (Item eq in this.UserPackage.GetEquipmentItems())
+            {
+                if (eq.Durability == 0 && eq.MaximumDurability > 0) continue;
+                if (eq.Position == Item.ItemPosition.LeftHand && eq.IsWeaponOneHand())
+                    atk += eq.MaxAttack / 2;
+                else
+                    atk += eq.MaxAttack;
+            }
+            return Math.Max(this.CalculateMinAttack(), (int)(atk * this.GetDragonGemMultiplier()));
+        }
+
+        public int CalculateTotalDefense()
+        {
+            int def = 0;
+            foreach (Item eq in this.UserPackage.GetEquipmentItems())
+            {
+                if (eq.Durability == 0 && eq.MaximumDurability > 0) continue;
+                def += eq.Defense;
+            }
+            return Math.Max(0, def);
+        }
+
+        public int CalculateTotalDodge()
+        {
+            int dodge = 0;
+            foreach (Item eq in this.UserPackage.GetEquipmentItems())
+            {
+                if (eq.Durability == 0 && eq.MaximumDurability > 0) continue;
+                dodge += eq.Dodge;
+            }
+            return Math.Max(0, dodge);
+        }
+
+        public int ApplyBlessAndTortoiseReduction(int incomingDamage)
+        {
+            int blessPct = 0;
+            int tortoisePct = 0;
+            foreach (Item eq in this.UserPackage.GetEquipmentItems())
+            {
+                if (!eq.IsMount())
+                    blessPct += eq.Blessing;
+                tortoisePct += GetTortoiseGemBonus(eq.SocketOne) + GetTortoiseGemBonus(eq.SocketTwo);
+            }
+
+            double factor = (1.0 - Math.Min(0.70, blessPct / 100.0)) * (1.0 - Math.Min(0.50, tortoisePct / 100.0));
+            return Math.Max(1, (int)(incomingDamage * factor));
+        }
+
+        public int GetAttackSpeedMs()
+        {
+            Item right = this.UserPackage[Item.ItemPosition.RightHand];
+            int baseSpeed = right?.Itemtype?.AtkSpeed > 0 ? right.Itemtype.AtkSpeed : 800;
+            int furyBonusPct = 0;
+            foreach (Item eq in this.UserPackage.GetEquipmentItems())
+            {
+                furyBonusPct += GetFuryGemBonus(eq.SocketOne) + GetFuryGemBonus(eq.SocketTwo);
+            }
+            int adjusted = (int)(baseSpeed * (1.0 - Math.Min(0.50, furyBonusPct / 100.0)));
+            return Math.Clamp(adjusted, 350, 2000);
+        }
+
+        public int GetAttackRange()
+        {
+            Item right = this.UserPackage[Item.ItemPosition.RightHand];
+            if (right == null) return 2;
+            if (right.IsBow()) return 12;
+            return Math.Max(2, (int)(right.Itemtype?.AtkRange ?? 2));
+        }
+
+        public async Task ExecutePhysicalAttackAsync(uint targetId, bool isBow)
+        {
+            if (!this.IsAlive || this.Map == null)
+            {
+                this.ClearAutoAttack();
+                return;
+            }
+
+            Role target = RoleManager.GetRole(targetId);
+            if (target == null || !target.IsAlive || target.Map != this.Map || target.Identity == this.Identity)
+            {
+                this.ClearAutoAttack();
+                return;
+            }
+
+            int maxRange = isBow ? 14 : this.GetAttackRange() + 1;
+            if (this.GetDistance(target) > maxRange)
+                return;
+
+            if (this.m_attackCooldown.IsActive() && !this.m_attackCooldown.IsTimeOut())
+                return;
+
+            this.m_attackCooldown.Startup(this.GetAttackSpeedMs());
+
+            // Bow requires equipped bow + consumes 1 arrow per shot
+            if (isBow)
+            {
+                Item right = this.UserPackage[Item.ItemPosition.RightHand];
+                Item arrows = this.UserPackage[Item.ItemPosition.LeftHand];
+                if (right == null || !right.IsBow())
+                {
+                    this.ClearAutoAttack();
+                    return;
+                }
+                if (arrows != null && arrows.IsArrowSort())
+                {
+                    if (arrows.Durability > 1)
+                    {
+                        arrows.Durability--;
+                        if (arrows.Durability % 25 == 0)
+                            await this.SendAsync(new MsgItemInfo(arrows, MsgItemInfo.ItemMode.Update));
+                    }
+                    else
+                    {
+                        await this.UserPackage.UnEquipAsync(Item.ItemPosition.LeftHand, deleteItem: true);
+                    }
+                }
+            }
+
+            int rawAtk = await Kernel.NextAsync(this.CalculateMinAttack(), this.CalculateMaxAttack() + 1);
+            MsgInteractType interactAction = isBow ? MsgInteractType.Shoot : MsgInteractType.Attack;
+
+            if (target is Monster mob)
+            {
+                if (mob.IsGuard && this.PkMode == PkModeType.Peace)
+                {
+                    this.ClearAutoAttack();
+                    return;
+                }
+
+                int netDmg = Math.Max(1, rawAtk - mob.Defense);
+                // Retail Archer bonus damage vs normal monsters
+                if (isBow && !mob.IsBoss && !mob.IsGuard)
+                    netDmg = (int)(netDmg * 1.35);
+
+                // Attack Talisman (Heaven Fan) bonus damage vs monsters/players
+                Item fan = this.UserPackage[Item.ItemPosition.AttackTalisman];
+                if (fan != null)
+                    netDmg += fan.MaxAttack;
+
+                await this.Map.BroadcastRoomMsgAsync(this.MapX, this.MapY, new MsgInteract
+                {
+                    SenderIdentity = this.Identity,
+                    TargetIdentity = mob.Identity,
+                    PosX = mob.MapX,
+                    PosY = mob.MapY,
+                    Action = interactAction,
+                    Data = netDmg
+                });
+
+                await mob.ReceiveDamageAsync(this, netDmg);
+                if (!mob.IsAlive)
+                    this.ClearAutoAttack();
+                return;
+            }
+
+            if (target is Character targetPlayer)
+            {
+                if (!this.CanAttackPlayer(targetPlayer))
+                {
+                    this.ClearAutoAttack();
+                    return;
+                }
+
+                // Mark attacker with Flashing Blue Name on non-FreePK maps against innocent players
+                if (!this.Map.Flag.HasFlag(MapTypeFlags.PkField) &&
+                    (targetPlayer.StatusFlag & (Monster.STATUS_FLASHING_NAME | Monster.STATUS_RED_NAME | Monster.STATUS_BLACK_NAME)) == 0)
+                {
+                    await this.SetFlashingNameAsync();
+                }
+
+                int def = isBow
+                    ? Math.Max(0, (int)(targetPlayer.CalculateTotalDodge() * 2.5))
+                    : targetPlayer.CalculateTotalDefense();
+
+                int netDmg = Math.Max(1, rawAtk - def);
+                Item fan = this.UserPackage[Item.ItemPosition.AttackTalisman];
+                Item tower = targetPlayer.UserPackage[Item.ItemPosition.DefenceTalisman];
+                if (fan != null) netDmg += fan.MaxAttack;
+                if (tower != null) netDmg = Math.Max(1, netDmg - tower.Defense);
+
+                // Retail Battle Power bonus (+3% damage per BP advantage up to +36%)
+                int bpDiff = this.BattlePower - targetPlayer.BattlePower;
+                if (bpDiff > 0)
+                    netDmg = (int)(netDmg * (1.0 + Math.Min(0.36, bpDiff * 0.03)));
+
+                netDmg = targetPlayer.ApplyBlessAndTortoiseReduction(netDmg);
+
+                await this.Map.BroadcastRoomMsgAsync(this.MapX, this.MapY, new MsgInteract
+                {
+                    SenderIdentity = this.Identity,
+                    TargetIdentity = targetPlayer.Identity,
+                    PosX = targetPlayer.MapX,
+                    PosY = targetPlayer.MapY,
+                    Action = interactAction,
+                    Data = netDmg
+                });
+
+                await targetPlayer.ReceiveDamageAsync(this, netDmg);
+                if (!targetPlayer.IsAlive)
+                    this.ClearAutoAttack();
+            }
+        }
+
+        public Task ProcessMagicAttackAsync(ushort magicType, uint targetId, ushort x, ushort y)
+        {
+            // Phase 4 full MagicType.dat & 6-class skill engine hook
+            return Task.CompletedTask;
+        }
+
+        public bool CanAttackPlayer(Character target)
+        {
+            if (target == null || target.Identity == this.Identity || !target.IsAlive)
+                return false;
+            if (this.Map == null || this.Map.IsPkDisable)
+                return false;
+            if (this.PkMode == PkModeType.Peace)
+                return false;
+            if (this.PkMode == PkModeType.Capture &&
+                (target.StatusFlag & (Monster.STATUS_FLASHING_NAME | Monster.STATUS_BLACK_NAME)) == 0)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public async Task SetFlashingNameAsync()
+        {
+            this.m_blueNameTimer.Startup(30);
+            if ((this.StatusFlag & Monster.STATUS_FLASHING_NAME) == 0)
+            {
+                this.StatusFlag |= Monster.STATUS_FLASHING_NAME;
+                await this.BroadcastRoomMsgAsync(
+                    new MsgUserAttrib(this.Identity, ClientUpdateType.StatusEffect, this.StatusFlag),
+                    includeSelf: true);
+            }
+        }
+
+        public async Task ReceiveDamageAsync(Role attacker, int damage)
+        {
+            if (!this.IsAlive || damage <= 0)
+                return;
+
+            uint dealt = (uint)Math.Min(this.Life, (uint)damage);
+            this.Life -= dealt;
+            await this.SendAsync(new MsgUserAttrib(this.Identity, ClientUpdateType.Hitpoints, this.Life));
+
+            if (this.Life == 0)
+                await this.DieAsync(attacker);
+        }
+
+        public async Task DieAsync(Role killer)
+        {
+            this.Life = 0;
+            this.Action = EntityAction.Stand;
+            this.ClearAutoAttack();
+            this.StatusFlag |= Monster.STATUS_DIE;
+            this.m_reviveCooldown.Startup(18);
+
+            // Award PK points on unlawful player kill outside FreePK maps
+            if (killer is Character killerPlayer &&
+                this.Map != null &&
+                !this.Map.Flag.HasFlag(MapTypeFlags.PkField) &&
+                (this.StatusFlag & (Monster.STATUS_FLASHING_NAME | Monster.STATUS_BLACK_NAME)) == 0)
+            {
+                killerPlayer.PkPoints += (ushort)((this.StatusFlag & Monster.STATUS_RED_NAME) != 0 ? 3 : 10);
+                killerPlayer.SyncPkStatusFlags();
+                await killerPlayer.SendAsync(new MsgUserAttrib(killerPlayer.Identity, ClientUpdateType.PkPoints, killerPlayer.PkPoints));
+                await killerPlayer.BroadcastRoomMsgAsync(
+                    new MsgUserAttrib(killerPlayer.Identity, ClientUpdateType.StatusEffect, killerPlayer.StatusFlag),
+                    includeSelf: true);
+            }
+
+            if (this.Map != null)
+            {
+                await this.Map.BroadcastRoomMsgAsync(this.MapX, this.MapY, new MsgInteract
+                {
+                    SenderIdentity = killer?.Identity ?? 0,
+                    TargetIdentity = this.Identity,
+                    PosX = this.MapX,
+                    PosY = this.MapY,
+                    Action = MsgInteractType.Kill,
+                    Data = 1
+                });
+
+                await this.BroadcastRoomMsgAsync(new MsgAction
+                {
+                    Identity = this.Identity,
+                    Command = this.Mesh,
+                    X = this.MapX,
+                    Y = this.MapY,
+                    Action = MsgAction.ActionType.Ghost
+                }, includeSelf: true);
+
+                var statusMsg = new MsgUserAttrib(this.Identity, ClientUpdateType.StatusEffect, this.StatusFlag);
+                statusMsg.Append(ClientUpdateType.Mesh, this.Mesh);
+                statusMsg.Append(ClientUpdateType.Hitpoints, 0);
+                await this.BroadcastRoomMsgAsync(statusMsg, includeSelf: true);
+            }
+        }
+
+        public async Task ReviveAsync(bool reviveHere = false)
+        {
+            if (this.IsAlive)
+                return;
+
+            if (!reviveHere && this.m_reviveCooldown.IsActive() && !this.m_reviveCooldown.IsTimeOut())
+                return;
+
+            this.StatusFlag &= ~(Monster.STATUS_DIE | Monster.STATUS_FLASHING_NAME);
+            this.SyncPkStatusFlags();
+            this.Life = this.MaxLife;
+            this.Mana = this.MaxMana;
+            this.Energy = this.MaxEnergy;
+
+            bool canHere = reviveHere && (this.IsBlessed || this.IsGm);
+            if (!canHere && this.Map != null)
+            {
+                uint rebornMapId = 1002;
+                var rebornPos = new Point(430, 380);
+                if (this.Map.GetRebornMap(ref rebornMapId, ref rebornPos))
+                {
+                    await this.FlyMapAsync(rebornMapId, rebornPos.X, rebornPos.Y);
+                }
+            }
+
+            var msg = new MsgUserAttrib(this.Identity, ClientUpdateType.StatusEffect, this.StatusFlag);
+            msg.Append(ClientUpdateType.Mesh, this.Mesh);
+            msg.Append(ClientUpdateType.Hitpoints, this.Life);
+            msg.Append(ClientUpdateType.Mana, this.Mana);
+            msg.Append(ClientUpdateType.Stamina, this.Energy);
+            await this.BroadcastRoomMsgAsync(msg, includeSelf: true);
+            await this.BroadcastSpawnAsync();
+        }
+
+        private double GetDragonGemMultiplier()
+        {
+            double bonus = 0.0;
+            foreach (Item eq in this.UserPackage.GetEquipmentItems())
+            {
+                bonus += GetDragonGemBonus(eq.SocketOne) + GetDragonGemBonus(eq.SocketTwo);
+            }
+            return 1.0 + bonus;
+        }
+
+        private static double GetDragonGemBonus(Item.SocketGem gem) =>
+            gem switch
+            {
+                Item.SocketGem.NormalDragonGem => 0.05,
+                Item.SocketGem.RefinedDragonGem => 0.10,
+                Item.SocketGem.SuperDragonGem => 0.15,
+                _ => 0.0
+            };
+
+        private static int GetFuryGemBonus(Item.SocketGem gem) =>
+            gem switch
+            {
+                Item.SocketGem.NormalFuryGem => 5,
+                Item.SocketGem.RefinedFuryGem => 10,
+                Item.SocketGem.SuperFuryGem => 15,
+                _ => 0
+            };
+
+        private static int GetTortoiseGemBonus(Item.SocketGem gem) =>
+            gem switch
+            {
+                Item.SocketGem.NormalTortoiseGem => 2,
+                Item.SocketGem.RefinedTortoiseGem => 4,
+                Item.SocketGem.SuperTortoiseGem => 6,
+                _ => 0
+            };
+
+        #endregion
+
         #region Networking, Spawn & Heartbeat
 
         public Task SendAsync(IPacket msg) =>
@@ -858,6 +1268,21 @@ namespace Comet.Game.States
 
         public override async Task OnTimerAsync()
         {
+            // Auto-repeat melee / bow attack while locked onto a target (official Conquer combat feel)
+            if (this.IsAlive && this.m_autoAttackTargetId != 0 && this.m_attackCooldown.IsTimeOut())
+            {
+                await this.ExecutePhysicalAttackAsync(this.m_autoAttackTargetId, this.m_autoAttackIsBow);
+            }
+
+            // Clear temporary flashing blue PK name after 30 seconds
+            if ((this.StatusFlag & Monster.STATUS_FLASHING_NAME) != 0 && this.m_blueNameTimer.IsTimeOut())
+            {
+                this.StatusFlag &= ~Monster.STATUS_FLASHING_NAME;
+                await this.BroadcastRoomMsgAsync(
+                    new MsgUserAttrib(this.Identity, ClientUpdateType.StatusEffect, this.StatusFlag),
+                    includeSelf: true);
+            }
+
             if (this.IsAlive && this.Energy < this.MaxEnergy && this.m_energyTimer.ToNextTime())
             {
                 int bonus = this.Action switch

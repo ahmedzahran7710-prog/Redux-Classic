@@ -25,6 +25,7 @@ namespace Comet.Game.World.Managers
         private static readonly ConcurrentDictionary<uint, DbItemtype> s_itemtypes = new();
         private static readonly ConcurrentDictionary<ulong, DbItemAddition> s_additions = new();
         private static readonly ConcurrentDictionary<uint, List<DbGoods>> s_shopGoods = new();
+        private static List<DbItemtype> s_droppableEquipment = new();
 
         public static int ItemtypeCount => s_itemtypes.Count;
         public static int AdditionCount => s_additions.Count;
@@ -57,6 +58,10 @@ namespace Comet.Game.World.Managers
                     s_shopGoods[grp.Key] = grp.ToList();
             }
 
+            s_droppableEquipment = s_itemtypes.Values
+                .Where(IsMonsterDroppableEquipment)
+                .ToList();
+
             await Log.WriteLogAsync(
                 LogLevel.Info,
                 $"ItemManager ready: {s_itemtypes.Count} itemtypes (client:{clientItems}, db:{dbItems.Count}), " +
@@ -66,6 +71,48 @@ namespace Comet.Game.World.Managers
 
         public static DbItemtype GetItemtype(uint idType) =>
             s_itemtypes.TryGetValue(idType, out DbItemtype item) ? item : null;
+
+        public static uint RollMonsterDropItemtype(byte monsterLevel, byte targetQuality, int randomSeed)
+        {
+            if (s_droppableEquipment.Count == 0)
+                return 0;
+
+            int minLvl = Math.Max(1, monsterLevel - 15);
+            int maxLvl = Math.Min(125, monsterLevel + 5);
+
+            var pool = s_droppableEquipment
+                .Where(x => x.ReqLevel >= minLvl && x.ReqLevel <= maxLvl && (x.Type % 10) == targetQuality)
+                .ToList();
+
+            if (pool.Count == 0)
+            {
+                pool = s_droppableEquipment
+                    .Where(x => x.ReqLevel >= minLvl && x.ReqLevel <= maxLvl && (x.Type % 10) >= 3 && (x.Type % 10) <= 5)
+                    .ToList();
+            }
+
+            if (pool.Count == 0)
+                return 0;
+
+            return pool[Math.Abs(randomSeed) % pool.Count].Type;
+        }
+
+        private static bool IsMonsterDroppableEquipment(DbItemtype x)
+        {
+            if (x == null || x.ReqLevel == 0 || x.ReqLevel > 125)
+                return false;
+
+            uint prefix = x.Type / 1000;
+            // Retail droppable gear prefixes: Helmets (111..118), Neck/Bags (120..121), Armors (130..139),
+            // Rings/Bracelets (150..152), Boots (160), 1H/2H/Bow/Katana Weapons (410..601), Shields (900)
+            return (prefix >= 111 && prefix <= 118) ||
+                   prefix == 120 || prefix == 121 ||
+                   (prefix >= 130 && prefix <= 139) ||
+                   (prefix >= 150 && prefix <= 152) ||
+                   prefix == 160 ||
+                   (prefix >= 410 && prefix <= 601) ||
+                   prefix == 900;
+        }
 
         public static DbItemtype FindItemtypeByName(string name, byte preferredQuality = 0)
         {

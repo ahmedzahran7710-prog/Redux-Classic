@@ -79,6 +79,78 @@ namespace Comet.Game.World.Managers
                     await user.SendTalkAsync(
                         "GM: /item <id|name> [plus] [bless] [hp] [gem1] [gem2] [count] | /clearinv | /syncitemsdb",
                         MsgTalk.TalkChannel.Talk);
+                    await user.SendTalkAsync(
+                        "GM: /spawnmob <id|name> [count] | /rebirth <11|21|41|51|132|142> [body] | /rates <exp> [silver] | /revive",
+                        MsgTalk.TalkChannel.Talk);
+                    return true;
+                }
+
+                case "spawnmob":
+                case "mob":
+                {
+                    if (user.Map == null || parts.Length < 2)
+                    {
+                        await user.SendTalkAsync("Usage: /spawnmob <monsterId or Name> [count 1..20]");
+                        return true;
+                    }
+
+                    Database.Models.DbMonstertype mobType = uint.TryParse(parts[1], out uint mid)
+                        ? MonsterManager.GetMonstertype(mid)
+                        : MonsterManager.FindByName(parts[1]);
+
+                    if (mobType == null)
+                    {
+                        await user.SendTalkAsync($"Monster '{parts[1]}' not found in cq_monstertype.");
+                        return true;
+                    }
+
+                    int count = parts.Length >= 3 && int.TryParse(parts[2], out int c) ? Math.Clamp(c, 1, 20) : 1;
+                    for (int i = 0; i < count; i++)
+                    {
+                        ushort sx = (ushort)Math.Clamp(user.MapX + (i % 4), 1, user.Map.Width - 2);
+                        ushort sy = (ushort)Math.Clamp(user.MapY + (i / 4), 1, user.Map.Height - 2);
+                        await MonsterManager.SpawnCustomAsync(mobType.Id, user.Map, sx, sy);
+                    }
+                    await user.SendTalkAsync($"Spawned {count}x {mobType.Name} (Lv.{mobType.Level}).");
+                    return true;
+                }
+
+                case "rebirth":
+                {
+                    if (parts.Length < 2 || !ushort.TryParse(parts[1], out ushort nextProf))
+                    {
+                        await user.SendTalkAsync("Usage: /rebirth <11=Trojan | 21=Warrior | 41=Archer | 51=Ninja | 132=Water | 142=Fire> [body]");
+                        return true;
+                    }
+
+                    ushort nextBody = parts.Length >= 3 && ushort.TryParse(parts[2], out ushort b) ? b : (ushort)0;
+                    var (ok, message) = await RebirthManager.PerformRebirthAsync(user, nextProf, nextBody);
+                    await user.SendTalkAsync(message, MsgTalk.TalkChannel.Talk, ok ? Color.Lime : Color.Red);
+                    return true;
+                }
+
+                case "rates":
+                {
+                    if (parts.Length < 2 || !double.TryParse(parts[1], out double expMult) || expMult <= 0)
+                    {
+                        await user.SendTalkAsync(
+                            $"Current Rates -> EXP: {DropManager.ExperienceRateMultiplier}x | Silver: {DropManager.SilverDropMultiplier}x. Usage: /rates <expMult> [silverMult]");
+                        return true;
+                    }
+
+                    DropManager.ExperienceRateMultiplier = expMult;
+                    if (parts.Length >= 3 && double.TryParse(parts[2], out double silMult) && silMult > 0)
+                        DropManager.SilverDropMultiplier = silMult;
+
+                    await RoleManager.BroadcastTalkAsync(
+                        $"Server rates updated: EXP {DropManager.ExperienceRateMultiplier}x | Silver {DropManager.SilverDropMultiplier}x!",
+                        MsgTalk.TalkChannel.Center);
+                    return true;
+                }
+
+                case "revive":
+                {
+                    await user.ReviveAsync(reviveHere: true);
                     return true;
                 }
 

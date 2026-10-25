@@ -74,6 +74,27 @@ namespace Comet.Game.Packets
             }
         }
 
+        public MsgPlayer(Monster monster)
+        {
+            this.Type = PacketType.MsgPlayer;
+            this.Identity = monster.Identity;
+            this.Mesh = monster.Mesh;
+            this.Status = monster.StatusFlag;
+            this.Helmet = monster.Template.HelmetType;
+            this.Armor = monster.Template.ArmorType;
+            this.RightHand = monster.Template.WeaponrType;
+            this.LeftHand = monster.Template.WeaponlType;
+            this.MonsterLife = (ushort)System.Math.Min(ushort.MaxValue, monster.Life);
+            this.MonsterLevel = monster.Level;
+            this.MapX = monster.MapX;
+            this.MapY = monster.MapY;
+            this.Direction = (byte)monster.Direction;
+            this.Pose = (byte)monster.Action;
+            this.Level = monster.Level;
+            this.Name = monster.Name ?? string.Empty;
+            this.FamilyName = string.Empty;
+        }
+
         public uint Mesh { get; set; }
         public uint Identity { get; set; }
         public uint SyndicateIdentity { get; set; }

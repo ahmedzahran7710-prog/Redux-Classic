@@ -236,9 +236,17 @@ namespace Comet.Game.Packets
 
                 case ActionType.CharacterEmote: // 81 - Sit, Stand, Dance, Bow, Wave, Kneel, Cool...
                 {
+                    user.ClearAutoAttack();
                     user.Action = (EntityAction)this.Command;
                     user.Direction = (FacingDirection)(this.Direction % 8);
                     await user.BroadcastRoomMsgAsync(this, includeSelf: true);
+                    break;
+                }
+
+                case ActionType.CharacterRevive: // 94 - Revive from Ghost state
+                {
+                    if (!user.IsAlive)
+                        await user.ReviveAsync(reviveHere: this.Command == 1);
                     break;
                 }
 

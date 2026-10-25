@@ -97,6 +97,7 @@ namespace Comet.Game
                     PacketType.MsgItem => new MsgItem(),
                     PacketType.MsgAction => new MsgAction(),
                     PacketType.MsgName => new MsgName(),
+                    PacketType.MsgInteract => new MsgInteract(),
                     PacketType.MsgAllot => new MsgAllot(),
                     PacketType.MsgGemEmbed => new MsgGemEmbed(),
                     PacketType.MsgPing => new MsgPing(),
