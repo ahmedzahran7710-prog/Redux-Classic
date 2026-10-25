@@ -21,6 +21,10 @@ namespace Comet.Game.Database
         public virtual DbSet<DbRegion> Regions { get; set; }
         public virtual DbSet<DbLevExp> LevelExperiences { get; set; }
         public virtual DbSet<DbPointAllot> PointAllots { get; set; }
+        public virtual DbSet<DbItem> Items { get; set; }
+        public virtual DbSet<DbItemtype> Itemtypes { get; set; }
+        public virtual DbSet<DbItemAddition> ItemAdditions { get; set; }
+        public virtual DbSet<DbGoods> Goods { get; set; }
 
         /// <summary>
         /// Configures the database to be used for this context. This method is called
@@ -49,6 +53,10 @@ namespace Comet.Game.Database
             builder.Entity<DbRegion>(e => e.HasKey(x => x.Identity));
             builder.Entity<DbLevExp>(e => e.HasKey(x => x.Level));
             builder.Entity<DbPointAllot>(e => e.HasKey(x => x.Identity));
+            builder.Entity<DbItem>(e => e.HasKey(x => x.Id));
+            builder.Entity<DbItemtype>(e => e.HasKey(x => x.Type));
+            builder.Entity<DbItemAddition>(e => e.HasKey(x => x.Identity));
+            builder.Entity<DbGoods>(e => e.HasKey(x => x.Identity));
         }
 
         /// <summary>

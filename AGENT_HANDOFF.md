@@ -132,12 +132,12 @@
   - [x] بناء `Role`, `Character`, `RoleManager`, `ExperienceManager` ونظام الرؤية ثنائي الاتجاه `Screen` (`VIEW_SIZE = 18`) + باكت `MsgPlayer (10014)` و `MsgUserAttrib (10017)` و `MsgMapInfo (1110)` و `MsgWeather (1016)` و `MsgData (1033)` و `MsgPing (1037)` و `MsgName (1015)` و `MsgAllot (1024)`.
   - [x] تفعيل المشي خطوة وخطوتين (`RunDir0..7`) والنط المفحوص بالارتفاع (`<= 210`) والانتقال عبر البوابات (`MsgWalk 10005`, `MsgAction 10010`: LoginSpawn, Jump, Direction, Emote, Portal, PkMode, Observation, Away, ChangeFace).
   - [x] تفعيل الشات الكامل (`MsgTalk 1004`) ونظام `CommandManager` لأوامر اللاعبين والـ GM (`/help`, `/chgmap`, `/tc`..`/gw`, `/move`, `/goto`, `/bring`, `/level`, `/exp`, `/pro`, `/reborn`, `/money`, `/cps`, `/str`..`/points`, `/heal`, `/pk`, `/vip`, `/hair`, `/avatar`, `/body`, `/weather`, `/bc`, `/kick`, `/where`, `/online`, `/dc`).
-- [ ] **المرحلة 2 (نظام الأيتمات والشنطة والمعدات والشوبات):**
-  - [ ] جدول `item` في SQL + قارئ `itemtype.txt` و `ItemAdd.ini` و `Shop.dat`.
-  - [ ] باكتات الأيتمات (`MsgItemInfo 1008`, `MsgItem 1009`, `MsgPackage 1102`, `MsgGemEmbed 1027`, `MsgDataArray 2036`).
-  - [ ] اللبس والخلع، الشنطة، البنوك (Warehouses)، الشراء والبيع، التصليح، رمي والتقاط الأيتمات (`MsgMapItem 1101`).
-  - [ ] التطوير (+1 إلى +12)، السوكتات والـ Gems، الـ Bless، التليزمانات (Fan/Tower/Crop)، والحصنة (`Steeds`)، وقفل الأيتمات (`MsgEquipLock`).
-  - [ ] نظام سكريبتات الأيتمات بـ C# (`IItemScript` للفافات، الجرعات، الصناديق، كرات الخبرة، الـ DB/Met scrolls).
+- [x] **المرحلة 2 (نظام الأيتمات والشنطة والمعدات والشوبات) — مكتملة 100%:**
+  - [x] جداول `cq_item`, `cq_itemtype`, `cq_itemaddition`, `cq_goods` + حقل `WarehouseSilver` في SQL + قارئ مزدوج يفك تشفير `ini/itemtype.dat` (`0x2537`) ويقرأ `ItemAdd.ini` و `Shop.dat` تلقائياً مع أمر `/syncitemsdb`.
+  - [x] باكتات الأيتمات الكاملة لباتش 5187 (`MsgItemInfo 1008`, `MsgItem 1009`, `MsgPackage 1102`, `MsgGemEmbed 1027`, `MsgDataArray 2036`, `MsgEquipLock 2048`, `MsgMapItem 1101`).
+  - [x] اللبس والخلع لقواعد 5187 (شاملاً 2 كاتانا للنينجا، القوس والأسهم، الدرع، التليزمانات، الحصان، والجيرمنت)، الشنطة (40 خانة + دمج وتقسيم)، البنوك (إيداع وسحب فضة وأيتمات + بنوك الـ VIP)، الشراء والبيع، التصليح، ورمي والتقاط الأيتمات والفضة (`MapItem`).
+  - [x] التطوير الرسمي (`+1` إلى `+12` بالحجارة والمعدات وخلط ألوان الحصان RGB)، رفع الجودة بالدراجون بول واللفل بالميتور مع فرصة فتح سوكت، تركيب وخلع الجواهر (شاملاً Thunder/Glory للمروحة والبرج)، الـ Enchant بالـ Gems، شحن سوكتات التليزمان، قفل الأيتمات بمهلة 5 أيام، وحساب الـ Battle Power.
+  - [x] نظام سكريبتات الأيتمات بـ C# (`ItemScriptEngine` / `[ItemScript]` للجرعات، لفافات المدن، كرات الخبرة، لفافات الميتور والدراجون بول، صبغات الشعر، وشنط الكبس).
 - [ ] **المرحلة 3 (الوحوش، الذكاء الاصطناعي، الدروب، اللفلفة والريبورن):**
   - [ ] جداول `monstertype` و `generator` (الـ Spawns) و `levexp` و `rebirth`.
   - [ ] كلاس `Monster` + حركة الوحوش والـ AI داخل `WorldProcessor` + نظام الدروب المتوازن (ذهب، أيتمات، ميتور، دراجون بول، CPs).
@@ -182,4 +182,10 @@
   * بناء منظومة الخرائط الرسمية (`Tile`, `GameMapData`, `GameBlock`, `Weather`, `GameMap`, `Screen`, `MapManager`, `ExperienceManager`) مع داتا كونكر الرسمية في `sql/comet.game.sql` ونماذج EF Core (`DbMap`, `DbPassway`, `DbPortal`, `DbRegion`, `DbLevExp`, `DbPointAllot`).
   * بناء الكيانات (`Role`, `Character`) وكافة باكتات العالم والحركة لباتش 5187 بدقة البايت (`MsgPlayer 10014`, `MsgWalk 10005`, `MsgAction 10010`, `MsgUserAttrib 10017`, `MsgMapInfo 1110`, `MsgWeather 1016`, `MsgData 1033`, `MsgPing 1037`, `MsgName 1015`, `MsgAllot 1024`, `MsgTalk 1004`) ونظام الأوامر `CommandManager`.
   * فحص شامل لكامل شجرة الـ AST والربط ومطابقة أنواع SQL/EF Core لـ 105 ملف C# بنتيجة **0 أخطاء**.
+* **2026-10-25 (المرحلة 2 — نظام الأيتمات، الشنطة، المعدات، البنوك، الشوبات، التطوير والسوكتات):**
+  * إضافة `TqDatCrypto` (`0x2537`) لفك تشفير `ini/itemtype.dat` تلقائياً، وبناء `ItemManager` المزدوج (`cq_itemtype` / `cq_itemaddition` / `cq_goods` + `itemtype.dat` / `ItemAdd.ini` / `Shop.dat`) مع أمر `/syncitemsdb`.
+  * بناء `Item`, `UserPackage`, `MapItem` مع قواعد اللبس الرسمية لباتش 5187 (شاملة النينجا كاتانا المزدوجة، التليزمانات، الحصنة وألوانها، الـ Battle Power، وقفل المعدات بمهلة 5 أيام).
+  * بناء وربط باكتات `MsgItemInfo (1008)`, `MsgItem (1009)`, `MsgMapItem (1101)`, `MsgPackage (1102)`, `MsgGemEmbed (1027)`, `MsgDataArray (2036)`, `MsgEquipLock (2048)` ومحرك سكريبتات `ItemScriptEngine` (`[ItemScript]`).
+  * إضافة معدات البداية للاعبين الجدد في `MsgRegister` وأوامر `/item`, `/clearinv`, `/syncitemsdb` في `CommandManager`.
+  * توثيق الشرح المفصل للمبتدئين ومتطلبات الكلينت في `قسم معلومات التعديلات/` وفحص شامل لـ 125 ملف C# و140 Type و11 جدول SQL بنتيجة **0 أخطاء**.
 

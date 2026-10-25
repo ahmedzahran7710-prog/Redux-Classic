@@ -45,5 +45,15 @@ namespace Comet.Core.Tests
             timer.Clear();
             Assert.False(timer.IsActive());
         }
+
+        [Fact]
+        public void TqDatCrypto_DecryptProducesDeterministicBytes()
+        {
+            var crypto = new TqDatCrypto(TqDatCrypto.ItemtypeSeed);
+            byte[] sample = { 0x12, 0x34, 0x56, 0x78, 0x9A };
+            byte[] dec1 = crypto.Decrypt(sample);
+            byte[] dec2 = crypto.Decrypt(sample);
+            Assert.Equal(dec1, dec2);
+        }
     }
 }

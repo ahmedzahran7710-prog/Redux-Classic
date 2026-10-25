@@ -146,11 +146,34 @@ namespace Comet.Game.Packets
             }
 
             client.Character = new Character(client, character);
+            await AwardStarterItemsAsync(client.Character);
             await RoleManager.LoginUserAsync(client);
 
             await client.SendAsync(MsgTalk.RegisterOk);
             await client.SendAsync(new MsgUserInfo(client.Character));
             await client.SendAsync(new MsgData(DateTime.Now));
+        }
+
+        private static async Task AwardStarterItemsAsync(Character user)
+        {
+            // Retail starter Tunic + Class weapon + 3 Stancher HP potions
+            var coat = await States.Items.Item.CreateAsync(user, 132005, States.Items.Item.ItemPosition.Armor);
+            _ = coat;
+
+            uint starterWeapon = user.Profession switch
+            {
+                40 => 500301u,  // Bow (Archer)
+                50 => 601301u,  // Katana (Ninja)
+                100 => 421301u, // Backsword (Taoist)
+                _ => 410301u    // Blade (Trojan / Warrior)
+            };
+            await States.Items.Item.CreateAsync(user, starterWeapon, States.Items.Item.ItemPosition.RightHand);
+
+            if (user.Profession == 40)
+                await States.Items.Item.CreateAsync(user, 1050000, States.Items.Item.ItemPosition.LeftHand);
+
+            for (int i = 0; i < 3; i++)
+                await States.Items.Item.CreateAsync(user, 1000000, States.Items.Item.ItemPosition.Inventory);
         }
     }
 }

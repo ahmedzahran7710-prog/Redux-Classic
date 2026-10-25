@@ -113,7 +113,7 @@ namespace Comet.Game.Packets
                     // Patch 5187 WhisperWindowInfo format:
                     // Strings[0] = Name
                     // Strings[1] = "{Identity} {Level} {BattlePower} #{GuildName} #{FamilyName} {MateName} {NobilityRank} {(Gender == 2 ? 0 : 1)}"
-                    int bp = target.Level;
+                    int bp = target.BattlePower;
                     int genderFlag = target.Gender == 2 ? 0 : 1;
                     this.Strings.Clear();
                     this.Strings.Add(target.Name);

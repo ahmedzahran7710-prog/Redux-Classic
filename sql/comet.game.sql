@@ -17,6 +17,7 @@ CREATE TABLE `character` (
   `Avatar` smallint(5) unsigned NOT NULL DEFAULT '1',
   `Hairstyle` smallint(5) unsigned NOT NULL DEFAULT '535',
   `Silver` int(10) unsigned NOT NULL DEFAULT '1000',
+  `WarehouseSilver` int(10) unsigned NOT NULL DEFAULT '0',
   `Jewels` int(10) unsigned NOT NULL DEFAULT '0',
   `CurrentClass` tinyint(3) unsigned NOT NULL DEFAULT '10',
   `PreviousClass` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -1884,5 +1885,200 @@ INSERT INTO `cq_point_allot` VALUES (0599, 0005, 0117, 0072, 0269, 0064, 0000);
 INSERT INTO `cq_point_allot` VALUES (0600, 0005, 0118, 0073, 0271, 0066, 0000);
 INSERT INTO `cq_point_allot` VALUES (0601, 0005, 0119, 0073, 0273, 0068, 0000);
 INSERT INTO `cq_point_allot` VALUES (0602, 0005, 0120, 0074, 0275, 0070, 0000);
+
+-- ------------------------------------------------------
+-- Table structure for table `cq_item` (Live Player Items & Warehouses)
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `cq_item`;
+CREATE TABLE `cq_item` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `type` int(10) unsigned NOT NULL DEFAULT '0',
+  `owner_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `player_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `amount` smallint(5) unsigned NOT NULL DEFAULT '100',
+  `amount_limit` smallint(5) unsigned NOT NULL DEFAULT '100',
+  `ident` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `position` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `gem1` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `gem2` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `magic1` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `magic2` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `magic3` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `data` int(10) unsigned NOT NULL DEFAULT '0',
+  `reduce_dmg` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `add_life` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `anti_monster` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `chk_sum` int(10) unsigned NOT NULL DEFAULT '0',
+  `plunder` datetime DEFAULT NULL,
+  `SpecialFlag` int(10) unsigned NOT NULL DEFAULT '0',
+  `color` int(10) unsigned NOT NULL DEFAULT '3',
+  `Addlevel_exp` int(10) unsigned NOT NULL DEFAULT '0',
+  `monopoly` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `syndicate` int(10) unsigned NOT NULL DEFAULT '0',
+  `del_time` int(11) NOT NULL DEFAULT '0',
+  `save_time` datetime DEFAULT NULL,
+  `accumulate_num` int(10) unsigned NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  KEY `idx_player` (`player_id`),
+  KEY `idx_owner_pos` (`owner_id`,`position`)
+) ENGINE=InnoDB AUTO_INCREMENT=10000000 DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------
+-- Table structure for table `cq_itemtype` (Item Templates - Auto-supplemented from ini/itemtype.dat)
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `cq_itemtype`;
+CREATE TABLE `cq_itemtype` (
+  `id` int(10) unsigned NOT NULL DEFAULT '0',
+  `name` varchar(32) NOT NULL DEFAULT '',
+  `req_profession` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `req_weaponskill` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `req_level` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `req_sex` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `req_force` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `req_speed` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `req_health` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `req_soul` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `monopoly` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `price` int(10) unsigned NOT NULL DEFAULT '0',
+  `id_action` int(10) unsigned NOT NULL DEFAULT '0',
+  `attack_max` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `attack_min` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `defense` smallint(6) NOT NULL DEFAULT '0',
+  `dexterity` smallint(6) NOT NULL DEFAULT '0',
+  `dodge` smallint(6) NOT NULL DEFAULT '0',
+  `life` smallint(6) NOT NULL DEFAULT '0',
+  `mana` smallint(6) NOT NULL DEFAULT '0',
+  `amount` smallint(5) unsigned NOT NULL DEFAULT '1',
+  `amount_limit` smallint(5) unsigned NOT NULL DEFAULT '1',
+  `ident` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `gem1` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `gem2` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `magic1` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `magic2` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `magic3` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `data` int(10) unsigned NOT NULL DEFAULT '0',
+  `magic_atk` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `magic_def` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `atk_range` smallint(5) unsigned NOT NULL DEFAULT '1',
+  `atk_speed` smallint(5) unsigned NOT NULL DEFAULT '800',
+  `fray_mode` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `repair_mode` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `type_mask` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `emoney_price` int(10) unsigned NOT NULL DEFAULT '0',
+  `emoney_mono_price` int(10) unsigned NOT NULL DEFAULT '0',
+  `save_time` int(11) NOT NULL DEFAULT '0',
+  `accumulate_limit` int(10) unsigned NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------
+-- Table structure for table `cq_itemaddition` (+1..+12 Bonus Stats - Auto-supplemented from ini/ItemAdd.ini)
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `cq_itemaddition`;
+CREATE TABLE `cq_itemaddition` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `typeid` int(10) unsigned NOT NULL DEFAULT '0',
+  `level` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `life` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `attack_max` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `attack_min` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `defense` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `magic_atk` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `magic_def` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `dexterity` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `dodge` smallint(5) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_type_level` (`typeid`,`level`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------
+-- Table structure for table `cq_goods` (NPC & Mall Shops - Auto-supplemented from ini/Shop.dat)
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `cq_goods`;
+CREATE TABLE `cq_goods` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ownerid` int(10) unsigned NOT NULL DEFAULT '0',
+  `itemtype` int(10) unsigned NOT NULL DEFAULT '0',
+  `moneytype` int(10) unsigned NOT NULL DEFAULT '0',
+  `monopoly` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_owner_item` (`ownerid`,`itemtype`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Essential Retail Core Items (Scrolls, Potions, Meteors, DragonBalls, +Stones, Gems, Starter Gear)
+INSERT INTO `cq_itemtype` (`id`, `name`, `req_profession`, `req_level`, `price`, `life`, `mana`, `amount`, `amount_limit`, `data`, `emoney_price`, `accumulate_limit`) VALUES
+(1000000, 'Stancher', 0, 1, 15, 80, 0, 1, 1, 0, 0, 1),
+(1000010, 'CureAll', 0, 1, 40, 200, 0, 1, 1, 0, 0, 1),
+(1000020, 'Panacea', 0, 1, 100, 500, 0, 1, 1, 0, 0, 1),
+(1000030, ' Ginseng', 0, 1, 350, 1000, 0, 1, 1, 0, 0, 1),
+(1001000, 'Agrypnotic', 0, 1, 30, 0, 70, 1, 1, 0, 0, 1),
+(1001010, 'Refresher', 0, 1, 80, 0, 190, 1, 1, 0, 0, 1),
+(1001020, 'ale', 0, 1, 200, 0, 520, 1, 1, 0, 0, 1),
+(1001030, 'Vanilla', 0, 1, 850, 0, 1650, 1, 1, 0, 0, 1),
+(1002000, 'Amrita', 0, 1, 2000, 2000, 0, 1, 1, 0, 0, 1),
+(1002010, 'SoulPill', 0, 1, 2500, 3000, 0, 1, 1, 0, 0, 1),
+(1002020, 'odyssy', 0, 1, 2800, 0, 2800, 1, 1, 0, 0, 1),
+(1050000, 'ArrowPack', 0, 1, 50, 0, 0, 500, 500, 0, 0, 1),
+(1060020, 'TwinCityScroll', 0, 1, 100, 0, 0, 1, 1, 1002, 0, 10),
+(1060021, 'PhoenixScroll', 0, 1, 100, 0, 0, 1, 1, 1011, 0, 10),
+(1060022, 'ApeScroll', 0, 1, 100, 0, 0, 1, 1, 1020, 0, 10),
+(1060023, 'DesertScroll', 0, 1, 100, 0, 0, 1, 1, 1000, 0, 10),
+(1060024, 'BirdScroll', 0, 1, 100, 0, 0, 1, 1, 1015, 0, 10),
+(1060100, 'MeteorTear', 0, 1, 50000, 0, 0, 1, 1, 0, 0, 1),
+(1088000, 'DragonBall', 0, 1, 500000, 0, 0, 1, 1, 0, 215, 1),
+(1088001, 'Meteor', 0, 1, 50000, 0, 0, 1, 1, 0, 12, 1),
+(1088002, 'MeteorScroll', 0, 1, 500000, 0, 0, 1, 1, 0, 120, 1),
+(720027, 'MeteorScrollPack', 0, 1, 500000, 0, 0, 1, 1, 0, 120, 1),
+(720028, 'DBScroll', 0, 1, 5000000, 0, 0, 1, 1, 0, 2150, 1),
+(723700, 'ExpBall', 0, 1, 100000, 0, 0, 1, 1, 0, 27, 1),
+(723017, 'ExpPotion', 0, 1, 100000, 0, 0, 1, 1, 0, 27, 1),
+(723584, 'ConquerPointsBag', 0, 1, 0, 0, 0, 1, 1, 270, 0, 1),
+(730001, '+1Stone', 0, 1, 10000, 0, 0, 1, 1, 0, 10, 1),
+(730002, '+2Stone', 0, 1, 40000, 0, 0, 1, 1, 0, 40, 1),
+(730003, '+3Stone', 0, 1, 120000, 0, 0, 1, 1, 0, 120, 1),
+(730004, '+4Stone', 0, 1, 360000, 0, 0, 1, 1, 0, 360, 1),
+(730005, '+5Stone', 0, 1, 1080000, 0, 0, 1, 1, 0, 1080, 1),
+(730006, '+6Stone', 0, 1, 3240000, 0, 0, 1, 1, 0, 3240, 1),
+(730007, '+7Stone', 0, 1, 9720000, 0, 0, 1, 1, 0, 9720, 1),
+(730008, '+8Stone', 0, 1, 29160000, 0, 0, 1, 1, 0, 29160, 1),
+(700001, 'NormalPhoenixGem', 0, 1, 10000, 0, 0, 1, 1, 0, 0, 1),
+(700002, 'RefinedPhoenixGem', 0, 1, 50000, 0, 0, 1, 1, 0, 0, 1),
+(700003, 'SuperPhoenixGem', 0, 1, 250000, 0, 0, 1, 1, 0, 0, 1),
+(700011, 'NormalDragonGem', 0, 1, 10000, 0, 0, 1, 1, 0, 0, 1),
+(700012, 'RefinedDragonGem', 0, 1, 50000, 0, 0, 1, 1, 0, 0, 1),
+(700013, 'SuperDragonGem', 0, 1, 250000, 0, 0, 1, 1, 0, 0, 1),
+(700021, 'NormalFuryGem', 0, 1, 10000, 0, 0, 1, 1, 0, 0, 1),
+(700022, 'RefinedFuryGem', 0, 1, 50000, 0, 0, 1, 1, 0, 0, 1),
+(700023, 'SuperFuryGem', 0, 1, 250000, 0, 0, 1, 1, 0, 0, 1),
+(700031, 'NormalRainbowGem', 0, 1, 10000, 0, 0, 1, 1, 0, 0, 1),
+(700032, 'RefinedRainbowGem', 0, 1, 50000, 0, 0, 1, 1, 0, 0, 1),
+(700033, 'SuperRainbowGem', 0, 1, 250000, 0, 0, 1, 1, 0, 0, 1),
+(700041, 'NormalKylinGem', 0, 1, 10000, 0, 0, 1, 1, 0, 0, 1),
+(700042, 'RefinedKylinGem', 0, 1, 50000, 0, 0, 1, 1, 0, 0, 1),
+(700043, 'SuperKylinGem', 0, 1, 250000, 0, 0, 1, 1, 0, 0, 1),
+(700051, 'NormalVioletGem', 0, 1, 10000, 0, 0, 1, 1, 0, 0, 1),
+(700052, 'RefinedVioletGem', 0, 1, 50000, 0, 0, 1, 1, 0, 0, 1),
+(700053, 'SuperVioletGem', 0, 1, 250000, 0, 0, 1, 1, 0, 0, 1),
+(700061, 'NormalMoonGem', 0, 1, 10000, 0, 0, 1, 1, 0, 0, 1),
+(700062, 'RefinedMoonGem', 0, 1, 50000, 0, 0, 1, 1, 0, 0, 1),
+(700063, 'SuperMoonGem', 0, 1, 250000, 0, 0, 1, 1, 0, 0, 1),
+(700071, 'NormalTortoiseGem', 0, 1, 10000, 0, 0, 1, 1, 0, 0, 1),
+(700072, 'RefinedTortoiseGem', 0, 1, 50000, 0, 0, 1, 1, 0, 0, 1),
+(700073, 'SuperTortoiseGem', 0, 1, 250000, 0, 0, 1, 1, 0, 0, 1),
+(700101, 'NormalThunderGem', 0, 1, 10000, 0, 0, 1, 1, 0, 0, 1),
+(700102, 'RefinedThunderGem', 0, 1, 50000, 0, 0, 1, 1, 0, 0, 1),
+(700103, 'SuperThunderGem', 0, 1, 250000, 0, 0, 1, 1, 0, 0, 1),
+(700121, 'NormalGloryGem', 0, 1, 10000, 0, 0, 1, 1, 0, 0, 1),
+(700122, 'RefinedGloryGem', 0, 1, 50000, 0, 0, 1, 1, 0, 0, 1),
+(700123, 'SuperGloryGem', 0, 1, 250000, 0, 0, 1, 1, 0, 0, 1),
+(132005, 'Tunic', 0, 1, 100, 0, 0, 3000, 3000, 0, 0, 1),
+(410301, 'Blade', 0, 1, 100, 0, 0, 3500, 3500, 0, 0, 1),
+(420301, 'Sword', 0, 1, 100, 0, 0, 3500, 3500, 0, 0, 1),
+(421301, 'Backsword', 100, 1, 100, 0, 0, 3500, 3500, 0, 0, 1),
+(500301, 'Bow', 40, 1, 100, 0, 0, 3500, 3500, 0, 0, 1),
+(601301, 'Katana', 50, 1, 100, 0, 0, 3500, 3500, 0, 0, 1),
+(300000, 'Steed', 0, 1, 100000, 0, 0, 100, 100, 0, 270, 1),
+(201009, 'HeavenFan', 0, 70, 100000, 0, 0, 6000, 6000, 0, 0, 1),
+(202009, 'StarTower', 0, 70, 100000, 0, 0, 6000, 6000, 0, 0, 1);
 
 SET FOREIGN_KEY_CHECKS = 1;

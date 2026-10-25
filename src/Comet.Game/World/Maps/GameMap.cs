@@ -402,6 +402,14 @@ namespace Comet.Game.World.Maps
             {
                 await user.OnTimerAsync();
             }
+
+            foreach (Role role in this.Roles.Values.ToArray())
+            {
+                if (role is States.Items.MapItem drop && drop.IsExpired)
+                {
+                    await drop.DisappearAsync();
+                }
+            }
         }
     }
 }

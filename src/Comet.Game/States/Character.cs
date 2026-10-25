@@ -2,20 +2,23 @@ namespace Comet.Game.States
 {
     using System;
     using System.Drawing;
+    using System.Linq;
     using System.Threading.Tasks;
     using Comet.Core;
     using Comet.Core.Mathematics;
     using Comet.Game.Database.Models;
     using Comet.Game.Database.Repositories;
     using Comet.Game.Packets;
+    using Comet.Game.States.Items;
     using Comet.Game.World.Managers;
     using Comet.Game.World.Maps;
     using Comet.Network.Packets;
 
     /// <summary>
     /// Live in-world player character wrapping <see cref="DbCharacter"/> and extending <see cref="Role"/>.
-    /// Implements official Patch 5187 formulas for LookFace, MaxHP/MaxMP, auto stat allotment,
-    /// stamina recovery, PK point decay, 1-step &amp; 2-step walking/running, elevation-checked jumping,
+    /// Implements official Patch 5187 formulas for LookFace, MaxHP/MaxMP (including equipped gear,
+    /// +1..+12 additions, and HP enchantments), Battle Power, 40-slot inventory &amp; warehouses,
+    /// stamina recovery, PK point decay, 1-step &amp; 2-step movement, elevation-checked jumping,
     /// and lockless cross-map teleportation.
     /// </summary>
     public sealed class Character : Role
@@ -30,6 +33,9 @@ namespace Comet.Game.States
         private readonly TimeOut m_pkDecreaseTimer = new(360);
         private readonly TimeOut m_autoSaveTimer = new(300);
 
+        private int m_equipBonusLife;
+        private int m_equipBonusMana;
+
         public Character(Client client, DbCharacter dbCharacter)
         {
             this.Client = client;
@@ -39,6 +45,7 @@ namespace Comet.Game.States
             this.m_posX = dbCharacter.X;
             this.m_posY = dbCharacter.Y;
             this.Screen = new Screen(this);
+            this.UserPackage = new UserPackage(this);
             this.Energy = DEFAULT_MAX_ENERGY;
 
             this.m_energyTimer.Startup(2000);
@@ -47,6 +54,7 @@ namespace Comet.Game.States
         }
 
         public Client Client { get; }
+        public UserPackage UserPackage { get; }
 
         #region Identity & Appearance
 
@@ -82,9 +90,6 @@ namespace Comet.Game.States
             set => this.m_dbCharacter.Avatar = value;
         }
 
-        /// <summary>
-        /// Patch 5187 32-bit LookFace = Body + (Avatar * 10000), or ghost body (98/99) when dead.
-        /// </summary>
         public override uint Mesh
         {
             get
@@ -102,7 +107,6 @@ namespace Comet.Game.States
             }
         }
 
-        /// <summary>1 = Male (1003, 1004), 2 = Female (2001, 2002).</summary>
         public int Gender => (this.Body == 2001 || this.Body == 2002) ? 2 : 1;
 
         public ushort Hairstyle
@@ -115,7 +119,7 @@ namespace Comet.Game.States
 
         #endregion
 
-        #region Profession, Level, Stats & Vitals
+        #region Profession, Level, Stats, Equipment Bonuses & Battle Power
 
         public byte Profession
         {
@@ -195,10 +199,6 @@ namespace Comet.Game.States
             set => this.m_dbCharacter.HealthPoints = (ushort)Math.Clamp(value, 0u, Math.Min((uint)ushort.MaxValue, this.MaxLife));
         }
 
-        /// <summary>
-        /// Retail Conquer Online MaxHP formula:
-        /// (Strength * 3 + Agility * 3 + Spirit * 3 + Vitality * 24) * TrojanMultiplier.
-        /// </summary>
         public override uint MaxLife
         {
             get
@@ -213,7 +213,8 @@ namespace Comet.Game.States
                     15 => 1.15,
                     _ => 1.00
                 };
-                return (uint)Math.Max(1, (int)(baseHp * factor));
+                int total = (int)(baseHp * factor) + Math.Max(0, this.m_equipBonusLife);
+                return (uint)Math.Max(1, total);
             }
         }
 
@@ -223,10 +224,6 @@ namespace Comet.Game.States
             set => this.m_dbCharacter.ManaPoints = (ushort)Math.Clamp(value, 0u, Math.Min((uint)ushort.MaxValue, this.MaxMana));
         }
 
-        /// <summary>
-        /// Retail Conquer Online MaxMP formula:
-        /// Non-Taoist = Spirit * 5; Intern Taoist = Spirit * 15; Promoted Water/Fire Taoist = Spirit * 15..30.
-        /// </summary>
         public override uint MaxMana
         {
             get
@@ -240,7 +237,36 @@ namespace Comet.Game.States
                     135 or 145 => 6,
                     _ => 1
                 };
-                return (uint)(this.Spirit * 5 * multiplier);
+                int total = (this.Spirit * 5 * multiplier) + Math.Max(0, this.m_equipBonusMana);
+                return (uint)Math.Max(0, total);
+            }
+        }
+
+        /// <summary>
+        /// Retail Conquer Online Patch 5187 Battle Power (Level + Rebirth*5 + Equipment BP).
+        /// </summary>
+        public int BattlePower
+        {
+            get
+            {
+                int bp = this.Level + (this.Metempsychosis * 5);
+                Item right = this.UserPackage[Item.ItemPosition.RightHand];
+                Item left = this.UserPackage[Item.ItemPosition.LeftHand];
+
+                foreach (Item eq in this.UserPackage.GetEquipmentItems())
+                {
+                    int itemBp = eq.CalculateBattlePower();
+                    if (eq.Position == Item.ItemPosition.RightHand &&
+                        eq.IsWeaponTwoHand() &&
+                        (left == null || left.IsArrowSort()))
+                    {
+                        // Retail 2H weapons count double toward Battle Power when off-hand has no weapon/shield
+                        itemBp *= 2;
+                    }
+                    bp += itemBp;
+                }
+
+                return bp;
             }
         }
 
@@ -248,14 +274,52 @@ namespace Comet.Game.States
         public byte MaxEnergy => this.IsBlessed ? BLESSED_MAX_ENERGY : DEFAULT_MAX_ENERGY;
         public byte XpCount { get; set; }
 
+        public async Task RecalculateEquipmentStatsAsync(bool broadcastAppearance = false)
+        {
+            int bonusHp = 0;
+            int bonusMp = 0;
+
+            foreach (Item eq in this.UserPackage.GetEquipmentItems())
+            {
+                if (eq.Durability == 0 && eq.MaximumDurability > 0 && !eq.IsMount())
+                    continue;
+
+                bonusHp += eq.Life;
+                bonusMp += eq.Mana;
+            }
+
+            this.m_equipBonusLife = bonusHp;
+            this.m_equipBonusMana = bonusMp;
+
+            if (this.Life > this.MaxLife)
+                this.Life = this.MaxLife;
+            if (this.Mana > this.MaxMana)
+                this.Mana = this.MaxMana;
+
+            var msg = new MsgUserAttrib(this.Identity, ClientUpdateType.MaxHitpoints, this.MaxLife);
+            msg.Append(ClientUpdateType.Hitpoints, this.Life);
+            msg.Append(ClientUpdateType.MaxMana, this.MaxMana);
+            msg.Append(ClientUpdateType.Mana, this.Mana);
+            await this.SendAsync(msg);
+
+            if (broadcastAppearance)
+                await this.BroadcastSpawnAsync();
+        }
+
         #endregion
 
-        #region Currencies, PK, VIP & Privileges
+        #region Currencies, PK, VIP & Ground Item Pickup
 
         public uint Silver
         {
             get => this.m_dbCharacter.Silver;
             set => this.m_dbCharacter.Silver = value;
+        }
+
+        public uint WarehouseSilver
+        {
+            get => this.m_dbCharacter.WarehouseSilver;
+            set => this.m_dbCharacter.WarehouseSilver = value;
         }
 
         public uint ConquerPoints
@@ -316,6 +380,87 @@ namespace Comet.Game.States
         public bool IsPm => (this.Client?.AuthorityLevel ?? 1) >= 3 ||
                             this.Name.EndsWith("[PM]", StringComparison.OrdinalIgnoreCase);
 
+        public async Task<bool> SpendSilverAsync(int amount)
+        {
+            if (amount <= 0) return true;
+            if (this.Silver < (uint)amount) return false;
+
+            this.Silver -= (uint)amount;
+            await this.SendAsync(new MsgUserAttrib(this.Identity, ClientUpdateType.Money, this.Silver));
+            return true;
+        }
+
+        public async Task AwardSilverAsync(int amount)
+        {
+            if (amount <= 0) return;
+            ulong next = Math.Min(2_000_000_000UL, (ulong)this.Silver + (uint)amount);
+            this.Silver = (uint)next;
+            await this.SendAsync(new MsgUserAttrib(this.Identity, ClientUpdateType.Money, this.Silver));
+        }
+
+        public async Task<bool> SpendConquerPointsAsync(int amount)
+        {
+            if (amount <= 0) return true;
+            if (this.ConquerPoints < (uint)amount) return false;
+
+            this.ConquerPoints -= (uint)amount;
+            await this.SendAsync(new MsgUserAttrib(this.Identity, ClientUpdateType.ConquerPoints, this.ConquerPoints));
+            return true;
+        }
+
+        public async Task AwardConquerPointsAsync(int amount)
+        {
+            if (amount <= 0) return;
+            ulong next = Math.Min(2_000_000_000UL, (ulong)this.ConquerPoints + (uint)amount);
+            this.ConquerPoints = (uint)next;
+            await this.SendAsync(new MsgUserAttrib(this.Identity, ClientUpdateType.ConquerPoints, this.ConquerPoints));
+        }
+
+        public async Task<bool> PickMapItemAsync(uint idMapItem)
+        {
+            if (this.Map == null || !this.Map.Roles.TryGetValue(idMapItem, out Role role) || role is not MapItem mapItem)
+                return false;
+
+            if (this.GetDistance(mapItem) > 3)
+                return false;
+
+            if (!mapItem.CanLoot(this))
+            {
+                await this.SendTalkAsync("This item currently belongs to another player.");
+                return false;
+            }
+
+            if (mapItem.IsMoney)
+            {
+                uint silver = mapItem.Money;
+                await mapItem.DisappearAsync();
+                await this.AwardSilverAsync((int)silver);
+                await this.SendTalkAsync($"You picked up {silver} silver.", MsgTalk.TalkChannel.System, Color.Yellow);
+                return true;
+            }
+
+            if (this.UserPackage.IsPackFull)
+            {
+                await this.SendTalkAsync("Your inventory is full.");
+                return false;
+            }
+
+            Item picked = mapItem.DetachItemForPickup();
+            if (picked == null)
+                return false;
+
+            await mapItem.DisappearAsync();
+            await this.UserPackage.AddItemAsync(picked, syncClient: true);
+            await this.BroadcastRoomMsgAsync(new MsgMapItem
+            {
+                Identity = this.Identity,
+                MapX = this.MapX,
+                MapY = this.MapY,
+                Mode = DropType.PickupItem
+            }, includeSelf: true);
+            return true;
+        }
+
         #endregion
 
         #region Position & Map Residency
@@ -373,7 +518,6 @@ namespace Comet.Game.States
             GameMap map = MapManager.GetMap(this.MapIdentity);
             if (map == null)
             {
-                // Fallback to Twin City (1002) if character was saved on a removed dynamic map
                 map = MapManager.GetMap(this.RecordMapIdentity != 0 ? this.RecordMapIdentity : 1002u)
                       ?? MapManager.GetMap(1002u);
                 if (map == null)
@@ -406,9 +550,6 @@ namespace Comet.Game.States
             }
         }
 
-        /// <summary>
-        /// Processes retail 1-step Walk/Run and 2-step `RunDir0..RunDir7` movement.
-        /// </summary>
         public async Task<bool> MoveTowardAsync(int direction, int mode, bool sync = true)
         {
             if (this.Map == null)
@@ -472,10 +613,6 @@ namespace Comet.Game.States
             return true;
         }
 
-        /// <summary>
-        /// Processes retail Conquer isometric jump (`MsgAction.MapJump`) with Chebyshev range
-        /// and Bresenham elevation checks (`<= 210` altitude delta).
-        /// </summary>
         public async Task<bool> JumpPosAsync(int newX, int newY)
         {
             if (this.Map == null)
@@ -521,10 +658,6 @@ namespace Comet.Game.States
             return true;
         }
 
-        /// <summary>
-        /// Teleports the character to (<paramref name="idMap"/>, <paramref name="x"/>, <paramref name="y"/>)
-        /// across map partitions without cross-channel locks.
-        /// </summary>
         public async Task<bool> FlyMapAsync(uint idMap, int x, int y)
         {
             GameMap destMap = MapManager.GetMap(idMap);
@@ -678,6 +811,7 @@ namespace Comet.Game.States
             msg.Append(ClientUpdateType.MaxMana, this.MaxMana);
             msg.Append(ClientUpdateType.Mana, this.Mana);
             msg.Append(ClientUpdateType.Money, this.Silver);
+            msg.Append(ClientUpdateType.WhMoney, this.WarehouseSilver);
             msg.Append(ClientUpdateType.ConquerPoints, this.ConquerPoints);
             msg.Append(ClientUpdateType.PkPoints, this.PkPoints);
             msg.Append(ClientUpdateType.Class, this.Profession);
@@ -691,7 +825,6 @@ namespace Comet.Game.States
 
         public void SyncPkStatusFlags()
         {
-            // Clear PK name flags first (RedName = 0x4000, BlackName = 0x8000)
             this.StatusFlag &= ~(0x4000UL | 0x8000UL);
             if (this.PkPoints >= 100)
                 this.StatusFlag |= 0x8000UL;
@@ -725,7 +858,6 @@ namespace Comet.Game.States
 
         public override async Task OnTimerAsync()
         {
-            // 1. Stamina recovery every 2 seconds
             if (this.IsAlive && this.Energy < this.MaxEnergy && this.m_energyTimer.ToNextTime())
             {
                 int bonus = this.Action switch
@@ -740,7 +872,6 @@ namespace Comet.Game.States
                 await this.SendAsync(new MsgUserAttrib(this.Identity, ClientUpdateType.Stamina, this.Energy));
             }
 
-            // 2. Retail PK point decay every 6 minutes (faster in Jail 6000)
             int pkDecaySecs = this.MapIdentity == 6000 ? 180 : 360;
             if (this.PkPoints > 0 && this.m_pkDecreaseTimer.ToNextTime(pkDecaySecs))
             {
@@ -756,7 +887,6 @@ namespace Comet.Game.States
                 }
             }
 
-            // 3. Periodic background DB autosave every 5 minutes
             if (this.m_autoSaveTimer.ToNextTime())
             {
                 await this.SaveAsync();

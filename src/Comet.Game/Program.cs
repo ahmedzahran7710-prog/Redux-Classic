@@ -58,8 +58,10 @@ namespace Comet.Game
                 Kernel.Services.Processor.StartAsync(shutdownCts.Token)
             };
 
-            // Load retail progression curves, maps, portals, and DMaps
+            // Load retail progression curves, items, scripts, maps, portals, and DMaps
             await ExperienceManager.InitializeAsync();
+            await ItemManager.InitializeAsync(config.World.GameDataPath);
+            ItemScriptEngine.Initialize();
             await MapManager.InitializeAsync(config.World.GameDataPath);
 
             // Start periodic world timer heartbeat

@@ -177,7 +177,16 @@ namespace Comet.Game.Packets
                     break;
                 }
 
-                case ActionType.LoginInventory:     // 75 (Phase 2 hook)
+                case ActionType.LoginInventory:     // 75 - Load & send equipment + inventory + warehouse silver
+                {
+                    await user.UserPackage.InitializeAsync();
+                    await user.UserPackage.SendAllAsync();
+                    await user.RecalculateEquipmentStatsAsync(broadcastAppearance: true);
+                    await user.SendAsync(new MsgUserAttrib(user.Identity, ClientUpdateType.WhMoney, user.WarehouseSilver));
+                    await user.SendAsync(this);
+                    break;
+                }
+
                 case ActionType.LoginRelationships: // 76 (Phase 5 hook)
                 case ActionType.LoginProficiencies: // 77 (Phase 3 hook)
                 case ActionType.LoginSpells:        // 78 (Phase 3 hook)
@@ -257,6 +266,10 @@ namespace Comet.Game.Packets
                     Character observed = RoleManager.GetUser(this.Command);
                     if (observed != null)
                     {
+                        foreach (var eq in observed.UserPackage.GetEquipmentItems())
+                        {
+                            await user.SendAsync(new MsgItemInfo(eq, MsgItemInfo.ItemMode.View));
+                        }
                         await user.SendAsync(new MsgPlayer(observed, windowSpawn: true));
                         await observed.SendTalkAsync(
                             $"{user.Name} is observing your gear carefully.",

@@ -32,6 +32,46 @@ namespace Comet.Game.Packets
             this.EnlightenPoints = user.EnlightenPoints;
             this.Name = user.Name ?? string.Empty;
             this.FamilyName = string.Empty;
+
+            if (user.UserPackage != null)
+            {
+                var head = user.UserPackage[States.Items.Item.ItemPosition.Headwear];
+                var garment = user.UserPackage[States.Items.Item.ItemPosition.Garment];
+                var armor = user.UserPackage[States.Items.Item.ItemPosition.Armor];
+                var right = user.UserPackage[States.Items.Item.ItemPosition.RightHand];
+                var left = user.UserPackage[States.Items.Item.ItemPosition.LeftHand];
+                var steed = user.UserPackage[States.Items.Item.ItemPosition.Steed];
+
+                if (head != null)
+                {
+                    this.Helmet = head.Type;
+                    this.HelmetColor = (ushort)head.Color;
+                }
+                if (garment != null)
+                {
+                    this.Garment = garment.Type;
+                }
+                if (armor != null)
+                {
+                    this.Armor = armor.Type;
+                    this.ArmorColor = (ushort)armor.Color;
+                }
+                if (right != null)
+                {
+                    this.RightHand = right.Type;
+                }
+                if (left != null)
+                {
+                    this.LeftHand = left.Type;
+                    this.LeftHandColor = (ushort)left.Color;
+                }
+                if (steed != null)
+                {
+                    this.Mount = steed.Type;
+                    this.MountAddition = steed.Plus;
+                    this.MountColor = steed.SocketProgress;
+                }
+            }
         }
 
         public uint Mesh { get; set; }

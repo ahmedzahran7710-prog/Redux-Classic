@@ -76,6 +76,88 @@ namespace Comet.Game.World.Managers
                     await user.SendTalkAsync(
                         "GM: /str /agi /vit /spi /points <n> | /pk <n> | /vip <0-6> | /hair <id> | /avatar <id> | /body <id>",
                         MsgTalk.TalkChannel.Talk);
+                    await user.SendTalkAsync(
+                        "GM: /item <id|name> [plus] [bless] [hp] [gem1] [gem2] [count] | /clearinv | /syncitemsdb",
+                        MsgTalk.TalkChannel.Talk);
+                    return true;
+                }
+
+                case "item":
+                {
+                    if (parts.Length < 2)
+                    {
+                        await user.SendTalkAsync("Usage: /item <itemId or Name> [plus 0-12] [bless 0-7] [enchant 0-255] [gem1] [gem2] [count]");
+                        return true;
+                    }
+
+                    Database.Models.DbItemtype template = uint.TryParse(parts[1], out uint parsedId)
+                        ? ItemManager.GetItemtype(parsedId)
+                        : ItemManager.FindItemtypeByName(parts[1]);
+
+                    if (template == null)
+                    {
+                        await user.SendTalkAsync($"Item '{parts[1]}' not found in cq_itemtype / itemtype.dat.");
+                        return true;
+                    }
+
+                    byte plus = parts.Length >= 3 && byte.TryParse(parts[2], out byte p) ? Math.Min((byte)12, p) : (byte)0;
+                    byte bless = parts.Length >= 4 && byte.TryParse(parts[3], out byte b) ? Math.Min((byte)7, b) : (byte)0;
+                    byte enchant = parts.Length >= 5 && byte.TryParse(parts[4], out byte en) ? en : (byte)0;
+                    byte g1 = parts.Length >= 6 && byte.TryParse(parts[5], out byte gv1) ? gv1 : (byte)0;
+                    byte g2 = parts.Length >= 7 && byte.TryParse(parts[6], out byte gv2) ? gv2 : (byte)0;
+                    int count = parts.Length >= 8 && int.TryParse(parts[7], out int cnt) ? Math.Clamp(cnt, 1, 40) : 1;
+
+                    if (template.AccumulateLimit > 1)
+                    {
+                        await user.UserPackage.AwardItemAsync(
+                            template.Type,
+                            plus,
+                            bless,
+                            enchant,
+                            (States.Items.Item.SocketGem)g1,
+                            (States.Items.Item.SocketGem)g2,
+                            bound: false,
+                            count: (ushort)Math.Min(count, (int)template.AccumulateLimit));
+                    }
+                    else
+                    {
+                        for (int i = 0; i < count; i++)
+                        {
+                            if (user.UserPackage.IsPackFull)
+                                break;
+                            await user.UserPackage.AwardItemAsync(
+                                template.Type,
+                                plus,
+                                bless,
+                                enchant,
+                                (States.Items.Item.SocketGem)g1,
+                                (States.Items.Item.SocketGem)g2);
+                        }
+                    }
+
+                    await user.SendTalkAsync($"Created {template.Name} ({template.Type}) +{plus} -{bless}.");
+                    return true;
+                }
+
+                case "clearinv":
+                {
+                    int cleared = 0;
+                    foreach (var invItem in user.UserPackage.GetInventoryItems())
+                    {
+                        if (invItem.IsLocked())
+                            continue;
+                        if (await user.UserPackage.RemoveFromInventoryAsync(invItem.Identity, deleteFromDb: true))
+                            cleared++;
+                    }
+                    await user.SendTalkAsync($"Cleared {cleared} unlocked items from inventory.");
+                    return true;
+                }
+
+                case "syncitemsdb":
+                {
+                    await user.SendTalkAsync("Exporting loaded client itemtype.dat, ItemAdd.ini, and Shop.dat to MySQL...");
+                    var (items, adds, goods) = await ItemManager.SyncToDatabaseAsync();
+                    await user.SendTalkAsync($"Synced {items} itemtypes, {adds} +additions, and {goods} shop items to MySQL!");
                     return true;
                 }
 

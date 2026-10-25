@@ -98,8 +98,13 @@ namespace Comet.Game
                     PacketType.MsgAction => new MsgAction(),
                     PacketType.MsgName => new MsgName(),
                     PacketType.MsgAllot => new MsgAllot(),
+                    PacketType.MsgGemEmbed => new MsgGemEmbed(),
                     PacketType.MsgPing => new MsgPing(),
                     PacketType.MsgConnect => new MsgConnect(),
+                    PacketType.MsgMapItem => new MsgMapItem(),
+                    PacketType.MsgPackage => new MsgPackage(),
+                    PacketType.MsgDataArray => new MsgDataArray(),
+                    PacketType.MsgEquipLock => new MsgEquipLock(),
                     _ => null
                 };
 
