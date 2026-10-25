@@ -147,6 +147,22 @@ namespace Comet.Game.Packets
                         await RebirthManager.EnlightenPlayerAsync(user, targetUser);
                     break;
                 }
+
+                case MsgInteractType.CounterKillSwitch: // 44 - Ninja Counter-Kill toggle!
+                {
+                    if (user.MagicData.Magics.ContainsKey(6003))
+                        user.MagicData.CounterKillEnabled = !user.MagicData.CounterKillEnabled;
+                    break;
+                }
+
+                case MsgInteractType.FatalStrike: // 45 - Ninja Fatal Strike melee teleport hit
+                {
+                    if (!user.IsAlive || !user.StatusSet.HasStatus(StatusSet.FATAL_STRIKE))
+                        return;
+                    user.SetAutoAttackTarget(this.TargetIdentity, isBow: false);
+                    await user.ExecutePhysicalAttackAsync(this.TargetIdentity, isBow: false);
+                    break;
+                }
             }
         }
 

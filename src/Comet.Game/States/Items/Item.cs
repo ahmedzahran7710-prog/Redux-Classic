@@ -493,7 +493,10 @@ namespace Comet.Game.States.Items
         public int MaxAttack => (this.m_itemtype?.AttackMax ?? 0) + (this.m_itemAddition?.AttackMax ?? 0);
         public int MagicAttack => (this.m_itemtype?.MagicAtk ?? 0) + (this.m_itemAddition?.MagicAtk ?? 0);
         public int Defense => (this.m_itemtype?.Defense ?? 0) + (this.m_itemAddition?.Defense ?? 0);
-        public int MagicDefense => (this.m_itemtype?.MagicDef ?? 0) + (this.m_itemAddition?.MagicDef ?? 0);
+        public int MagicDefensePercent => !this.IsTalisman() ? (this.m_itemtype?.MagicDef ?? 0) : 0;
+        public int MagicDefense => this.IsTalisman()
+            ? (this.m_itemtype?.MagicDef ?? 0) + (this.m_itemAddition?.MagicDef ?? 0)
+            : (this.m_itemAddition?.MagicDef ?? 0);
         public int Dodge => (this.m_itemtype?.Dodge ?? 0) + (this.m_itemAddition?.Dodge ?? 0);
         public int Agility => (this.m_itemtype?.Dexterity ?? 0) + (this.m_itemAddition?.Dexterity ?? 0);
 

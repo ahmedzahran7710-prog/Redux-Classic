@@ -10,6 +10,7 @@ namespace Comet.Game.States
     using Comet.Game.Database.Repositories;
     using Comet.Game.Packets;
     using Comet.Game.States.Items;
+    using Comet.Game.States.Magics;
     using Comet.Game.World.Managers;
     using Comet.Game.World.Maps;
     using Comet.Network.Packets;
@@ -40,6 +41,7 @@ namespace Comet.Game.States
         private readonly TimeOutMS m_attackCooldown = new(800);
         private readonly TimeOut m_reviveCooldown = new(18);
         private readonly TimeOut m_blueNameTimer = new(30);
+        private readonly TimeOut m_xpCircleTimer = new(65);
 
         public Character(Client client, DbCharacter dbCharacter)
         {
@@ -51,15 +53,18 @@ namespace Comet.Game.States
             this.m_posY = dbCharacter.Y;
             this.Screen = new Screen(this);
             this.UserPackage = new UserPackage(this);
+            this.MagicData = new MagicData(this);
             this.Energy = DEFAULT_MAX_ENERGY;
 
             this.m_energyTimer.Startup(2000);
             this.m_pkDecreaseTimer.Startup(360);
             this.m_autoSaveTimer.Startup(300);
+            this.m_xpCircleTimer.Startup(65);
         }
 
         public Client Client { get; }
         public UserPackage UserPackage { get; }
+        public MagicData MagicData { get; }
 
         #region Identity & Appearance
 
@@ -773,6 +778,7 @@ namespace Comet.Game.States
             }, includeSelf: false);
 
             await this.RefreshClientAttributesAsync();
+            await this.MagicData.GrantAutoLearnClassSpellsAsync(sendToClient: true);
             await this.SaveAsync();
         }
 
@@ -865,7 +871,16 @@ namespace Comet.Game.States
                 else
                     atk += eq.MinAttack;
             }
-            return (int)(atk * this.GetDragonGemMultiplier());
+
+            double mult = this.GetDragonGemMultiplier();
+            Item right = this.UserPackage[Item.ItemPosition.RightHand];
+            if (right != null)
+                mult *= this.MagicData.GetWeaponProficiencyBonusMultiplier(right.Type);
+
+            if (this.StatusSet[StatusSet.STIG] is ActiveStatus stig)
+                mult *= StatusSet.GetPercentMultiplier(stig.Power, 1.0);
+
+            return (int)(atk * mult);
         }
 
         public int CalculateMaxAttack()
@@ -879,7 +894,51 @@ namespace Comet.Game.States
                 else
                     atk += eq.MaxAttack;
             }
-            return Math.Max(this.CalculateMinAttack(), (int)(atk * this.GetDragonGemMultiplier()));
+
+            double mult = this.GetDragonGemMultiplier();
+            Item right = this.UserPackage[Item.ItemPosition.RightHand];
+            if (right != null)
+                mult *= this.MagicData.GetWeaponProficiencyBonusMultiplier(right.Type);
+
+            if (this.StatusSet[StatusSet.STIG] is ActiveStatus stig)
+                mult *= StatusSet.GetPercentMultiplier(stig.Power, 1.0);
+
+            return Math.Max(this.CalculateMinAttack(), (int)(atk * mult));
+        }
+
+        public int CalculateMagicAttack()
+        {
+            int matk = this.Spirit * 5;
+            foreach (Item eq in this.UserPackage.GetEquipmentItems())
+            {
+                if (eq.Durability == 0 && eq.MaximumDurability > 0) continue;
+                if (eq.Position != Item.ItemPosition.AttackTalisman)
+                    matk += eq.MagicAttack;
+            }
+            return (int)(matk * this.GetPhoenixGemMagicMultiplier());
+        }
+
+        public int CalculateMagicDefensePercent()
+        {
+            int pct = 0;
+            foreach (Item eq in this.UserPackage.GetEquipmentItems())
+            {
+                if (eq.Durability == 0 && eq.MaximumDurability > 0) continue;
+                pct += eq.MagicDefensePercent;
+            }
+            return Math.Clamp(pct, 0, 75);
+        }
+
+        public int CalculateMagicDefenseFlat()
+        {
+            int mdef = this.Spirit * 2;
+            foreach (Item eq in this.UserPackage.GetEquipmentItems())
+            {
+                if (eq.Durability == 0 && eq.MaximumDurability > 0) continue;
+                if (eq.Position != Item.ItemPosition.DefenceTalisman)
+                    mdef += eq.MagicDefense;
+            }
+            return Math.Max(0, mdef);
         }
 
         public int CalculateTotalDefense()
@@ -890,6 +949,8 @@ namespace Comet.Game.States
                 if (eq.Durability == 0 && eq.MaximumDurability > 0) continue;
                 def += eq.Defense;
             }
+            if (this.StatusSet[StatusSet.SHIELD] is ActiveStatus shield)
+                def = (int)(def * StatusSet.GetPercentMultiplier(shield.Power, 1.0));
             return Math.Max(0, def);
         }
 
@@ -901,6 +962,8 @@ namespace Comet.Game.States
                 if (eq.Durability == 0 && eq.MaximumDurability > 0) continue;
                 dodge += eq.Dodge;
             }
+            if (this.StatusSet[StatusSet.DODGE] is ActiveStatus dBuff)
+                dodge = (int)(dodge * StatusSet.GetPercentMultiplier(dBuff.Power, 1.0));
             return Math.Max(0, dodge);
         }
 
@@ -929,7 +992,34 @@ namespace Comet.Game.States
                 furyBonusPct += GetFuryGemBonus(eq.SocketOne) + GetFuryGemBonus(eq.SocketTwo);
             }
             int adjusted = (int)(baseSpeed * (1.0 - Math.Min(0.50, furyBonusPct / 100.0)));
-            return Math.Clamp(adjusted, 350, 2000);
+            if (this.StatusSet.HasStatus(StatusSet.CYCLONE))
+                adjusted = (int)(adjusted * 0.70);
+            return Math.Clamp(adjusted, 300, 2000);
+        }
+
+        public async Task ConsumeArrowsAsync(int count = 1)
+        {
+            Item arrows = this.UserPackage[Item.ItemPosition.LeftHand];
+            if (arrows == null || !arrows.IsArrowSort() || count <= 0)
+                return;
+
+            if (arrows.Durability > count)
+            {
+                arrows.Durability = (ushort)(arrows.Durability - count);
+                if (arrows.Durability % 25 == 0)
+                    await this.SendAsync(new MsgItemInfo(arrows, MsgItemInfo.ItemMode.Update));
+            }
+            else
+            {
+                await this.UserPackage.UnEquipAsync(Item.ItemPosition.LeftHand, deleteItem: true);
+            }
+        }
+
+        public void ExtendKoBuffsOnMonsterKill()
+        {
+            this.StatusSet.ExtendDuration(StatusSet.CYCLONE, 2, 60);
+            this.StatusSet.ExtendDuration(StatusSet.SUPERMAN, 2, 60);
+            this.StatusSet.ExtendDuration(StatusSet.FATAL_STRIKE, 2, 60);
         }
 
         public int GetAttackRange()
@@ -955,7 +1045,7 @@ namespace Comet.Game.States
                 return;
             }
 
-            int maxRange = isBow ? 14 : this.GetAttackRange() + 1;
+            int maxRange = isBow ? 14 : (this.StatusSet.HasStatus(StatusSet.FATAL_STRIKE) ? 12 : this.GetAttackRange() + 1);
             if (this.GetDistance(target) > maxRange)
                 return;
 
@@ -964,32 +1054,35 @@ namespace Comet.Game.States
 
             this.m_attackCooldown.Startup(this.GetAttackSpeedMs());
 
+            if (this.StatusSet.HasStatus(StatusSet.INVISIBLE))
+                await this.StatusSet.DetachAsync(StatusSet.INVISIBLE);
+
+            // Auto-active weapon passive procs (Phoenix, Snow, Boreas, Rage, Celestial, Earthquake, Seizer, Penetration!)
+            if (!isBow && !this.StatusSet.HasStatus(StatusSet.FATAL_STRIKE) &&
+                await this.MagicData.TryTriggerAutoWeaponSkillAsync(target))
+            {
+                return;
+            }
+
             // Bow requires equipped bow + consumes 1 arrow per shot
             if (isBow)
             {
                 Item right = this.UserPackage[Item.ItemPosition.RightHand];
-                Item arrows = this.UserPackage[Item.ItemPosition.LeftHand];
                 if (right == null || !right.IsBow())
                 {
                     this.ClearAutoAttack();
                     return;
                 }
-                if (arrows != null && arrows.IsArrowSort())
-                {
-                    if (arrows.Durability > 1)
-                    {
-                        arrows.Durability--;
-                        if (arrows.Durability % 25 == 0)
-                            await this.SendAsync(new MsgItemInfo(arrows, MsgItemInfo.ItemMode.Update));
-                    }
-                    else
-                    {
-                        await this.UserPackage.UnEquipAsync(Item.ItemPosition.LeftHand, deleteItem: true);
-                    }
-                }
+                await this.ConsumeArrowsAsync(1);
             }
 
             int rawAtk = await Kernel.NextAsync(this.CalculateMinAttack(), this.CalculateMaxAttack() + 1);
+            if (isBow && this.StatusSet[StatusSet.INTENSIFY] is ActiveStatus intensify)
+            {
+                rawAtk = (int)(rawAtk * StatusSet.GetPercentMultiplier(intensify.Power, 2.0));
+                await this.StatusSet.DetachAsync(StatusSet.INTENSIFY);
+            }
+
             MsgInteractType interactAction = isBow ? MsgInteractType.Shoot : MsgInteractType.Attack;
 
             if (target is Monster mob)
@@ -998,6 +1091,19 @@ namespace Comet.Game.States
                 {
                     this.ClearAutoAttack();
                     return;
+                }
+
+                // Ninja Fatal Strike (6011): teleport adjacent to monster & deal 5x damage!
+                if (!isBow && this.StatusSet.HasStatus(StatusSet.FATAL_STRIKE))
+                {
+                    if (this.GetDistance(mob) > 1 && this.Map.IsStandEnable(mob.MapX, mob.MapY))
+                        await this.JumpPosAsync(mob.MapX, mob.MapY);
+                    rawAtk *= 5;
+                    interactAction = MsgInteractType.FatalStrike;
+                }
+                else if (this.StatusSet.HasStatus(StatusSet.SUPERMAN))
+                {
+                    rawAtk *= 10;
                 }
 
                 int netDmg = Math.Max(1, rawAtk - mob.Defense);
@@ -1021,8 +1127,15 @@ namespace Comet.Game.States
                 });
 
                 await mob.ReceiveDamageAsync(this, netDmg);
+                Item rightWep = this.UserPackage[Item.ItemPosition.RightHand];
+                if (rightWep != null)
+                    await this.MagicData.AwardWeaponSkillExpAsync(rightWep.Type, (uint)netDmg);
+
                 if (!mob.IsAlive)
+                {
+                    this.ExtendKoBuffsOnMonsterKill();
                     this.ClearAutoAttack();
+                }
                 return;
             }
 
@@ -1033,6 +1146,13 @@ namespace Comet.Game.States
                     this.ClearAutoAttack();
                     return;
                 }
+
+                // Ground melee cannot reach a flying Archer!
+                if (!isBow && targetPlayer.StatusSet.HasStatus(StatusSet.FLY))
+                    return;
+
+                if (this.StatusSet.HasStatus(StatusSet.SUPERMAN))
+                    rawAtk *= 2;
 
                 // Mark attacker with Flashing Blue Name on non-FreePK maps against innocent players
                 if (!this.Map.Flag.HasFlag(MapTypeFlags.PkField) &&
@@ -1069,16 +1189,17 @@ namespace Comet.Game.States
                 });
 
                 await targetPlayer.ReceiveDamageAsync(this, netDmg);
+                Item rightWep = this.UserPackage[Item.ItemPosition.RightHand];
+                if (rightWep != null)
+                    await this.MagicData.AwardWeaponSkillExpAsync(rightWep.Type, (uint)netDmg);
+
                 if (!targetPlayer.IsAlive)
                     this.ClearAutoAttack();
             }
         }
 
-        public Task ProcessMagicAttackAsync(ushort magicType, uint targetId, ushort x, ushort y)
-        {
-            // Phase 4 full MagicType.dat & 6-class skill engine hook
-            return Task.CompletedTask;
-        }
+        public Task ProcessMagicAttackAsync(ushort magicType, uint targetId, ushort x, ushort y) =>
+            this.MagicData.ProcessMagicAttackAsync(magicType, targetId, x, y);
 
         public bool CanAttackPlayer(Character target)
         {
@@ -1113,6 +1234,35 @@ namespace Comet.Game.States
             if (!this.IsAlive || damage <= 0)
                 return;
 
+            // Ninja Counter-Kill (Scapegoat 6003): 30% chance to negate melee hit & counter-attack!
+            if (this.MagicData.CounterKillEnabled &&
+                attacker != null &&
+                attacker.IsAlive &&
+                this.GetDistance(attacker) <= 2 &&
+                this.MagicData.Magics.ContainsKey(6003) &&
+                await Kernel.NextAsync(0, 100) < 30)
+            {
+                int counterDmg = Math.Max(1, this.CalculateMaxAttack());
+                if (this.Map != null)
+                {
+                    await this.Map.BroadcastRoomMsgAsync(this.MapX, this.MapY, new MsgInteract
+                    {
+                        SenderIdentity = this.Identity,
+                        TargetIdentity = attacker.Identity,
+                        PosX = attacker.MapX,
+                        PosY = attacker.MapY,
+                        Action = MsgInteractType.CounterKill,
+                        Data = counterDmg
+                    });
+                }
+
+                if (attacker is Monster mob)
+                    await mob.ReceiveDamageAsync(this, counterDmg);
+                else if (attacker is Character otherChar)
+                    await otherChar.ReceiveDamageAsync(this, otherChar.ApplyBlessAndTortoiseReduction(counterDmg));
+                return;
+            }
+
             uint dealt = (uint)Math.Min(this.Life, (uint)damage);
             this.Life -= dealt;
             await this.SendAsync(new MsgUserAttrib(this.Identity, ClientUpdateType.Hitpoints, this.Life));
@@ -1126,6 +1276,7 @@ namespace Comet.Game.States
             this.Life = 0;
             this.Action = EntityAction.Stand;
             this.ClearAutoAttack();
+            await this.StatusSet.ClearAllOnDeathAsync();
             this.StatusFlag |= Monster.STATUS_DIE;
             this.m_reviveCooldown.Startup(18);
 
@@ -1205,6 +1356,29 @@ namespace Comet.Game.States
             await this.BroadcastSpawnAsync();
         }
 
+        public double GetPhoenixGemMagicMultiplier()
+        {
+            double bonus = 0.0;
+            foreach (Item eq in this.UserPackage.GetEquipmentItems())
+            {
+                bonus += GetPhoenixGemBonus(eq.SocketOne) + GetPhoenixGemBonus(eq.SocketTwo);
+            }
+            return 1.0 + bonus;
+        }
+
+        public double GetPhoenixAndVioletGemBonus(bool isWeapon)
+        {
+            double bonus = 0.0;
+            foreach (Item eq in this.UserPackage.GetEquipmentItems())
+            {
+                if (isWeapon)
+                    bonus += GetVioletGemBonus(eq.SocketOne) + GetVioletGemBonus(eq.SocketTwo);
+                else
+                    bonus += GetMoonGemBonus(eq.SocketOne) + GetMoonGemBonus(eq.SocketTwo);
+            }
+            return 1.0 + bonus;
+        }
+
         private double GetDragonGemMultiplier()
         {
             double bonus = 0.0;
@@ -1221,6 +1395,33 @@ namespace Comet.Game.States
                 Item.SocketGem.NormalDragonGem => 0.05,
                 Item.SocketGem.RefinedDragonGem => 0.10,
                 Item.SocketGem.SuperDragonGem => 0.15,
+                _ => 0.0
+            };
+
+        private static double GetPhoenixGemBonus(Item.SocketGem gem) =>
+            gem switch
+            {
+                Item.SocketGem.NormalPhoenixGem => 0.05,
+                Item.SocketGem.RefinedPhoenixGem => 0.10,
+                Item.SocketGem.SuperPhoenixGem => 0.15,
+                _ => 0.0
+            };
+
+        private static double GetVioletGemBonus(Item.SocketGem gem) =>
+            gem switch
+            {
+                Item.SocketGem.NormalVioletGem => 0.30,
+                Item.SocketGem.RefinedVioletGem => 0.50,
+                Item.SocketGem.SuperVioletGem => 1.00,
+                _ => 0.0
+            };
+
+        private static double GetMoonGemBonus(Item.SocketGem gem) =>
+            gem switch
+            {
+                Item.SocketGem.NormalMoonGem => 0.15,
+                Item.SocketGem.RefinedMoonGem => 0.30,
+                Item.SocketGem.SuperMoonGem => 0.50,
                 _ => 0.0
             };
 
@@ -1268,6 +1469,15 @@ namespace Comet.Game.States
 
         public override async Task OnTimerAsync()
         {
+            // Tick active buffs/debuffs (Cyclone, Superman, Stigma, Shield, ToxicFog, ShurikenVortex...)
+            await this.StatusSet.OnTimerAsync();
+
+            // Light up golden XP Skill Circle (`START_XP = 5`) every ~65 seconds while alive
+            if (this.IsAlive && !this.StatusSet.HasStatus(StatusSet.START_XP) && this.m_xpCircleTimer.ToNextTime())
+            {
+                await this.StatusSet.AttachAsync(StatusSet.START_XP, 1, 20, 0, 0, this.Identity);
+            }
+
             // Auto-repeat melee / bow attack while locked onto a target (official Conquer combat feel)
             if (this.IsAlive && this.m_autoAttackTargetId != 0 && this.m_attackCooldown.IsTimeOut())
             {

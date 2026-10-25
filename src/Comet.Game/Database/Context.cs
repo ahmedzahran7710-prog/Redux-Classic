@@ -28,6 +28,9 @@ namespace Comet.Game.Database
         public virtual DbSet<DbMonstertype> Monstertypes { get; set; }
         public virtual DbSet<DbGenerator> Generators { get; set; }
         public virtual DbSet<DbRebirth> Rebirths { get; set; }
+        public virtual DbSet<DbMagictype> Magictypes { get; set; }
+        public virtual DbSet<DbMagic> Magics { get; set; }
+        public virtual DbSet<DbWeaponSkill> WeaponSkills { get; set; }
 
         /// <summary>
         /// Configures the database to be used for this context. This method is called
@@ -63,6 +66,9 @@ namespace Comet.Game.Database
             builder.Entity<DbMonstertype>(e => e.HasKey(x => x.Id));
             builder.Entity<DbGenerator>(e => e.HasKey(x => x.Id));
             builder.Entity<DbRebirth>(e => e.HasKey(x => x.Identity));
+            builder.Entity<DbMagictype>(e => e.HasKey(x => x.Id));
+            builder.Entity<DbMagic>(e => e.HasKey(x => x.Id));
+            builder.Entity<DbWeaponSkill>(e => e.HasKey(x => x.Identity));
         }
 
         /// <summary>

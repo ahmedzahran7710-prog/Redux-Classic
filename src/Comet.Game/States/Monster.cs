@@ -300,6 +300,11 @@ namespace Comet.Game.States
                 return;
             }
 
+            // 1b. Tick poison / Ninja ToxicFog periodic damage even if player steps away
+            await this.StatusSet.OnTimerAsync();
+            if (!this.IsAlive)
+                return;
+
             // 2. Sleep AI completely if no player is within neighboring 3x3 GameBlocks!
             if (!this.HasActiveBlockAround())
                 return;
@@ -408,6 +413,14 @@ namespace Comet.Game.States
                 foreach (Role nearby in this.Map.Query9BlocksByPos(this.MapX, this.MapY))
                 {
                     if (nearby is not Character player || !player.IsAlive || player.IsGm)
+                        continue;
+
+                    // Water Taoist Invisibility hides player from monster aggro!
+                    if (player.StatusSet.HasStatus(StatusSet.INVISIBLE))
+                        continue;
+
+                    // Ground melee monsters ignore flying Archers!
+                    if (this.AttackRange <= 2 && player.StatusSet.HasStatus(StatusSet.FLY))
                         continue;
 
                     int d = this.GetDistance(player);
@@ -527,6 +540,10 @@ namespace Comet.Game.States
 
             if (target is Character player)
             {
+                // Ground melee monsters cannot strike flying Archers!
+                if (!this.IsGuard && this.AttackRange <= 2 && player.StatusSet.HasStatus(StatusSet.FLY))
+                    return;
+
                 int playerDef = player.CalculateTotalDefense();
                 int playerDodge = player.CalculateTotalDodge();
 
