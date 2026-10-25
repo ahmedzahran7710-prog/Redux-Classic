@@ -117,6 +117,7 @@ namespace Comet.Game.World.Managers
             user.Mana = user.MaxMana;
 
             await user.RefreshClientAttributesAsync();
+            await user.MagicData.GrantAutoLearnClassSpellsAsync(sendToClient: true);
             await user.BroadcastSpawnAsync();
             await user.SaveAsync();
 

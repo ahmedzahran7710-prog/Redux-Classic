@@ -82,6 +82,91 @@ namespace Comet.Game.World.Managers
                     await user.SendTalkAsync(
                         "GM: /spawnmob <id|name> [count] | /rebirth <11|21|41|51|132|142> [body] | /rates <exp> [silver] | /revive",
                         MsgTalk.TalkChannel.Talk);
+                    await user.SendTalkAsync(
+                        "GM: /skill <id|name> [lvl] | /allskills | /wskill <subtype> [lvl] | /xp",
+                        MsgTalk.TalkChannel.Talk);
+                    return true;
+                }
+
+                case "skill":
+                {
+                    if (parts.Length < 2)
+                    {
+                        await user.SendTalkAsync("Usage: /skill <spellId or SpellName> [level]");
+                        return true;
+                    }
+
+                    Database.Models.DbMagictype mt = ushort.TryParse(parts[1], out ushort sid)
+                        ? MagicManager.GetMagictype(sid, 0)
+                        : MagicManager.FindByName(parts[1]);
+
+                    if (mt == null)
+                    {
+                        await user.SendTalkAsync($"Skill '{parts[1]}' not found in cq_magictype.");
+                        return true;
+                    }
+
+                    ushort maxLvl = MagicManager.GetMaxLevel((ushort)mt.Type);
+                    ushort lvl = parts.Length >= 3 && ushort.TryParse(parts[2], out ushort reqLvl)
+                        ? Math.Min(reqLvl, maxLvl)
+                        : maxLvl;
+
+                    await user.MagicData.LearnMagicAsync((ushort)mt.Type, lvl, sendToClient: true);
+                    await user.SendTalkAsync($"Learned {mt.Name} ({mt.Type}) Lv.{lvl}!");
+                    return true;
+                }
+
+                case "allskills":
+                {
+                    var classSpells = MagicManager.GetClassAutoLearnSpells(user.Profession, 140);
+                    foreach (ushort sp in classSpells)
+                    {
+                        ushort maxLvl = MagicManager.GetMaxLevel(sp);
+                        await user.MagicData.LearnMagicAsync(sp, maxLvl, sendToClient: true);
+                    }
+                    await user.SendTalkAsync($"Granted {classSpells.Count} maxed class skills!");
+                    return true;
+                }
+
+                case "wskill":
+                {
+                    if (parts.Length < 2 || !uint.TryParse(parts[1], out uint subtype))
+                    {
+                        await user.SendTalkAsync("Usage: /wskill <410=Blade|420=Sword|421=Backsword|480=Club|500=Bow|510=Glaive|530=Poleaxe|560=Spear|601=Katana> [lvl 1..20]");
+                        return true;
+                    }
+
+                    byte lvl = parts.Length >= 3 && byte.TryParse(parts[2], out byte l) ? Math.Clamp(l, (byte)1, (byte)20) : (byte)20;
+                    if (!user.MagicData.WeaponSkills.TryGetValue(subtype, out Database.Models.DbWeaponSkill ws))
+                    {
+                        ws = new Database.Models.DbWeaponSkill
+                        {
+                            OwnerIdentity = user.Identity,
+                            Type = subtype,
+                            Level = lvl
+                        };
+                        user.MagicData.WeaponSkills[subtype] = ws;
+                    }
+                    else
+                    {
+                        ws.Level = lvl;
+                        ws.Experience = 0;
+                    }
+
+                    await Database.Repositories.WeaponSkillRepository.SaveAsync(ws);
+                    await user.SendAsync(new MsgWeaponSkill(ws));
+                    foreach (var passive in MagicManager.GetWeaponPassiveMagics(subtype))
+                    {
+                        await user.MagicData.LearnMagicAsync((ushort)passive.Type, MagicManager.GetMaxLevel((ushort)passive.Type), sendToClient: true);
+                    }
+                    await user.SendTalkAsync($"Weapon proficiency {subtype} set to Lv.{lvl}!");
+                    return true;
+                }
+
+                case "xp":
+                {
+                    await user.StatusSet.AttachAsync(StatusSet.START_XP, 1, 20, 0, 0, user.Identity);
+                    await user.SendTalkAsync("XP Skill circle activated for 20 seconds!");
                     return true;
                 }
 
@@ -377,6 +462,7 @@ namespace Comet.Game.World.Managers
                     user.Life = user.MaxLife;
                     user.Mana = user.MaxMana;
                     await user.RefreshClientAttributesAsync();
+                    await user.MagicData.GrantAutoLearnClassSpellsAsync(sendToClient: true);
                     await user.SaveAsync();
                     return true;
                 }

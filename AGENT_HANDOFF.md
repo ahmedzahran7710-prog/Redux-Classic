@@ -144,15 +144,11 @@
   - [x] مدير المناطق `Generator` و `MonsterManager` + محرك الدروب الرسمي القابل للتخصيص `DropManager` (فضة + انفجار الفضة المتناثر، جرعات، معدات وأسلحة مطابقة للفل الوحش من Normal حتى Super، ميتور، دراجون بول مع برودكاست، وخيار كبس جاهز).
   - [x] باكت القتال والتفاعل لباتش 5187 (`MsgInteract 1022`: الضرب الجسدي المتواصل، الرمي بالقوس وخصم الأسهم، فك تشفير `MagicAttack` لباتش 5187 استعداداً للمرحلة 4، الموت كشبح وإعادة الإحياء `CharacterRevive 94`، حساب بونص الجواهر والتليزمان والـ Bless والـ Battle Power).
   - [x] نظام الخبرة من الوحوش حسب فرق اللفل، والـ 1st Reborn والـ 2nd Reborn ومنحنى النقاط الإضافية والـ Enlightenment في `RebirthManager` + أوامر الـ GM (`/spawnmob`, `/rebirth`, `/rates`, `/revive`).
-- [ ] **المرحلة 4 (نظام القتال، الـ Battle Power، ومهارات الـ 6 شخصيات حتى النينجا):**
-  - [ ] قارئ `MagicType.dat` + جداول `magic` و `weapon_skill` (`MsgMagicInfo 1103`, `MsgWeaponSkill 1025`, `MsgFlushExp 1104`).
-  - [ ] معادلات الضرر الدقيقة لـ 5187 (Physical, Magic, Archer, Battle Power Bonus, Dodge, Bless, Tortoise Gem) في `MsgInteract (1022)` و `MsgMagicEffect (1105)`.
-  - [ ] تنفيذ كافة السكيلات والـ Status Flags لجميع الكلاسات الـ 6:
-    - Trojan (Cyclone, FastBlade/ScentSword, SpiritHealing, Hercules...)
-    - Warrior (Superman, Shield, Accuracy, Roar, FlyingMoon, Dash...)
-    - Archer (Scatter, RapidFire, Fly, Intensify, ArrowRain...)
-    - Water & Fire Taoist (Stigma, StarOfAccuracy, MagicShield, Revive, Pray, Tornado, FireCircle, FireMeteor, FireOfHell...)
-    - **Ninja** (TwofoldBlades, ToxicFog, PoisonStar, ShurikenVortex, FatalStrike, ArcherBane...)
+- [x] **المرحلة 4 (نظام القتال، الـ Battle Power، خبرة الأسلحة، ومهارات الـ 6 شخصيات حتى النينجا) — مكتملة 100%:**
+  - [x] جداول `cq_magictype` (803 صف رسمي لباتش 5187 بدون Monk/Pirate)، `cq_magic`، و `cq_weapon_skill` في `sql/comet.game.sql` + قارئ `MagicManager` المزدوج (`ini/magictype.dat` المشفر بـ `0x2537` + الداتابيز).
+  - [x] باكتات المهارات الكاملة لباتش 5187 (`MsgMagicInfo 1103`, `MsgWeaponSkill 1025`, `MsgFlushExp 1104`, `MsgMagicEffect 1105`) وربط خطوتي الدخول `LoginProficiencies (77)` و `LoginSpells (78)` في `MsgAction`.
+  - [x] نظام الحالات والبافات الكامل `StatusSet` (`1UL << (statusId - 1)`) شاملاً دائرة الـ XP التلقائية (`START_XP`), `Cyclone`, `Superman`, `Stigma`, `Shield / MagicShield`, `StarOfAccuracy`, `Invisibility`, `Fly`, `Intensify`, وحالات النينجا (`PoisonStar` المانعة للجرعات، `ToxicFog` الدورية، `ShurikenVortex`، و `FatalStrike`) مع تمديد وقت الـ KO عند قتل الوحوش.
+  - [x] محرك `MagicData` الشامل لكل عائلات المهارات للـ 6 كلاسات حتى النينجا (`FastBlade / ScentSword` بخوارزمية Bresenham، `Scatter`، `Hercules`، `Dash`، `Roar`، `Cure / HealingRain / Revive / Pray / Meditation`، `Tornado / FireMeteor / FireOfHell`، `TwofoldBlades / ToxicFog / PoisonStar / Counter-Kill / ArcherBane / ShurikenVortex / FatalStrike`) + خبرة إتقان الأسلحة من 1 إلى 20 ومهارات الأسلحة التلقائية (`Phoenix, Snow, Boreas, Rage, Celestial, Earthquake, Seizer, Penetration...`) + كتب المهارات وأوامر `/skill`, `/allskills`, `/wskill`, `/xp`.
 - [ ] **المرحلة 5 (نظام الـ NPCs، التجارة، الفريق، العلاقات):**
   - [ ] جداول `npc` + باكتات `MsgNpcInfo (2030)`, `MsgNpc (2031)`, `MsgTaskDialog (2032)`.
   - [ ] محرك `NpcScriptEngine` بـ C# لكتابة أي NPC أو كويست بسهولة ونظافة فائقة.
@@ -196,4 +192,10 @@
   * بناء `Monster` (مع طابور إعادة تدوير UIDs لمنع استنزاف الأرقام، وذكاء اصطناعي للحراس والوحوش يتوقف تلقائياً في الـ Blocks الخالية من اللاعبين، ومزامنة شاشة دقيقة)، `Generator`, `MonsterManager`, `DropManager` (مع فهرسة المعدات القابلة للسقوط حسب لفل الوحش في `ItemManager`), و `RebirthManager` (الريبورن الأول والثاني ومنحنى النقاط الإضافية والـ Enlightenment).
   * بناء وتسجيل باكت `MsgInteract (1022)` في `Server.cs` (يشمل الضرب الجسدي التلقائي، رمي القوس وخصم الأسهم، فك تشفير `MagicAttack` لباتش 5187، الموت كشبح وإعادة الإحياء `Revive` في `Character` و `MsgAction`)، وتحديث `MsgPlayer` بباني الوحوش `MsgPlayer(Monster)`، وإضافة أوامر `/spawnmob`, `/rebirth`, `/rates`, `/revive`.
   * توثيق المرحلة 3 بالكامل في `قسم معلومات التعديلات/` وفحص شامل لـ 137 ملف C# و14 جدول SQL بنتيجة **0 أخطاء**.
+* **2026-10-25 (المرحلة 4 — نظام المهارات `MagicType`، خبرة الأسلحة `Weapon Skills`، وسكيلات الـ 6 شخصيات حتى النينجا):**
+  * استخراج وتنقية **803 صف رسمي** لجدول `cq_magictype` (35 عموداً لباتش 5187 بدون Monk/Pirate) وإضافة جدولي `cq_magic` و `cq_weapon_skill` إلى `sql/comet.game.sql` (`588 KB` إجمالاً، 17 جدولاً) + نماذج ومستودعات EF Core وتسجيلها في `ServerDbContext`.
+  * بناء الباكتات الأربعة الرسمية لباتش 5187 (`MsgMagicInfo 1103`, `MsgMagicEffect 1105`, `MsgWeaponSkill 1025`, `MsgFlushExp 1104`) وربط `LoginProficiencies (77)` و `LoginSpells (78)` في `MsgAction`.
+  * بناء `StatusSet` (حالات 5187 بقاعدة `1UL << (id - 1)` شاملة البافات والسموم الدورية ودائرة `START_XP` وتمديد وقت الـ KO)، `MagicManager` (قارئ مزدوج لـ `ini/magictype.dat` + `cq_magictype`)، و `MagicData` (كافة مهارات الكلاسات الـ 6 حتى النينجا شاملة `TwofoldBlades`, `ToxicFog`, `PoisonStar` المانعة للجرعات، `Counter-Kill`, `ArcherBane`, `ShurikenVortex`, `FatalStrike`, `FastBlade/ScentSword`, `Scatter`, `Fly`, `Intensify`, `Revive`, `Pray`, `Stigma`, `Cyclone`, `Superman`, وخبرة ومهارات الأسلحة التلقائية).
+  * دعم كتب المهارات في `ItemScriptEngine` وإضافة أوامر `/skill`, `/allskills`, `/wskill`, `/xp` في `CommandManager`.
+  * توثيق المرحلة 4 في `قسم معلومات التعديلات/` وفحص شامل لـ 150 ملف C# و17 جدول SQL بنتيجة **0 أخطاء**.
 

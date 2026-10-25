@@ -68,6 +68,13 @@ namespace Comet.Game.World.Managers
             // 2. Built-in Retail HP / MP Potions (any item template with positive Life or Mana in 1000xxx..1004xxx)
             if (item.Type >= 1000000 && item.Type < 1005000 && (item.Itemtype.Life > 0 || item.Itemtype.Mana > 0))
             {
+                // Ninja PoisonStar (6002) blocks HP potion usage while active!
+                if (item.Itemtype.Life > 0 && user.StatusSet.HasStatus(StatusSet.POISON_STAR))
+                {
+                    await user.SendTalkAsync("Poison Star prevents you from using healing potions!");
+                    return false;
+                }
+
                 if (!await user.UserPackage.SpendItemAsync(item, 1))
                     return false;
 
@@ -86,7 +93,24 @@ namespace Comet.Game.World.Managers
                 return true;
             }
 
-            // 3. Built-in Retail Hair Dyes (1060030..1060099)
+            // 3. Built-in Retail Skill Books (725xxx..726xxx or Itemtype.Magic1 > 0)
+            if (item.Itemtype.Magic1 > 0 && MagicManager.GetMagictype((ushort)item.Itemtype.Magic1, 0) != null)
+            {
+                ushort spellId = (ushort)item.Itemtype.Magic1;
+                if (user.MagicData.Magics.ContainsKey(spellId))
+                {
+                    await user.SendTalkAsync("You have already learned this skill.");
+                    return false;
+                }
+                if (!await user.UserPackage.SpendItemAsync(item, 1))
+                    return false;
+
+                await user.MagicData.LearnMagicAsync(spellId, 0, sendToClient: true);
+                await user.SendTalkAsync($"You learned {MagicManager.GetMagictype(spellId, 0)?.Name ?? "a new skill"}!");
+                return true;
+            }
+
+            // 4. Built-in Retail Hair Dyes (1060030..1060099)
             if (item.Type >= 1060030 && item.Type <= 1060099)
             {
                 int colorIdx = (int)(item.Type % 10);

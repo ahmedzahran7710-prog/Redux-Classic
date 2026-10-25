@@ -58,10 +58,11 @@ namespace Comet.Game
                 Kernel.Services.Processor.StartAsync(shutdownCts.Token)
             };
 
-            // Load retail progression curves, items, scripts, maps, portals, rebirths, and monster spawns
+            // Load retail progression curves, items, magics, scripts, maps, portals, rebirths, and monster spawns
             await ExperienceManager.InitializeAsync();
             await RebirthManager.InitializeAsync();
             await ItemManager.InitializeAsync(config.World.GameDataPath);
+            await MagicManager.InitializeAsync(config.World.GameDataPath);
             ItemScriptEngine.Initialize();
             await MapManager.InitializeAsync(config.World.GameDataPath);
             await MonsterManager.InitializeAsync();

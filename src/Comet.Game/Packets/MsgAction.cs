@@ -187,9 +187,24 @@ namespace Comet.Game.Packets
                     break;
                 }
 
+                case ActionType.LoginProficiencies: // 77 - Load & send weapon proficiencies
+                {
+                    await user.MagicData.LoadAsync();
+                    foreach (var ws in user.MagicData.WeaponSkills.Values)
+                        await user.SendAsync(new MsgWeaponSkill(ws));
+                    await user.SendAsync(this);
+                    break;
+                }
+
+                case ActionType.LoginSpells:        // 78 - Send all learned class & weapon spells
+                {
+                    foreach (var m in user.MagicData.Magics.Values)
+                        await user.SendAsync(new MsgMagicInfo(m));
+                    await user.SendAsync(this);
+                    break;
+                }
+
                 case ActionType.LoginRelationships: // 76 (Phase 5 hook)
-                case ActionType.LoginProficiencies: // 77 (Phase 3 hook)
-                case ActionType.LoginSpells:        // 78 (Phase 3 hook)
                 case ActionType.LoginGuild:         // 97 (Phase 5 hook)
                 case ActionType.LoginComplete:      // 132
                 case ActionType.QueryFriends:       // 240

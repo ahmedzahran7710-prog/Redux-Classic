@@ -63,6 +63,12 @@ namespace Comet.Game.States
         protected ushort m_posX;
         protected ushort m_posY;
 
+        protected Role()
+        {
+            this.StatusSet = new StatusSet(this);
+        }
+
+        public StatusSet StatusSet { get; }
         public virtual uint Identity { get; protected set; }
         public virtual string Name { get; set; } = string.Empty;
         public virtual uint Mesh { get; set; }
