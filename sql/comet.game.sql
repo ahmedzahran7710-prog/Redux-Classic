@@ -1,0 +1,4210 @@
+CREATE DATABASE IF NOT EXISTS `comet.game` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin */;
+USE `comet.game`;
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ------------------------------------------------------
+-- Table structure for table `character`
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `character`;
+CREATE TABLE `character` (
+  `CharacterID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `AccountID` int(10) unsigned NOT NULL,
+  `Name` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `MateName` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'None',
+  `Mesh` int(10) unsigned NOT NULL DEFAULT '1003',
+  `Avatar` smallint(5) unsigned NOT NULL DEFAULT '1',
+  `Hairstyle` smallint(5) unsigned NOT NULL DEFAULT '535',
+  `Silver` int(10) unsigned NOT NULL DEFAULT '1000',
+  `WarehouseSilver` int(10) unsigned NOT NULL DEFAULT '0',
+  `Jewels` int(10) unsigned NOT NULL DEFAULT '0',
+  `CurrentClass` tinyint(3) unsigned NOT NULL DEFAULT '10',
+  `PreviousClass` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `AncestorClass` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `Rebirths` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `Level` tinyint(3) unsigned NOT NULL DEFAULT '1',
+  `Experience` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `MapID` int(10) unsigned NOT NULL DEFAULT '1010',
+  `X` smallint(5) unsigned NOT NULL DEFAULT '61',
+  `Y` smallint(5) unsigned NOT NULL DEFAULT '109',
+  `RecordMapID` int(10) unsigned NOT NULL DEFAULT '1002',
+  `RecordX` smallint(5) unsigned NOT NULL DEFAULT '430',
+  `RecordY` smallint(5) unsigned NOT NULL DEFAULT '380',
+  `Virtue` int(10) unsigned NOT NULL DEFAULT '0',
+  `Strength` smallint(5) unsigned NOT NULL DEFAULT '4',
+  `Agility` smallint(5) unsigned NOT NULL DEFAULT '6',
+  `Vitality` smallint(5) unsigned NOT NULL DEFAULT '12',
+  `Spirit` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `AttributePoints` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `HealthPoints` smallint(5) unsigned NOT NULL DEFAULT '12',
+  `ManaPoints` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `KillPoints` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `EnlightenPoints` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `QuizPoints` int(10) unsigned NOT NULL DEFAULT '0',
+  `VIPLevel` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `PkMode` tinyint(3) unsigned NOT NULL DEFAULT '3',
+  `AutoAllot` tinyint(3) unsigned NOT NULL DEFAULT '1',
+  `HeavenBlessing` datetime DEFAULT NULL,
+  `Registered` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`CharacterID`),
+  UNIQUE KEY `CharacterID_UNIQUE` (`CharacterID`),
+  UNIQUE KEY `AccountID_UNIQUE` (`AccountID`),
+  UNIQUE KEY `Name_UNIQUE` (`Name`)
+) ENGINE=InnoDB AUTO_INCREMENT=1000000 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+-- ------------------------------------------------------
+-- Table structure for table `cq_map` (Retail Conquer Maps)
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `cq_map`;
+CREATE TABLE `cq_map` (
+  `id` int(10) unsigned NOT NULL DEFAULT '0',
+  `name` varchar(35) NOT NULL DEFAULT '',
+  `describe_text` varchar(127) DEFAULT NULL,
+  `mapdoc` int(10) unsigned NOT NULL DEFAULT '0',
+  `type` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `owner_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `mapgroup` int(10) unsigned NOT NULL DEFAULT '0',
+  `idxserver` int(11) NOT NULL DEFAULT '-1',
+  `weather` int(10) unsigned NOT NULL DEFAULT '0',
+  `bgmusic` int(10) unsigned NOT NULL DEFAULT '0',
+  `bgmusic_show` int(10) unsigned NOT NULL DEFAULT '0',
+  `portal0_x` int(10) unsigned NOT NULL DEFAULT '0',
+  `portal0_y` int(10) unsigned NOT NULL DEFAULT '0',
+  `reborn_map` int(10) unsigned NOT NULL DEFAULT '0',
+  `reborn_portal` int(10) unsigned NOT NULL DEFAULT '0',
+  `res_lev` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `owner_type` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `link_map` int(10) unsigned NOT NULL DEFAULT '0',
+  `link_x` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `link_y` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `del_flag` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `color` int(10) unsigned NOT NULL DEFAULT '4294967295',
+  `file_name` varchar(127) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------
+-- Table structure for table `cq_passway` (Retail Portal Tiles)
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `cq_passway`;
+CREATE TABLE `cq_passway` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `mapid` int(10) unsigned NOT NULL DEFAULT '0',
+  `passway_idx` int(10) unsigned NOT NULL DEFAULT '0',
+  `passway_mapid` int(10) unsigned NOT NULL DEFAULT '0',
+  `passway_mapportal` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `map_idx` (`mapid`,`passway_idx`),
+  KEY `idx_mapid` (`mapid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------
+-- Table structure for table `cq_portal` (Retail Portal Destinations)
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `cq_portal`;
+CREATE TABLE `cq_portal` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `mapid` int(10) unsigned NOT NULL DEFAULT '0',
+  `portal_idx` int(10) unsigned NOT NULL DEFAULT '0',
+  `portal_x` int(10) unsigned NOT NULL DEFAULT '0',
+  `portal_y` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `idx_mapid` (`mapid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------
+-- Table structure for table `cq_region` (Retail Map Regions)
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `cq_region`;
+CREATE TABLE `cq_region` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `mapid` int(10) unsigned NOT NULL DEFAULT '0',
+  `type` int(10) unsigned NOT NULL DEFAULT '0',
+  `bound_x` int(10) unsigned NOT NULL DEFAULT '0',
+  `bound_y` int(10) unsigned NOT NULL DEFAULT '0',
+  `bound_cx` int(10) unsigned NOT NULL DEFAULT '0',
+  `bound_cy` int(10) unsigned NOT NULL DEFAULT '0',
+  `datastr` varchar(32) NOT NULL DEFAULT '',
+  `data0` int(10) unsigned NOT NULL DEFAULT '0',
+  `data1` int(10) unsigned NOT NULL DEFAULT '0',
+  `data2` int(10) unsigned NOT NULL DEFAULT '0',
+  `data3` int(10) unsigned NOT NULL DEFAULT '0',
+  `actionid` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `idx_mapid` (`mapid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------
+-- Table structure for table `cq_levexp` (Retail Level Experience Curve)
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `cq_levexp`;
+CREATE TABLE `cq_levexp` (
+  `level` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `exp` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `up_lev_time` int(11) NOT NULL DEFAULT '0',
+  `mentor_uplev_time` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`level`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------
+-- Table structure for table `cq_point_allot` (Retail Stat Auto-Allotment: Trojan/Warrior/Archer/Ninja/Taoist)
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `cq_point_allot`;
+CREATE TABLE `cq_point_allot` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `profession` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `level` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `force` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `Speed` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `health` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `soul` smallint(5) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_prof_level` (`profession`,`level`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------
+-- Seed Data: Retail Maps, Passways, Portals, Regions, LevExp, PointAllot
+-- ------------------------------------------------------
+
+-- Records of `cq_map` (273 rows)
+INSERT INTO `cq_map` VALUES (601, 'OfflineTG', '601', 601, 66062, 0, 0000, -1, 0000, 0000, 0000, 0065, 0055, 0601, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'Nhouse04.DMap');
+INSERT INTO `cq_map` VALUES (700, 'Lottery', '700', 700, 66124, 0, 0000, -1, 0000, 0000, 0000, 0040, 0047, 0700, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'arena-none.DMap');
+INSERT INTO `cq_map` VALUES (1000, 'DesertCity', '1000', 1000, 8192, 0, 0000, -1, 0000, 0000, 0000, 0499, 0650, 1000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'desert.DMap');
+INSERT INTO `cq_map` VALUES (1001, 'MysticCastle', '1001', 1001, 8192, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 1000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'd_antre01.DMap');
+INSERT INTO `cq_map` VALUES (1002, 'TwinCity', '1002', 1002, 0008, 0, 0000, -1, 0000, 0000, 0000, 0430, 0380, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'newplain.DMap');
+INSERT INTO `cq_map` VALUES (1003, 'Twin City Mine', '1003', 1003, 8192, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 1002, 0000, 001, 000, 0000, 0000, 0000, 000, 4294967295, 'mine01.DMap');
+INSERT INTO `cq_map` VALUES (1004, 'JobCenter', '1004', 1004, 65544, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'forum.DMap');
+INSERT INTO `cq_map` VALUES (1005, 'Arena', '1005', 1005, 0001, 0, 0000, -1, 0000, 0000, 0000, 0051, 0050, 1005, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'arena.DMap');
+INSERT INTO `cq_map` VALUES (1006, 'TCStable', '1006', 1006, 65544, 0, 0000, -1, 0000, 0000, 0000, 0037, 0031, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'horse.DMap');
+INSERT INTO `cq_map` VALUES (1007, 'Blacksmith', '1007', 1007, 8206, 0, 0000, -1, 0000, 0000, 0000, 0025, 0024, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'smith.DMap');
+INSERT INTO `cq_map` VALUES (1008, 'TCGrocery', '1008', 1008, 8206, 0, 0000, -1, 0000, 0000, 0000, 0022, 0025, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'grocery.DMap');
+INSERT INTO `cq_map` VALUES (1009, 'NewbieMap', '1009', 1009, 8206, 0, 0000, -1, 0000, 0000, 0000, 0022, 0025, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'grocery.DMap');
+INSERT INTO `cq_map` VALUES (1010, 'BirthVillage', '1010', 1010, 65544, 0, 0000, -1, 0000, 0000, 0000, 0060, 0108, 1002, 0000, 000, 000, 0000, 0415, 0200, 000, 4294967295, 'newbie.DMap');
+INSERT INTO `cq_map` VALUES (1011, 'PhoenixCastle', '1011', 1011, 8192, 0, 0000, -1, 0000, 0000, 0000, 0193, 0266, 1011, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'woods.DMap');
+INSERT INTO `cq_map` VALUES (1012, 'Dreamland', '1012', 1012, 8192, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 1020, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'sky.DMap');
+INSERT INTO `cq_map` VALUES (1013, 'HadesCave', '1013', 1013, 8192, 0, 0000, -1, 0000, 0000, 0000, 0022, 0025, 1011, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'tiger.DMap');
+INSERT INTO `cq_map` VALUES (1014, 'DragonPool', '1014', 1014, 8192, 0, 0000, -1, 0000, 0000, 0000, 0022, 0025, 1011, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'dragon.DMap');
+INSERT INTO `cq_map` VALUES (1015, 'BirdIsland', '1015', 1015, 8192, 0, 0000, -1, 0000, 0000, 0000, 0717, 0577, 1015, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'island.DMap');
+INSERT INTO `cq_map` VALUES (1016, 'Kylin Cave', '1016', 1016, 8192, 0, 0000, -1, 0000, 0000, 0000, 0022, 0025, 1011, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'qiling.DMap');
+INSERT INTO `cq_map` VALUES (1017, 'w-arena_1017', NULL, 1017, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'w-arena.DMap');
+INSERT INTO `cq_map` VALUES (1018, 'Arena', '1018', 1018, 0007, 0, 0000, -1, 0000, 0000, 0000, 0430, 0380, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'p-arena.DMap');
+INSERT INTO `cq_map` VALUES (1019, 'l-arena_1019', NULL, 1019, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'l-arena.DMap');
+INSERT INTO `cq_map` VALUES (1020, 'ApeMountain', '1020', 1020, 8192, 0, 0000, -1, 0000, 0000, 0000, 0566, 0565, 1020, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'canyon.DMap');
+INSERT INTO `cq_map` VALUES (1021, 'Twin City Hidden Mine', '1021', 1021, 8198, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 1002, 0000, 002, 000, 0000, 0000, 0000, 000, 4294967295, 'mine.DMap');
+INSERT INTO `cq_map` VALUES (1022, 'Twin City Hidden Mine2', '1022', 1022, 8718, 0, 0000, -1, 0000, 0000, 0000, 0499, 0520, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'brave.DMap');
+INSERT INTO `cq_map` VALUES (1025, 'MineCave1', '1025', 1025, 10242, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 1011, 0000, 002, 000, 0000, 0000, 0000, 000, 4294967295, 'mine-one.DMap');
+INSERT INTO `cq_map` VALUES (1026, 'MineCave2', '1026', 1026, 10242, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 1020, 0000, 003, 000, 0000, 0000, 0000, 000, 4294967295, 'mine-two.DMap');
+INSERT INTO `cq_map` VALUES (1027, 'MineCave3', '1027', 1027, 10242, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 1000, 0000, 003, 000, 0000, 0000, 0000, 000, 4294967295, 'mine-three.DMap');
+INSERT INTO `cq_map` VALUES (1028, 'MineCave4', '1028', 1028, 10242, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 1002, 0000, 001, 000, 0000, 0000, 0000, 000, 4294967295, 'mine-four.DMap');
+INSERT INTO `cq_map` VALUES (1029, 'mine-one2_1029', NULL, 1029, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'mine-one2.DMap');
+INSERT INTO `cq_map` VALUES (1030, 'mine-two2_1030', NULL, 1030, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'mine-two2.DMap');
+INSERT INTO `cq_map` VALUES (1031, 'mine-three2_1031', NULL, 1031, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'mine-three2.DMap');
+INSERT INTO `cq_map` VALUES (1032, 'mine-four2_1032', NULL, 1032, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'mine-four2.DMap');
+INSERT INTO `cq_map` VALUES (1035, 'newbie_1035', NULL, 1035, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'newbie.DMap');
+INSERT INTO `cq_map` VALUES (1036, 'Market', NULL, 1036, 8732, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'street.DMap');
+INSERT INTO `cq_map` VALUES (1037, 'faction-black_1037', NULL, 1037, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'faction-black.DMap');
+INSERT INTO `cq_map` VALUES (1038, 'GuildWar', '1038', 1038, 65664, 5852, 0000, -1, 0000, 0000, 0000, 0050, 0050, 6001, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'faction.DMap');
+INSERT INTO `cq_map` VALUES (1039, 'TrainingGround', '1039', 1039, 66062, 0, 0000, -1, 0000, 0000, 0000, 0029, 0072, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'playground.DMap');
+INSERT INTO `cq_map` VALUES (1040, 'SkyPass', NULL, 1040, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'skycut.DMap');
+INSERT INTO `cq_map` VALUES (1041, 'skymaze_1041', NULL, 1041, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'skymaze.DMap');
+INSERT INTO `cq_map` VALUES (1042, 'Moon Box Quest 1', '1042', 1042, 8192, 0, 0000, -1, 0000, 0000, 0000, 0060, 0108, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'lineup-pass.DMap');
+INSERT INTO `cq_map` VALUES (1043, 'Moon Box Quest 2', '1043', 1043, 8258, 0, 0000, -1, 0000, 0000, 0000, 0060, 0108, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'lineup.DMap');
+INSERT INTO `cq_map` VALUES (1044, 'Moon Box Quest 3', '1044', 1044, 8258, 0, 0000, -1, 0000, 0000, 0000, 0060, 0108, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'lineup.DMap');
+INSERT INTO `cq_map` VALUES (1045, 'Moon Box Quest 4', '1045', 1045, 8258, 0, 0000, -1, 0000, 0000, 0000, 0060, 0108, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'lineup.DMap');
+INSERT INTO `cq_map` VALUES (1046, 'Moon Box Quest 5', '1046', 1046, 8258, 0, 0000, -1, 0000, 0000, 0000, 0060, 0108, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'lineup.DMap');
+INSERT INTO `cq_map` VALUES (1047, 'Moon Box Quest 6', '1047', 1047, 8258, 0, 0000, -1, 0000, 0000, 0000, 0060, 0108, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'lineup.DMap');
+INSERT INTO `cq_map` VALUES (1048, 'Moon Box Quest 7', '1048', 1048, 8258, 0, 0000, -1, 0000, 0000, 0000, 0060, 0108, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'lineup.DMap');
+INSERT INTO `cq_map` VALUES (1049, 'Moon Box Quest Final', '1049', 1049, 8258, 0, 0000, -1, 0000, 0000, 0000, 0060, 0108, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'lineup.DMap');
+INSERT INTO `cq_map` VALUES (1050, 'lineup_1050', NULL, 1050, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'lineup.DMap');
+INSERT INTO `cq_map` VALUES (1051, 'riskisland_1051', NULL, 1051, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'riskisland.DMap');
+INSERT INTO `cq_map` VALUES (1052, 'AncientDevil', '1052', 1082, 8192, 0, 0000, -1, 0000, 0000, 0000, 0724, 0573, 1015, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'idland-map.DMap');
+INSERT INTO `cq_map` VALUES (1060, 'skymaze1_1060', NULL, 1060, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'skymaze1.DMap');
+INSERT INTO `cq_map` VALUES (1061, 'skymaze2_1061', NULL, 1061, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'skymaze2.DMap');
+INSERT INTO `cq_map` VALUES (1062, 'skymaze3_1062', NULL, 1062, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'skymaze3.DMap');
+INSERT INTO `cq_map` VALUES (1063, 'riskisland_1063', NULL, 1063, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'riskisland.DMap');
+INSERT INTO `cq_map` VALUES (1064, 'star_1064', NULL, 1064, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'star.DMap');
+INSERT INTO `cq_map` VALUES (1066, 'woods-z_1066', NULL, 1066, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'woods-z.DMap');
+INSERT INTO `cq_map` VALUES (1067, 'qiling-z_1067', NULL, 1067, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'qiling-z.DMap');
+INSERT INTO `cq_map` VALUES (1068, 'forum_1068', NULL, 1068, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'forum.DMap');
+INSERT INTO `cq_map` VALUES (1069, 'desert-snail_1069', NULL, 1069, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'desert-snail.DMap');
+INSERT INTO `cq_map` VALUES (1070, 'boa_1070', NULL, 1070, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'boa.DMap');
+INSERT INTO `cq_map` VALUES (1075, 'newcanyon_1075', NULL, 1075, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'newcanyon.DMap');
+INSERT INTO `cq_map` VALUES (1076, 'newwoods_1076', NULL, 1076, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'newwoods.DMap');
+INSERT INTO `cq_map` VALUES (1077, 'newdesert_1077', NULL, 1077, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'newdesert.DMap');
+INSERT INTO `cq_map` VALUES (1078, 'newisland_1078', NULL, 1078, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'newisland.DMap');
+INSERT INTO `cq_map` VALUES (1079, 'mys-island_1079', NULL, 1079, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'mys-island.DMap');
+INSERT INTO `cq_map` VALUES (1080, 'p-arena_1080', NULL, 1080, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'p-arena.DMap');
+INSERT INTO `cq_map` VALUES (1081, 'p-arena_1081', NULL, 1081, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'p-arena.DMap');
+INSERT INTO `cq_map` VALUES (1082, 'idland-map_1082', NULL, 1082, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'idland-map.DMap');
+INSERT INTO `cq_map` VALUES (1090, 'ArenaQualifier', '50 50', 1090, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'parena-m.DMap');
+INSERT INTO `cq_map` VALUES (1091, 'parena-s_1091', '20 20', 1091, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'parena-s.DMap');
+INSERT INTO `cq_map` VALUES (1098, 'house01_1098', NULL, 1098, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'house01.DMap');
+INSERT INTO `cq_map` VALUES (1099, 'house03_1099', NULL, 1099, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'house03.DMap');
+INSERT INTO `cq_map` VALUES (1100, 'star01_1100', NULL, 1100, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'star01.DMap');
+INSERT INTO `cq_map` VALUES (1101, 'star02_1101', NULL, 1101, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'star02.DMap');
+INSERT INTO `cq_map` VALUES (1102, 'star03_1102', NULL, 1102, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'star03.DMap');
+INSERT INTO `cq_map` VALUES (1103, 'star04_1103', NULL, 1103, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'star04.DMap');
+INSERT INTO `cq_map` VALUES (1104, 'star05_1104', NULL, 1104, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'star05.DMap');
+INSERT INTO `cq_map` VALUES (1105, 'star10_1105', NULL, 1105, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'star10.DMap');
+INSERT INTO `cq_map` VALUES (1106, 'star06_1106', NULL, 1106, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'star06.DMap');
+INSERT INTO `cq_map` VALUES (1107, 'star07_1107', NULL, 1107, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'star07.DMap');
+INSERT INTO `cq_map` VALUES (1108, 'star08_1108', NULL, 1108, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'star08.DMap');
+INSERT INTO `cq_map` VALUES (1109, 'star09_1109', NULL, 1109, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'star09.DMap');
+INSERT INTO `cq_map` VALUES (1201, 'Lab1', '1201', 1201, 0002, 0, 0000, -1, 0000, 0000, 0000, 0447, 0347, 1077, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'task01.DMap');
+INSERT INTO `cq_map` VALUES (1202, 'Lab2', '1202', 1202, 0002, 0, 0000, -1, 0000, 0000, 0000, 0447, 0347, 1077, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'task02.DMap');
+INSERT INTO `cq_map` VALUES (1204, 'Lab3', '1204', 1204, 0002, 0, 0000, -1, 0000, 0000, 0000, 0448, 0272, 1213, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'task04.DMap');
+INSERT INTO `cq_map` VALUES (1205, 'Lab4', '1205', 1205, 0002, 0, 0000, -1, 0000, 0000, 0000, 0447, 0347, 1077, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'task05.DMap');
+INSERT INTO `cq_map` VALUES (1207, 'adv.z.>7.4', '1207', 1207, 0002, 0, 0000, -1, 0000, 0000, 0000, 0448, 0272, 1213, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'task07.DMap');
+INSERT INTO `cq_map` VALUES (1208, 'adv.z.>7.5  ??', '1208', 1208, 0002, 0, 0000, -1, 0000, 0000, 0000, 0448, 0272, 1213, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'task08.DMap');
+INSERT INTO `cq_map` VALUES (1210, 'adv.z.>8 met', '1210', 1210, 32834, 0, 0000, -1, 0000, 0000, 0000, 1017, 1294, 1219, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'task10.DMap');
+INSERT INTO `cq_map` VALUES (1211, 'adv.z.>9', '1211', 1211, 32834, 0, 0000, -1, 0000, 0000, 0000, 1017, 1294, 1219, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'task11.DMap');
+INSERT INTO `cq_map` VALUES (1212, 'adv.z.>1x +?', '1212', 1212, 32834, 0, 0000, -1, 0000, 0000, 0000, 1017, 1294, 1219, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'island-snail.DMap');
+INSERT INTO `cq_map` VALUES (1213, 'adv.z.>5 city', '1213', 1213, 0002, 0, 0000, -1, 0000, 0000, 0000, 0448, 0272, 1213, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'desert-snail.DMap');
+INSERT INTO `cq_map` VALUES (1214, 'adv.z.>7.1', '1214', 1214, 0002, 0, 0000, -1, 0000, 0000, 0000, 0448, 0272, 1213, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'canyon-fairy.DMap');
+INSERT INTO `cq_map` VALUES (1215, 'adv.z.>7.3', '1215', 1215, 0002, 0, 0000, -1, 0000, 0000, 0000, 0448, 0272, 1213, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'woods-fairy.DMap');
+INSERT INTO `cq_map` VALUES (1216, 'adv.z.>7', '1216', 1216, 0002, 0, 0000, -1, 0000, 0000, 0000, 0448, 0272, 1213, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'newplain-fairy.DMap');
+INSERT INTO `cq_map` VALUES (1217, 'adv.z.>7.2 gc4', '1217', 1075, 0002, 0, 0000, -1, 0000, 0000, 0000, 0448, 0272, 1213, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'mine-four.DMap');
+INSERT INTO `cq_map` VALUES (1219, 'adv.z.>1x +?', '1219', 1212, 32834, 0, 0000, -1, 0000, 0000, 0000, 1003, 1278, 1213, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'island-snail.DMap');
+INSERT INTO `cq_map` VALUES (1300, 'Wine Zone', '1300', 1001, 8194, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 1000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'd_antre01.DMap');
+INSERT INTO `cq_map` VALUES (1351, 's-task01_1351', NULL, 1351, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 's-task01.DMap');
+INSERT INTO `cq_map` VALUES (1352, 's-task02_1352', NULL, 1352, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 's-task02.DMap');
+INSERT INTO `cq_map` VALUES (1353, 's-task03_1353', NULL, 1353, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 's-task03.DMap');
+INSERT INTO `cq_map` VALUES (1354, 's-task04_1354', NULL, 1354, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 's-task04.DMap');
+INSERT INTO `cq_map` VALUES (1360, 'maidan-A_1360', '200 200', 1360, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maidan-A.DMap');
+INSERT INTO `cq_map` VALUES (1364, 'maidan-E_1364', '200 200', 1364, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maidan-E.DMap');
+INSERT INTO `cq_map` VALUES (1500, 'mine-a_1500', NULL, 1500, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'mine-a.DMap');
+INSERT INTO `cq_map` VALUES (1501, 'mine-b_1501', NULL, 1501, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'mine-b.DMap');
+INSERT INTO `cq_map` VALUES (1502, 'mine-c_1502', NULL, 1502, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'mine-c.DMap');
+INSERT INTO `cq_map` VALUES (1503, 'mine-d_1503', NULL, 1503, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'mine-d.DMap');
+INSERT INTO `cq_map` VALUES (1505, 'slpk_1505', '150 150 tcpkmap', 1505, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'slpk.DMap');
+INSERT INTO `cq_map` VALUES (1506, 'hhpk_1506', NULL, 1506, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'hhpk.DMap');
+INSERT INTO `cq_map` VALUES (1507, 'blpk_1507', NULL, 1507, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'blpk.DMap');
+INSERT INTO `cq_map` VALUES (1508, 'ympk_1508', NULL, 1508, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'ympk.DMap');
+INSERT INTO `cq_map` VALUES (1509, 'mfpk_1509', NULL, 1509, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'mfpk.DMap');
+INSERT INTO `cq_map` VALUES (1510, 'grocery_1510', NULL, 1510, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'grocery.DMap');
+INSERT INTO `cq_map` VALUES (1511, 'forum_1511', NULL, 1511, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'forum.DMap');
+INSERT INTO `cq_map` VALUES (1512, 'tiger_1512', NULL, 1512, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'tiger.DMap');
+INSERT INTO `cq_map` VALUES (1550, 'faction01_1550', NULL, 1550, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'faction01.DMap');
+INSERT INTO `cq_map` VALUES (1551, 'faction01_1551', NULL, 1551, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'faction01.DMap');
+INSERT INTO `cq_map` VALUES (1560, 'faction_1560', NULL, 1560, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'faction.DMap');
+INSERT INTO `cq_map` VALUES (1561, 'faction_1561', NULL, 1561, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'faction.DMap');
+INSERT INTO `cq_map` VALUES (1601, 'sanctuary_1601', NULL, 1601, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'sanctuary.DMap');
+INSERT INTO `cq_map` VALUES (1615, 'jokul01_1615', '26 27', 1615, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'jokul01.DMap');
+INSERT INTO `cq_map` VALUES (1616, 'tiemfiles_1616', '52 56', 1616, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'tiemfiles.DMap');
+INSERT INTO `cq_map` VALUES (1617, 'tiemfiles_1617', '52 56', 1617, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'tiemfiles.DMap');
+INSERT INTO `cq_map` VALUES (1645, 'cordiform_1645', '82 118', 1645, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'cordiform.DMap');
+INSERT INTO `cq_map` VALUES (1700, 'SecondReborn', NULL, 1700, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'Gulf.DMap');
+INSERT INTO `cq_map` VALUES (1707, 'forum_1707', NULL, 1707, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'forum.DMap');
+INSERT INTO `cq_map` VALUES (1730, 'fairylandPK-02_1730', NULL, 1730, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-02.DMap');
+INSERT INTO `cq_map` VALUES (1731, 'fairylandPK-03_1731', NULL, 1731, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-03.DMap');
+INSERT INTO `cq_map` VALUES (1732, 'fairylandPK-04_1732', NULL, 1732, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-04.DMap');
+INSERT INTO `cq_map` VALUES (1733, 'fairylandPK-05_1733', NULL, 1733, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-05.DMap');
+INSERT INTO `cq_map` VALUES (1734, 'fairylandPK-06_1734', NULL, 1734, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-06.DMap');
+INSERT INTO `cq_map` VALUES (1735, 'fairylandPK-07_1735', NULL, 1735, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-07.DMap');
+INSERT INTO `cq_map` VALUES (1736, 'fairylandPK-08_1736', NULL, 1736, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-08.DMap');
+INSERT INTO `cq_map` VALUES (1737, 'fairylandPK-10_1737', NULL, 1737, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-10.DMap');
+INSERT INTO `cq_map` VALUES (1760, 'fairylandPK-07_1760', NULL, 1760, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-07.DMap');
+INSERT INTO `cq_map` VALUES (1761, 'star05_1761', NULL, 1761, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'star05.DMap');
+INSERT INTO `cq_map` VALUES (1762, 'FrozenGrotto1', 'Start 60 257', 1762, 8192, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'icecrypt-lev1.DMap');
+INSERT INTO `cq_map` VALUES (1763, 'parena-m_1763', NULL, 1763, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'parena-m.DMap');
+INSERT INTO `cq_map` VALUES (1764, 'fairylandPK-03_1764', NULL, 1764, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-03.DMap');
+INSERT INTO `cq_map` VALUES (1765, 'Nhouse04_1765', NULL, 1765, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'Nhouse04.DMap');
+INSERT INTO `cq_map` VALUES (1766, 'Halloween2007a_1766', '150 100', 1766, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'Halloween2007a.DMap');
+INSERT INTO `cq_map` VALUES (1767, 'Halloween2007boss_1767', NULL, 1767, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'Halloween2007boss.DMap');
+INSERT INTO `cq_map` VALUES (1768, 'sky_1768', NULL, 1768, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'sky.DMap');
+INSERT INTO `cq_map` VALUES (1769, 'idland-map_1769', NULL, 1769, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'idland-map.DMap');
+INSERT INTO `cq_map` VALUES (1770, 'fairylandPK-02_1770', NULL, 1770, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-02.DMap');
+INSERT INTO `cq_map` VALUES (1771, 'fairylandPK-03_1771', NULL, 1771, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-03.DMap');
+INSERT INTO `cq_map` VALUES (1772, 'fairylandPK-04_1772', NULL, 1772, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-04.DMap');
+INSERT INTO `cq_map` VALUES (1773, 'fairylandPK-05_1773', NULL, 1773, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-05.DMap');
+INSERT INTO `cq_map` VALUES (1774, 'fairylandPK-06_1774', NULL, 1774, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-06.DMap');
+INSERT INTO `cq_map` VALUES (1775, 'fairylandPK-07_1775', NULL, 1775, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-07.DMap');
+INSERT INTO `cq_map` VALUES (1777, 'fairylandPK-08_1777', NULL, 1777, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-08.DMap');
+INSERT INTO `cq_map` VALUES (1779, 'slpk_1779', NULL, 1779, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'slpk.DMap');
+INSERT INTO `cq_map` VALUES (1780, 'slpk_1780', NULL, 1780, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'slpk.DMap');
+INSERT INTO `cq_map` VALUES (1785, 'Halloween2007a_1785', NULL, 1785, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'Halloween2007a.DMap');
+INSERT INTO `cq_map` VALUES (1786, 'Halloween2007b_1786', NULL, 1786, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'Halloween2007b.DMap');
+INSERT INTO `cq_map` VALUES (1787, 'Halloween2007boss_1787', NULL, 1787, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'Halloween2007boss.DMap');
+INSERT INTO `cq_map` VALUES (1801, 'mission_1801', NULL, 1801, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'mission.DMap');
+INSERT INTO `cq_map` VALUES (1806, 'flower_1806', NULL, 1806, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'flower.DMap');
+INSERT INTO `cq_map` VALUES (1812, 'fairylandPK-10_1812', NULL, 1812, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-10.DMap');
+INSERT INTO `cq_map` VALUES (1813, 'fairylandPK-04_1813', NULL, 1813, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-04.DMap');
+INSERT INTO `cq_map` VALUES (1814, 'fairylandPK-06_1814', NULL, 1814, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-06.DMap');
+INSERT INTO `cq_map` VALUES (1819, 'Hallowmas_1819', NULL, 1819, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'Hallowmas.DMap');
+INSERT INTO `cq_map` VALUES (1826, 'christmas01_1826', NULL, 1826, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'christmas01.DMap');
+INSERT INTO `cq_map` VALUES (1830, 'newyeartask01_1830', NULL, 1830, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'newyeartask01.DMap');
+INSERT INTO `cq_map` VALUES (1832, 'christmas02_1832', NULL, 1832, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'christmas02.DMap');
+INSERT INTO `cq_map` VALUES (1836, 'newyeartask03_1836', NULL, 1836, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'newyeartask03.DMap');
+INSERT INTO `cq_map` VALUES (1844, 'sf-parade_1844', NULL, 1844, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'sf-parade.DMap');
+INSERT INTO `cq_map` VALUES (1845, 'SpringTown_1845', NULL, 1845, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'SpringTown.DMap');
+INSERT INTO `cq_map` VALUES (1857, 'valentine_1857', NULL, 1857, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'valentine.DMap');
+INSERT INTO `cq_map` VALUES (1858, 'poker_1858', NULL, 1858, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'poker.DMap');
+INSERT INTO `cq_map` VALUES (1860, 'poker02_1860', NULL, 1860, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'poker02.DMap');
+INSERT INTO `cq_map` VALUES (1924, 'arena-none_1924', NULL, 1924, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'arena-none.DMap');
+INSERT INTO `cq_map` VALUES (1927, 'FrozenGrotto2', NULL, 1762, 8192, 0, 0000, -1, 0000, 0000, 0000, 0499, 0650, 1000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'icecrypt-lev1.DMap');
+INSERT INTO `cq_map` VALUES (1929, 'arenamap_1929', NULL, 1929, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'arenamap.DMap');
+INSERT INTO `cq_map` VALUES (1930, '2009-7x_1930', NULL, 1930, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, '2009-7x.DMap');
+INSERT INTO `cq_map` VALUES (1950, 'horserate_1950', NULL, 1950, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'horserate.DMap');
+INSERT INTO `cq_map` VALUES (1952, 'halloween01_1952', NULL, 1952, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'halloween01.DMap');
+INSERT INTO `cq_map` VALUES (1953, 'halloween03_1953', NULL, 1953, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'halloween03.DMap');
+INSERT INTO `cq_map` VALUES (1955, 'halloween02_1955', NULL, 1955, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'halloween02.DMap');
+INSERT INTO `cq_map` VALUES (1961, 'maze01_1961', NULL, 1961, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze01.DMap');
+INSERT INTO `cq_map` VALUES (1962, 'maze02_1962', NULL, 1962, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze02.DMap');
+INSERT INTO `cq_map` VALUES (1963, 'maze03_1963', NULL, 1963, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze03.DMap');
+INSERT INTO `cq_map` VALUES (1964, 'maze04_1964', NULL, 1964, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze04.DMap');
+INSERT INTO `cq_map` VALUES (1965, 'maze05_1965', NULL, 1965, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze05.DMap');
+INSERT INTO `cq_map` VALUES (1966, 'maze06_1966', NULL, 1966, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze06.DMap');
+INSERT INTO `cq_map` VALUES (1967, 'maze07_1967', NULL, 1967, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze07.DMap');
+INSERT INTO `cq_map` VALUES (1968, 'maze08_1968', NULL, 1968, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze08.DMap');
+INSERT INTO `cq_map` VALUES (1969, 'maze09_1969', NULL, 1969, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze09.DMap');
+INSERT INTO `cq_map` VALUES (1971, 'maze01_1971', NULL, 1971, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze01.DMap');
+INSERT INTO `cq_map` VALUES (1972, 'maze02_1972', NULL, 1972, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze02.DMap');
+INSERT INTO `cq_map` VALUES (1973, 'maze03_1973', NULL, 1973, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze03.DMap');
+INSERT INTO `cq_map` VALUES (1974, 'maze04_1974', NULL, 1974, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze04.DMap');
+INSERT INTO `cq_map` VALUES (1975, 'maze05_1975', NULL, 1975, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze05.DMap');
+INSERT INTO `cq_map` VALUES (1976, 'maze06_1976', NULL, 1976, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze06.DMap');
+INSERT INTO `cq_map` VALUES (1977, 'maze07_1977', NULL, 1977, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze07.DMap');
+INSERT INTO `cq_map` VALUES (1978, 'maze08_1978', NULL, 1978, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze08.DMap');
+INSERT INTO `cq_map` VALUES (1979, 'maze09_1979', NULL, 1979, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze09.DMap');
+INSERT INTO `cq_map` VALUES (1981, 'maze01_1981', NULL, 1981, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze01.DMap');
+INSERT INTO `cq_map` VALUES (1982, 'maze02_1982', NULL, 1982, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze02.DMap');
+INSERT INTO `cq_map` VALUES (1983, 'maze03_1983', NULL, 1983, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze03.DMap');
+INSERT INTO `cq_map` VALUES (1984, 'maze04_1984', NULL, 1984, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze04.DMap');
+INSERT INTO `cq_map` VALUES (1985, 'maze05_1985', NULL, 1985, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze05.DMap');
+INSERT INTO `cq_map` VALUES (1986, 'maze06_1986', NULL, 1986, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze06.DMap');
+INSERT INTO `cq_map` VALUES (1987, 'maze07_1987', NULL, 1987, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze07.DMap');
+INSERT INTO `cq_map` VALUES (1988, 'maze08_1988', NULL, 1988, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze08.DMap');
+INSERT INTO `cq_map` VALUES (1989, 'maze09_1989', NULL, 1989, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'maze09.DMap');
+INSERT INTO `cq_map` VALUES (1992, '09christmas03_1992', NULL, 1992, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, '09christmas03.DMap');
+INSERT INTO `cq_map` VALUES (1993, '09Christmas04_1993', NULL, 1993, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, '09Christmas04.DMap');
+INSERT INTO `cq_map` VALUES (1996, '09christmas01_1996', NULL, 1996, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, '09christmas01.DMap');
+INSERT INTO `cq_map` VALUES (1999, 'FrozenGrotto3', NULL, 1999, 8192, 0, 0000, -1, 0000, 0000, 0000, 0499, 0650, 1000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'icecrypt-lev3.DMap');
+INSERT INTO `cq_map` VALUES (2021, 'DisCity1', NULL, 2021, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'Dgate.DMap');
+INSERT INTO `cq_map` VALUES (2022, 'DisCity2', NULL, 2022, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'Dsquare.DMap');
+INSERT INTO `cq_map` VALUES (2023, 'DisCity3', NULL, 2023, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'Dcloister.DMap');
+INSERT INTO `cq_map` VALUES (2024, 'DisCity4', NULL, 2024, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'Dsigil.DMap');
+INSERT INTO `cq_map` VALUES (2054, 'FrozenGrotto4', NULL, 2054, 8192, 0, 0000, -1, 0000, 0000, 0000, 0499, 0650, 1000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'icecrypt-lev4.DMap');
+INSERT INTO `cq_map` VALUES (2055, 'FrozenGrotto5', NULL, 2055, 8192, 0, 0000, -1, 0000, 0000, 0000, 0499, 0650, 1000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'icecrypt-lev5.DMap');
+INSERT INTO `cq_map` VALUES (2056, 'FrozenGrotto6', NULL, 2056, 8192, 0, 0000, -1, 0000, 0000, 0000, 0499, 0650, 1000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'icecrypt-lev6.DMap');
+INSERT INTO `cq_map` VALUES (2057, 'CaptureTheFlag', NULL, 2057, 82052, 0, 0000, -1, 0000, 0000, 0000, 0482, 0367, 2057, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'bp-flag.DMap');
+INSERT INTO `cq_map` VALUES (2060, 'GuildContestMap', NULL, 2060, 82052, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'bp-contest02.DMap');
+INSERT INTO `cq_map` VALUES (2062, 'horserate-ic1_2062', NULL, 2062, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'horserate-ic1.DMap');
+INSERT INTO `cq_map` VALUES (2063, 'horserate-ic2_2063', NULL, 2063, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'horserate-ic2.DMap');
+INSERT INTO `cq_map` VALUES (2065, 'horserate-is_2065', NULL, 2065, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'horserate-is.DMap');
+INSERT INTO `cq_map` VALUES (2071, 'bp-kingfight_2071', NULL, 2071, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'bp-kingfight.DMap');
+INSERT INTO `cq_map` VALUES (2080, 'Nhouse03_2080', NULL, 2080, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'Nhouse03.DMap');
+INSERT INTO `cq_map` VALUES (2090, 'tiger01_2090', NULL, 2090, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'tiger01.DMap');
+INSERT INTO `cq_map` VALUES (3024, 'family_3024', NULL, 3024, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'family.DMap');
+INSERT INTO `cq_map` VALUES (3030, 'climate_3030', NULL, 3030, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'climate.DMap');
+INSERT INTO `cq_map` VALUES (4021, 'HellGate', 'DisCity', 2021, 8198, 0, 0000, -1, 0000, 0000, 0000, 0566, 0565, 1020, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'Dgate.DMap');
+INSERT INTO `cq_map` VALUES (4022, 'HellCloister', 'DisCity', 2022, 8198, 0, 0000, -1, 0000, 0000, 0000, 0566, 0565, 1020, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'Dsquare.DMap');
+INSERT INTO `cq_map` VALUES (4023, 'LeftFlank', 'DisCity', 2023, 8198, 0, 0000, -1, 0000, 0000, 0000, 0566, 0565, 1020, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'Dcloister.DMap');
+INSERT INTO `cq_map` VALUES (4024, 'RightFlank', 'DisCity', 2023, 8198, 0, 0000, -1, 0000, 0000, 0000, 0266, 0565, 1020, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'Dcloister.DMap');
+INSERT INTO `cq_map` VALUES (4025, 'UltimatePluto', 'DisCity', 2024, 8263, 0, 0000, -1, 0000, 0000, 0000, 0566, 0565, 1020, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'Dsigil.DMap');
+INSERT INTO `cq_map` VALUES (5000, 'NPCJail', NULL, 5000, 24840, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'mine-one.DMap');
+INSERT INTO `cq_map` VALUES (6000, 'Jail', '6000', 6000, 108898, 0, 0000, -1, 0000, 0000, 0000, 0029, 0072, 6000, 0000, 002, 000, 0000, 0000, 0000, 000, 4294967295, 'prison.DMap');
+INSERT INTO `cq_map` VALUES (6001, 'BotJail', '6001', 6001, 98403, 0, 0000, -1, 0000, 0000, 0000, 0030, 0076, 6001, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'prison.DMap');
+INSERT INTO `cq_map` VALUES (6003, 'Bot Jail', NULL, 6000, 106563, 0, 0000, -1, 0000, 0000, 0000, 0029, 0072, 6003, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'prison.DMap');
+INSERT INTO `cq_map` VALUES (6072, 'Subclass Hall', '1004', 1004, 65544, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'forum.DMap');
+INSERT INTO `cq_map` VALUES (7000, 'TrojanPkWar', 'Class Pk Map', 1730, 0007, 0, 0000, -1, 0000, 0000, 0000, 0430, 0378, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-02.DMap');
+INSERT INTO `cq_map` VALUES (7001, 'WarriorPkWar', 'Class Pk Map', 1730, 0007, 0, 0000, -1, 0000, 0000, 0000, 0430, 0378, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-02.DMap');
+INSERT INTO `cq_map` VALUES (7002, 'ArcherPkWar', 'Class Pk Map', 1732, 0007, 0, 0000, -1, 0000, 0000, 0000, 0430, 0378, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-04.DMap');
+INSERT INTO `cq_map` VALUES (7003, 'WaterPkWar', 'Class Pk Map', 1731, 0007, 0, 0000, -1, 0000, 0000, 0000, 0430, 0378, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-04.DMap');
+INSERT INTO `cq_map` VALUES (7004, 'FirePkWar', 'Class Pk Map', 1731, 0007, 0, 0000, -1, 0000, 0000, 0000, 0430, 0378, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-03.DMap');
+INSERT INTO `cq_map` VALUES (7005, 'NinjaPkWar', 'Class Pk Map', 1730, 0007, 0, 0000, -1, 0000, 0000, 0000, 0430, 0378, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-02.DMap');
+INSERT INTO `cq_map` VALUES (7006, 'MonkPkWar', 'Class Pk Map', 1730, 0007, 0, 0000, -1, 0000, 0000, 0000, 0430, 0378, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-02.DMap');
+INSERT INTO `cq_map` VALUES (7500, 'WeeklyPKTournament', 'Monthly too xD', 1734, 0007, 0, 0000, -1, 0000, 0000, 0000, 0430, 0378, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-06.DMap');
+INSERT INTO `cq_map` VALUES (7501, 'HourlySkillPK', 'HourlySkillPK', 1734, 163845, 0, 0000, -1, 0000, 0000, 0000, 0430, 0378, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'fairylandPK-06.DMap');
+INSERT INTO `cq_map` VALUES (7503, 'ScorePKWar', 'ScorePKWar', 1090, 0007, 0, 0000, -1, 0000, 0000, 0000, 0050, 0050, 7503, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'parena-m.DMap');
+INSERT INTO `cq_map` VALUES (7504, 'ScorePkWait', 'ScorePkWar', 1616, 66060, 0, 0000, -1, 0000, 0000, 0000, 0430, 0380, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'tiemfiles.DMap');
+INSERT INTO `cq_map` VALUES (7505, 'LineSkillTournament', NULL, 900000, 262693, 0, 0000, -1, 0000, 0000, 0000, 0380, 0430, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'newarena.DMap');
+INSERT INTO `cq_map` VALUES (7600, 'SyndicateScorePK', NULL, 2071, 196740, 0, 0000, -1, 0000, 0000, 0000, 0031, 0074, 7601, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'bp-kingfight.DMap');
+INSERT INTO `cq_map` VALUES (7601, 'SyndicateScorePKJail', NULL, 6000, 98659, 0, 0000, -1, 0000, 0000, 0000, 0031, 0074, 7601, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'prison.DMap');
+INSERT INTO `cq_map` VALUES (8000, '12GhostsMap', 'Halloween Quest', 1001, 8192, 0, 0000, -1, 0000, 0000, 0000, 0430, 0378, 1002, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'd_antre01.DMap');
+INSERT INTO `cq_map` VALUES (8822, 'babel_8822', NULL, 8822, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'babel.DMap');
+INSERT INTO `cq_map` VALUES (8823, 'babel_8823', NULL, 8823, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'babel.DMap');
+INSERT INTO `cq_map` VALUES (8824, 'babel_8824', NULL, 8824, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'babel.DMap');
+INSERT INTO `cq_map` VALUES (8825, 'babel_8825', NULL, 8825, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'babel.DMap');
+INSERT INTO `cq_map` VALUES (8826, 'babel_8826', NULL, 8826, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'babel.DMap');
+INSERT INTO `cq_map` VALUES (8827, 'babel_8827', NULL, 8827, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'babel.DMap');
+INSERT INTO `cq_map` VALUES (8828, 'babel_8828', NULL, 8828, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'babel.DMap');
+INSERT INTO `cq_map` VALUES (8829, 'babel_8829', NULL, 8829, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'babel.DMap');
+INSERT INTO `cq_map` VALUES (8830, 'babel_8830', NULL, 8830, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'babel.DMap');
+INSERT INTO `cq_map` VALUES (8831, 'babel_8831', NULL, 8831, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'babel.DMap');
+INSERT INTO `cq_map` VALUES (8832, 'babel_8832', NULL, 8832, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'babel.DMap');
+INSERT INTO `cq_map` VALUES (8833, 'babel_8833', NULL, 8833, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'babel.DMap');
+INSERT INTO `cq_map` VALUES (8834, 'babel_8834', NULL, 8834, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'babel.DMap');
+INSERT INTO `cq_map` VALUES (8835, 'babel_8835', NULL, 8835, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'babel.DMap');
+INSERT INTO `cq_map` VALUES (8836, 'babel_8836', NULL, 8836, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'babel.DMap');
+INSERT INTO `cq_map` VALUES (8837, 'babel_8837', NULL, 8837, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'babel.DMap');
+INSERT INTO `cq_map` VALUES (8838, 'babel_8838', NULL, 8838, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'babel.DMap');
+INSERT INTO `cq_map` VALUES (8839, 'babel_8839', NULL, 8839, 0000, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'babel.DMap');
+INSERT INTO `cq_map` VALUES (900000, 'Arena Qualifier', NULL, 900000, 0007, 0, 0000, -1, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 000, 000, 0000, 0000, 0000, 000, 4294967295, 'newarena.DMap');
+
+-- Records of `cq_passway` (347 rows)
+INSERT INTO `cq_passway` VALUES (0001, 1000, 0000, 1001, 0000);
+INSERT INTO `cq_passway` VALUES (0002, 1001, 0000, 1000, 0001);
+INSERT INTO `cq_passway` VALUES (0003, 1002, 0000, 1000, 0002);
+INSERT INTO `cq_passway` VALUES (0004, 1002, 0001, 1028, 0000);
+INSERT INTO `cq_passway` VALUES (0005, 1000, 0001, 1002, 0001);
+INSERT INTO `cq_passway` VALUES (0006, 1003, 0000, 1002, 0002);
+INSERT INTO `cq_passway` VALUES (0007, 1002, 0002, 1004, 0000);
+INSERT INTO `cq_passway` VALUES (0009, 1004, 0000, 1002, 0004);
+INSERT INTO `cq_passway` VALUES (0010, 1005, 0000, 1002, 0003);
+INSERT INTO `cq_passway` VALUES (0011, 1006, 0000, 1002, 0005);
+INSERT INTO `cq_passway` VALUES (0012, 1007, 0000, 1002, 0006);
+INSERT INTO `cq_passway` VALUES (0015, 1008, 0000, 1002, 0007);
+INSERT INTO `cq_passway` VALUES (0016, 1009, 0000, 1002, 0008);
+INSERT INTO `cq_passway` VALUES (0017, 1002, 0004, 1008, 0000);
+INSERT INTO `cq_passway` VALUES (0018, 1002, 0005, 1007, 0000);
+INSERT INTO `cq_passway` VALUES (0019, 1002, 0006, 1009, 0000);
+INSERT INTO `cq_passway` VALUES (0020, 1002, 0003, 1006, 0000);
+INSERT INTO `cq_passway` VALUES (0021, 1002, 0007, 1011, 0000);
+INSERT INTO `cq_passway` VALUES (0022, 1011, 0000, 1002, 0009);
+INSERT INTO `cq_passway` VALUES (0023, 1011, 0001, 1013, 0000);
+INSERT INTO `cq_passway` VALUES (0024, 1013, 0000, 1011, 0001);
+INSERT INTO `cq_passway` VALUES (0025, 1013, 0001, 1014, 0000);
+INSERT INTO `cq_passway` VALUES (0026, 1014, 0000, 1013, 0001);
+INSERT INTO `cq_passway` VALUES (0027, 1014, 0001, 1016, 0000);
+INSERT INTO `cq_passway` VALUES (0028, 1016, 0000, 1014, 0001);
+INSERT INTO `cq_passway` VALUES (0030, 1015, 0000, 1015, 0001);
+INSERT INTO `cq_passway` VALUES (0031, 1015, 0001, 1015, 0000);
+INSERT INTO `cq_passway` VALUES (0032, 1015, 0002, 1015, 0003);
+INSERT INTO `cq_passway` VALUES (0033, 1015, 0003, 1015, 0004);
+INSERT INTO `cq_passway` VALUES (0034, 1015, 0004, 1015, 0029);
+INSERT INTO `cq_passway` VALUES (0035, 1015, 0005, 1015, 0006);
+INSERT INTO `cq_passway` VALUES (0036, 1015, 0006, 1015, 0007);
+INSERT INTO `cq_passway` VALUES (0037, 1015, 0007, 1015, 0030);
+INSERT INTO `cq_passway` VALUES (0038, 1015, 0008, 1015, 0031);
+INSERT INTO `cq_passway` VALUES (0039, 1015, 0009, 1015, 0032);
+INSERT INTO `cq_passway` VALUES (0040, 1015, 0010, 1015, 0033);
+INSERT INTO `cq_passway` VALUES (0041, 1015, 0011, 1015, 0034);
+INSERT INTO `cq_passway` VALUES (0042, 1015, 0012, 1015, 0013);
+INSERT INTO `cq_passway` VALUES (0043, 1015, 0013, 1015, 0035);
+INSERT INTO `cq_passway` VALUES (0044, 1015, 0014, 1015, 0015);
+INSERT INTO `cq_passway` VALUES (0045, 1015, 0015, 1015, 0033);
+INSERT INTO `cq_passway` VALUES (0046, 1015, 0016, 1015, 0036);
+INSERT INTO `cq_passway` VALUES (0047, 1015, 0017, 1015, 0018);
+INSERT INTO `cq_passway` VALUES (0048, 1015, 0018, 1015, 0019);
+INSERT INTO `cq_passway` VALUES (0049, 1015, 0019, 1015, 0020);
+INSERT INTO `cq_passway` VALUES (0050, 1015, 0020, 1015, 0021);
+INSERT INTO `cq_passway` VALUES (0051, 1015, 0021, 1015, 0020);
+INSERT INTO `cq_passway` VALUES (0052, 1015, 0022, 1015, 0019);
+INSERT INTO `cq_passway` VALUES (0053, 1015, 0023, 1015, 0037);
+INSERT INTO `cq_passway` VALUES (0054, 1015, 0024, 1015, 0025);
+INSERT INTO `cq_passway` VALUES (0055, 1015, 0025, 1015, 0026);
+INSERT INTO `cq_passway` VALUES (0056, 1015, 0026, 1015, 0027);
+INSERT INTO `cq_passway` VALUES (0057, 1015, 0027, 1015, 0038);
+INSERT INTO `cq_passway` VALUES (0058, 1015, 0028, 1002, 0010);
+INSERT INTO `cq_passway` VALUES (0059, 1002, 0008, 1015, 0039);
+INSERT INTO `cq_passway` VALUES (0060, 1002, 0009, 1020, 0000);
+INSERT INTO `cq_passway` VALUES (0061, 1020, 0000, 1011, 0002);
+INSERT INTO `cq_passway` VALUES (0062, 1020, 0001, 1002, 0011);
+INSERT INTO `cq_passway` VALUES (0065, 1020, 0004, 1012, 0000);
+INSERT INTO `cq_passway` VALUES (0066, 1012, 0000, 1020, 0003);
+INSERT INTO `cq_passway` VALUES (0067, 1011, 0002, 1020, 0004);
+INSERT INTO `cq_passway` VALUES (0068, 1003, 0001, 1021, 0000);
+INSERT INTO `cq_passway` VALUES (0069, 1021, 0000, 1003, 0001);
+INSERT INTO `cq_passway` VALUES (0071, 1020, 0002, 1026, 0000);
+INSERT INTO `cq_passway` VALUES (0072, 1011, 0003, 1025, 0000);
+INSERT INTO `cq_passway` VALUES (0073, 1000, 0002, 1027, 0000);
+INSERT INTO `cq_passway` VALUES (0074, 1025, 0000, 1011, 0003);
+INSERT INTO `cq_passway` VALUES (0075, 1026, 0000, 1020, 0005);
+INSERT INTO `cq_passway` VALUES (0076, 1027, 0000, 1000, 0003);
+INSERT INTO `cq_passway` VALUES (0077, 1028, 0000, 1002, 0002);
+INSERT INTO `cq_passway` VALUES (0078, 1015, 0029, 1015, 0040);
+INSERT INTO `cq_passway` VALUES (0079, 1018, 0000, 1002, 0003);
+INSERT INTO `cq_passway` VALUES (0080, 1039, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0081, 1038, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0100, 1042, 0000, 1002, 0012);
+INSERT INTO `cq_passway` VALUES (0101, 1070, 0000, 1020, 0000);
+INSERT INTO `cq_passway` VALUES (0105, 1075, 0000, 1020, 0006);
+INSERT INTO `cq_passway` VALUES (0106, 1020, 0010, 1075, 0000);
+INSERT INTO `cq_passway` VALUES (0107, 1076, 0000, 1011, 0005);
+INSERT INTO `cq_passway` VALUES (0108, 1011, 0004, 1076, 0000);
+INSERT INTO `cq_passway` VALUES (0110, 1000, 0003, 1077, 0000);
+INSERT INTO `cq_passway` VALUES (0111, 1077, 0000, 1000, 0004);
+INSERT INTO `cq_passway` VALUES (0112, 1015, 0031, 1078, 0000);
+INSERT INTO `cq_passway` VALUES (0113, 1078, 0029, 1015, 0041);
+INSERT INTO `cq_passway` VALUES (0114, 1078, 0000, 1078, 0001);
+INSERT INTO `cq_passway` VALUES (0115, 1078, 0001, 1078, 0002);
+INSERT INTO `cq_passway` VALUES (0116, 1078, 0002, 1078, 0003);
+INSERT INTO `cq_passway` VALUES (0117, 1078, 0003, 1078, 0004);
+INSERT INTO `cq_passway` VALUES (0118, 1078, 0004, 1078, 0005);
+INSERT INTO `cq_passway` VALUES (0119, 1078, 0005, 1078, 0006);
+INSERT INTO `cq_passway` VALUES (0120, 1078, 0006, 1078, 0007);
+INSERT INTO `cq_passway` VALUES (0121, 1078, 0007, 1078, 0008);
+INSERT INTO `cq_passway` VALUES (0122, 1078, 0008, 1078, 0009);
+INSERT INTO `cq_passway` VALUES (0123, 1078, 0009, 1078, 0010);
+INSERT INTO `cq_passway` VALUES (0124, 1078, 0010, 1078, 0011);
+INSERT INTO `cq_passway` VALUES (0125, 1078, 0011, 1078, 0012);
+INSERT INTO `cq_passway` VALUES (0126, 1078, 0012, 1078, 0013);
+INSERT INTO `cq_passway` VALUES (0127, 1078, 0013, 1078, 0014);
+INSERT INTO `cq_passway` VALUES (0128, 1078, 0014, 1078, 0015);
+INSERT INTO `cq_passway` VALUES (0129, 1078, 0015, 1078, 0016);
+INSERT INTO `cq_passway` VALUES (0130, 1078, 0016, 1078, 0017);
+INSERT INTO `cq_passway` VALUES (0131, 1078, 0017, 1078, 0018);
+INSERT INTO `cq_passway` VALUES (0132, 1078, 0018, 1078, 0019);
+INSERT INTO `cq_passway` VALUES (0133, 1078, 0019, 1078, 0020);
+INSERT INTO `cq_passway` VALUES (0134, 1078, 0020, 1078, 0021);
+INSERT INTO `cq_passway` VALUES (0135, 1078, 0021, 1078, 0022);
+INSERT INTO `cq_passway` VALUES (0136, 1078, 0022, 1078, 0023);
+INSERT INTO `cq_passway` VALUES (0137, 1078, 0023, 1078, 0024);
+INSERT INTO `cq_passway` VALUES (0138, 1078, 0024, 1078, 0025);
+INSERT INTO `cq_passway` VALUES (0139, 1078, 0025, 1078, 0026);
+INSERT INTO `cq_passway` VALUES (0140, 1078, 0026, 1078, 0027);
+INSERT INTO `cq_passway` VALUES (0141, 1078, 0027, 1078, 0028);
+INSERT INTO `cq_passway` VALUES (0142, 1078, 0028, 1078, 0029);
+INSERT INTO `cq_passway` VALUES (0143, 1078, 0030, 1078, 0030);
+INSERT INTO `cq_passway` VALUES (0144, 1078, 0031, 1078, 0031);
+INSERT INTO `cq_passway` VALUES (0145, 1078, 0032, 1078, 0032);
+INSERT INTO `cq_passway` VALUES (0149, 1511, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0160, 1778, 0000, 1778, 0001);
+INSERT INTO `cq_passway` VALUES (0161, 1778, 0001, 1778, 0002);
+INSERT INTO `cq_passway` VALUES (0162, 1782, 0000, 1782, 0000);
+INSERT INTO `cq_passway` VALUES (0163, 1783, 0000, 1783, 0000);
+INSERT INTO `cq_passway` VALUES (0164, 1792, 0000, 1011, 0002);
+INSERT INTO `cq_passway` VALUES (0165, 1792, 0001, 1011, 0002);
+INSERT INTO `cq_passway` VALUES (0166, 1794, 0000, 1794, 0000);
+INSERT INTO `cq_passway` VALUES (0200, 1041, 0000, 1041, 0000);
+INSERT INTO `cq_passway` VALUES (0201, 1041, 0001, 1041, 0001);
+INSERT INTO `cq_passway` VALUES (0202, 1041, 0002, 1041, 0002);
+INSERT INTO `cq_passway` VALUES (0203, 1041, 0003, 1041, 0003);
+INSERT INTO `cq_passway` VALUES (0204, 1060, 0000, 1060, 0000);
+INSERT INTO `cq_passway` VALUES (0205, 1060, 0001, 1060, 0001);
+INSERT INTO `cq_passway` VALUES (0206, 1060, 0002, 1060, 0002);
+INSERT INTO `cq_passway` VALUES (0207, 1060, 0003, 1060, 0003);
+INSERT INTO `cq_passway` VALUES (0208, 1060, 0004, 1061, 0004);
+INSERT INTO `cq_passway` VALUES (0209, 1060, 0005, 1062, 0004);
+INSERT INTO `cq_passway` VALUES (0210, 1061, 0000, 1061, 0000);
+INSERT INTO `cq_passway` VALUES (0211, 1061, 0001, 1061, 0001);
+INSERT INTO `cq_passway` VALUES (0212, 1061, 0002, 1061, 0002);
+INSERT INTO `cq_passway` VALUES (0213, 1061, 0003, 1061, 0003);
+INSERT INTO `cq_passway` VALUES (0214, 1061, 0004, 1060, 0004);
+INSERT INTO `cq_passway` VALUES (0215, 1061, 0005, 1062, 0005);
+INSERT INTO `cq_passway` VALUES (0216, 1062, 0000, 1062, 0000);
+INSERT INTO `cq_passway` VALUES (0217, 1062, 0001, 1062, 0001);
+INSERT INTO `cq_passway` VALUES (0218, 1062, 0002, 1062, 0002);
+INSERT INTO `cq_passway` VALUES (0219, 1062, 0003, 1062, 0003);
+INSERT INTO `cq_passway` VALUES (0220, 1062, 0004, 1060, 0005);
+INSERT INTO `cq_passway` VALUES (0221, 1062, 0005, 1061, 0005);
+INSERT INTO `cq_passway` VALUES (0230, 1100, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0231, 1101, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0232, 1102, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0233, 1103, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0234, 1104, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0235, 1105, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0236, 1106, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0237, 1107, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0238, 1108, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0239, 1109, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0300, 1051, 0001, 1051, 0000);
+INSERT INTO `cq_passway` VALUES (0301, 1051, 0002, 1051, 0001);
+INSERT INTO `cq_passway` VALUES (0302, 1051, 0003, 1051, 0002);
+INSERT INTO `cq_passway` VALUES (0303, 1051, 0004, 1051, 0003);
+INSERT INTO `cq_passway` VALUES (0304, 1051, 0005, 1051, 0004);
+INSERT INTO `cq_passway` VALUES (0305, 1051, 0006, 1051, 0005);
+INSERT INTO `cq_passway` VALUES (0310, 1052, 0000, 1052, 0000);
+INSERT INTO `cq_passway` VALUES (0311, 1052, 0001, 1052, 0000);
+INSERT INTO `cq_passway` VALUES (0312, 1052, 0002, 1052, 0000);
+INSERT INTO `cq_passway` VALUES (0313, 1052, 0003, 1052, 0000);
+INSERT INTO `cq_passway` VALUES (0314, 1052, 0004, 1052, 0000);
+INSERT INTO `cq_passway` VALUES (0315, 1052, 0005, 1015, 0042);
+INSERT INTO `cq_passway` VALUES (0316, 1081, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0317, 1080, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0320, 1114, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0321, 1111, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0322, 1117, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0323, 1112, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0324, 1115, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0325, 1118, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0500, 1214, 0001, 1216, 0001);
+INSERT INTO `cq_passway` VALUES (0501, 1214, 0000, 1217, 0000);
+INSERT INTO `cq_passway` VALUES (0502, 1217, 0000, 1214, 0001);
+INSERT INTO `cq_passway` VALUES (0503, 1205, 0001, 1077, 0001);
+INSERT INTO `cq_passway` VALUES (0504, 1205, 0000, 1202, 0001);
+INSERT INTO `cq_passway` VALUES (0505, 1202, 0001, 1205, 0000);
+INSERT INTO `cq_passway` VALUES (0506, 1202, 0000, 1201, 0001);
+INSERT INTO `cq_passway` VALUES (0507, 1201, 0001, 1202, 0000);
+INSERT INTO `cq_passway` VALUES (0508, 1201, 0000, 1213, 0001);
+INSERT INTO `cq_passway` VALUES (0509, 1213, 0001, 1201, 0000);
+INSERT INTO `cq_passway` VALUES (0510, 1213, 0000, 1204, 0001);
+INSERT INTO `cq_passway` VALUES (0511, 1204, 0001, 1213, 0000);
+INSERT INTO `cq_passway` VALUES (0515, 1215, 0001, 1207, 0001);
+INSERT INTO `cq_passway` VALUES (0516, 1207, 0001, 1215, 0003);
+INSERT INTO `cq_passway` VALUES (0517, 1207, 0000, 1208, 0000);
+INSERT INTO `cq_passway` VALUES (0518, 1208, 0000, 1207, 0000);
+INSERT INTO `cq_passway` VALUES (0530, 1212, 0000, 1212, 0001);
+INSERT INTO `cq_passway` VALUES (0531, 1212, 0001, 1212, 0000);
+INSERT INTO `cq_passway` VALUES (0532, 1212, 0002, 1212, 0003);
+INSERT INTO `cq_passway` VALUES (0533, 1212, 0003, 1212, 0002);
+INSERT INTO `cq_passway` VALUES (0534, 1212, 0004, 1212, 0005);
+INSERT INTO `cq_passway` VALUES (0535, 1212, 0005, 1212, 0004);
+INSERT INTO `cq_passway` VALUES (0536, 1212, 0006, 1212, 0007);
+INSERT INTO `cq_passway` VALUES (0537, 1212, 0007, 1212, 0006);
+INSERT INTO `cq_passway` VALUES (0538, 1212, 0008, 1212, 0009);
+INSERT INTO `cq_passway` VALUES (0539, 1212, 0009, 1212, 0008);
+INSERT INTO `cq_passway` VALUES (0540, 1212, 0010, 1212, 0011);
+INSERT INTO `cq_passway` VALUES (0541, 1212, 0011, 1212, 0010);
+INSERT INTO `cq_passway` VALUES (0542, 1212, 0012, 1212, 0013);
+INSERT INTO `cq_passway` VALUES (0543, 1212, 0013, 1212, 0012);
+INSERT INTO `cq_passway` VALUES (0544, 1212, 0014, 1212, 0015);
+INSERT INTO `cq_passway` VALUES (0545, 1212, 0015, 1212, 0014);
+INSERT INTO `cq_passway` VALUES (0546, 1212, 0016, 1212, 0017);
+INSERT INTO `cq_passway` VALUES (0547, 1212, 0017, 1212, 0016);
+INSERT INTO `cq_passway` VALUES (0548, 1212, 0018, 1212, 0019);
+INSERT INTO `cq_passway` VALUES (0549, 1212, 0019, 1212, 0018);
+INSERT INTO `cq_passway` VALUES (0550, 1212, 0020, 1212, 0021);
+INSERT INTO `cq_passway` VALUES (0551, 1212, 0021, 1212, 0020);
+INSERT INTO `cq_passway` VALUES (0552, 1212, 0022, 1212, 0023);
+INSERT INTO `cq_passway` VALUES (0553, 1212, 0023, 1212, 0022);
+INSERT INTO `cq_passway` VALUES (0554, 1212, 0024, 1212, 0025);
+INSERT INTO `cq_passway` VALUES (0555, 1212, 0025, 1212, 0024);
+INSERT INTO `cq_passway` VALUES (0556, 1212, 0026, 1212, 0027);
+INSERT INTO `cq_passway` VALUES (0557, 1212, 0027, 1212, 0026);
+INSERT INTO `cq_passway` VALUES (0558, 1212, 0028, 1212, 0029);
+INSERT INTO `cq_passway` VALUES (0559, 1212, 0029, 1212, 0028);
+INSERT INTO `cq_passway` VALUES (0560, 1212, 0030, 1212, 0031);
+INSERT INTO `cq_passway` VALUES (0561, 1212, 0031, 1212, 0030);
+INSERT INTO `cq_passway` VALUES (0570, 1204, 0000, 1216, 0003);
+INSERT INTO `cq_passway` VALUES (0571, 1216, 0003, 1204, 0000);
+INSERT INTO `cq_passway` VALUES (0572, 1216, 0001, 1214, 0002);
+INSERT INTO `cq_passway` VALUES (0573, 1216, 0002, 1215, 0000);
+INSERT INTO `cq_passway` VALUES (0574, 1215, 0000, 1216, 0002);
+INSERT INTO `cq_passway` VALUES (0576, 1210, 0001, 1216, 0000);
+INSERT INTO `cq_passway` VALUES (0577, 1210, 0000, 1211, 0001);
+INSERT INTO `cq_passway` VALUES (0578, 1211, 0001, 1210, 0000);
+INSERT INTO `cq_passway` VALUES (0579, 1211, 0000, 1212, 0032);
+INSERT INTO `cq_passway` VALUES (0580, 1212, 0032, 1211, 0000);
+INSERT INTO `cq_passway` VALUES (0581, 1218, 0000, 1210, 0002);
+INSERT INTO `cq_passway` VALUES (0582, 1219, 0000, 1219, 0001);
+INSERT INTO `cq_passway` VALUES (0583, 1219, 0001, 1219, 0000);
+INSERT INTO `cq_passway` VALUES (0584, 1219, 0002, 1219, 0003);
+INSERT INTO `cq_passway` VALUES (0585, 1219, 0003, 1219, 0002);
+INSERT INTO `cq_passway` VALUES (0586, 1219, 0004, 1219, 0005);
+INSERT INTO `cq_passway` VALUES (0587, 1219, 0005, 1219, 0004);
+INSERT INTO `cq_passway` VALUES (0588, 1219, 0006, 1219, 0007);
+INSERT INTO `cq_passway` VALUES (0589, 1219, 0007, 1219, 0006);
+INSERT INTO `cq_passway` VALUES (0590, 1219, 0008, 1219, 0009);
+INSERT INTO `cq_passway` VALUES (0591, 1219, 0009, 1219, 0008);
+INSERT INTO `cq_passway` VALUES (0592, 1219, 0010, 1219, 0011);
+INSERT INTO `cq_passway` VALUES (0593, 1219, 0011, 1219, 0010);
+INSERT INTO `cq_passway` VALUES (0594, 1219, 0012, 1219, 0013);
+INSERT INTO `cq_passway` VALUES (0595, 1219, 0013, 1219, 0012);
+INSERT INTO `cq_passway` VALUES (0596, 1219, 0014, 1219, 0015);
+INSERT INTO `cq_passway` VALUES (0597, 1219, 0015, 1219, 0014);
+INSERT INTO `cq_passway` VALUES (0598, 1219, 0016, 1219, 0017);
+INSERT INTO `cq_passway` VALUES (0599, 1219, 0017, 1219, 0016);
+INSERT INTO `cq_passway` VALUES (0600, 1219, 0018, 1219, 0019);
+INSERT INTO `cq_passway` VALUES (0601, 1219, 0019, 1219, 0018);
+INSERT INTO `cq_passway` VALUES (0602, 1219, 0020, 1219, 0021);
+INSERT INTO `cq_passway` VALUES (0603, 1219, 0021, 1219, 0020);
+INSERT INTO `cq_passway` VALUES (0604, 1219, 0022, 1219, 0023);
+INSERT INTO `cq_passway` VALUES (0605, 1219, 0023, 1219, 0022);
+INSERT INTO `cq_passway` VALUES (0606, 1219, 0024, 1219, 0025);
+INSERT INTO `cq_passway` VALUES (0607, 1219, 0025, 1219, 0024);
+INSERT INTO `cq_passway` VALUES (0608, 1219, 0026, 1219, 0027);
+INSERT INTO `cq_passway` VALUES (0609, 1219, 0027, 1219, 0026);
+INSERT INTO `cq_passway` VALUES (0610, 1219, 0028, 1219, 0029);
+INSERT INTO `cq_passway` VALUES (0611, 1219, 0029, 1219, 0028);
+INSERT INTO `cq_passway` VALUES (0612, 1219, 0030, 1219, 0031);
+INSERT INTO `cq_passway` VALUES (0613, 1219, 0031, 1219, 0030);
+INSERT INTO `cq_passway` VALUES (0614, 1219, 0032, 1212, 0033);
+INSERT INTO `cq_passway` VALUES (0615, 1300, 0000, 1001, 0001);
+INSERT INTO `cq_passway` VALUES (0620, 1451, 0000, 1011, 0003);
+INSERT INTO `cq_passway` VALUES (0621, 1090, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0622, 1092, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0623, 1094, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0635, 7503, 0000, 7503, 0000);
+INSERT INTO `cq_passway` VALUES (0700, 1022, 0000, 1002, 0004);
+INSERT INTO `cq_passway` VALUES (0701, 6072, 0000, 1004, 0000);
+INSERT INTO `cq_passway` VALUES (0702, 1723, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0703, 1763, 0000, 1002, 0000);
+INSERT INTO `cq_passway` VALUES (0704, 1766, 0000, 1766, 0000);
+INSERT INTO `cq_passway` VALUES (0705, 7001, 0000, 1002, 0004);
+INSERT INTO `cq_passway` VALUES (0706, 7001, 0001, 1002, 0004);
+INSERT INTO `cq_passway` VALUES (0707, 7007, 0001, 1002, 0004);
+INSERT INTO `cq_passway` VALUES (0708, 2204, 0001, 1002, 0004);
+INSERT INTO `cq_passway` VALUES (0709, 7007, 0000, 1002, 0004);
+INSERT INTO `cq_passway` VALUES (0710, 2204, 0000, 1002, 0004);
+INSERT INTO `cq_passway` VALUES (0711, 1762, 0001, 1000, 0005);
+INSERT INTO `cq_passway` VALUES (0712, 1762, 0000, 1927, 0000);
+INSERT INTO `cq_passway` VALUES (0713, 1927, 0000, 1762, 0000);
+INSERT INTO `cq_passway` VALUES (0714, 1927, 0001, 1999, 0000);
+INSERT INTO `cq_passway` VALUES (0715, 1999, 0001, 1927, 0001);
+INSERT INTO `cq_passway` VALUES (0716, 1999, 0000, 2054, 0000);
+INSERT INTO `cq_passway` VALUES (0717, 1999, 0013, 1999, 0002);
+INSERT INTO `cq_passway` VALUES (0718, 1999, 0004, 1999, 0003);
+INSERT INTO `cq_passway` VALUES (0719, 1999, 0012, 1999, 0004);
+INSERT INTO `cq_passway` VALUES (0720, 1999, 0002, 1999, 0005);
+INSERT INTO `cq_passway` VALUES (0721, 1999, 0008, 1999, 0006);
+INSERT INTO `cq_passway` VALUES (0722, 1999, 0006, 1999, 0007);
+INSERT INTO `cq_passway` VALUES (0723, 1999, 0011, 1999, 0008);
+INSERT INTO `cq_passway` VALUES (0724, 1999, 0005, 1999, 0009);
+INSERT INTO `cq_passway` VALUES (0725, 1999, 0014, 1999, 0010);
+INSERT INTO `cq_passway` VALUES (0726, 1999, 0015, 1999, 0011);
+INSERT INTO `cq_passway` VALUES (0727, 1999, 0003, 1999, 0012);
+INSERT INTO `cq_passway` VALUES (0728, 1999, 0010, 1999, 0013);
+INSERT INTO `cq_passway` VALUES (0729, 2054, 0000, 1999, 0014);
+INSERT INTO `cq_passway` VALUES (0730, 1999, 0007, 1999, 0015);
+INSERT INTO `cq_passway` VALUES (0731, 2055, 0016, 2055, 0002);
+INSERT INTO `cq_passway` VALUES (0732, 2055, 0006, 2055, 0001);
+INSERT INTO `cq_passway` VALUES (0733, 2055, 0017, 2055, 0003);
+INSERT INTO `cq_passway` VALUES (0734, 2055, 0003, 2055, 0001);
+INSERT INTO `cq_passway` VALUES (0735, 2055, 0018, 2055, 0004);
+INSERT INTO `cq_passway` VALUES (0736, 2055, 0021, 2055, 0001);
+INSERT INTO `cq_passway` VALUES (0737, 2055, 0019, 2055, 0005);
+INSERT INTO `cq_passway` VALUES (0738, 2055, 0020, 2055, 0006);
+INSERT INTO `cq_passway` VALUES (0739, 2055, 0028, 2055, 0007);
+INSERT INTO `cq_passway` VALUES (0740, 2055, 0015, 2055, 0001);
+INSERT INTO `cq_passway` VALUES (0741, 2055, 0029, 2055, 0008);
+INSERT INTO `cq_passway` VALUES (0742, 2055, 0005, 2055, 0001);
+INSERT INTO `cq_passway` VALUES (0743, 2055, 0030, 2055, 0009);
+INSERT INTO `cq_passway` VALUES (0744, 2055, 0002, 2055, 0001);
+INSERT INTO `cq_passway` VALUES (0745, 2055, 0031, 2055, 0010);
+INSERT INTO `cq_passway` VALUES (0746, 2055, 0001, 2055, 0001);
+INSERT INTO `cq_passway` VALUES (0747, 2055, 0032, 2055, 0011);
+INSERT INTO `cq_passway` VALUES (0748, 2055, 0008, 2055, 0001);
+INSERT INTO `cq_passway` VALUES (0749, 2055, 0033, 2055, 0012);
+INSERT INTO `cq_passway` VALUES (0750, 2055, 0004, 2055, 0001);
+INSERT INTO `cq_passway` VALUES (0751, 2055, 0034, 2055, 0013);
+INSERT INTO `cq_passway` VALUES (0752, 2055, 0014, 2055, 0001);
+INSERT INTO `cq_passway` VALUES (0753, 2055, 0035, 2055, 0014);
+INSERT INTO `cq_passway` VALUES (0754, 2055, 0011, 2055, 0001);
+INSERT INTO `cq_passway` VALUES (0755, 2055, 0036, 2055, 0015);
+INSERT INTO `cq_passway` VALUES (0756, 2055, 0007, 2055, 0001);
+INSERT INTO `cq_passway` VALUES (0757, 2055, 0037, 2055, 0016);
+INSERT INTO `cq_passway` VALUES (0758, 2055, 0009, 2055, 0001);
+INSERT INTO `cq_passway` VALUES (0759, 2055, 0038, 2055, 0017);
+INSERT INTO `cq_passway` VALUES (0760, 2055, 0013, 2055, 0001);
+INSERT INTO `cq_passway` VALUES (0761, 2055, 0039, 2055, 0018);
+INSERT INTO `cq_passway` VALUES (0762, 2055, 0010, 2055, 0001);
+INSERT INTO `cq_passway` VALUES (0763, 2055, 0040, 2055, 0019);
+INSERT INTO `cq_passway` VALUES (0764, 2055, 0042, 2056, 0000);
+INSERT INTO `cq_passway` VALUES (0765, 2056, 0000, 2055, 0001);
+INSERT INTO `cq_passway` VALUES (0766, 2055, 0022, 2055, 0020);
+INSERT INTO `cq_passway` VALUES (0767, 2055, 0023, 2055, 0021);
+INSERT INTO `cq_passway` VALUES (0768, 2055, 0024, 2055, 0022);
+INSERT INTO `cq_passway` VALUES (0769, 2055, 0025, 2055, 0023);
+INSERT INTO `cq_passway` VALUES (0770, 2055, 0026, 2055, 0024);
+INSERT INTO `cq_passway` VALUES (0771, 2055, 0027, 2055, 0025);
+INSERT INTO `cq_passway` VALUES (0774, 2055, 0000, 2055, 0001);
+
+-- Records of `cq_portal` (322 rows)
+INSERT INTO `cq_portal` VALUES (0001, 1000, 0000, 0493, 0650);
+INSERT INTO `cq_portal` VALUES (0002, 1001, 0000, 0312, 0646);
+INSERT INTO `cq_portal` VALUES (0003, 1002, 0000, 0439, 0385);
+INSERT INTO `cq_portal` VALUES (0004, 1000, 0001, 0085, 0323);
+INSERT INTO `cq_portal` VALUES (0005, 1000, 0002, 0971, 0666);
+INSERT INTO `cq_portal` VALUES (0006, 1002, 0001, 0069, 0473);
+INSERT INTO `cq_portal` VALUES (0007, 1002, 0002, 0053, 0399);
+INSERT INTO `cq_portal` VALUES (0008, 1003, 0000, 0072, 0051);
+INSERT INTO `cq_portal` VALUES (0009, 1002, 0003, 0455, 0295);
+INSERT INTO `cq_portal` VALUES (0010, 1005, 0000, 0051, 0069);
+INSERT INTO `cq_portal` VALUES (0011, 1002, 0004, 0403, 0394);
+INSERT INTO `cq_portal` VALUES (0012, 1004, 0000, 0051, 0070);
+INSERT INTO `cq_portal` VALUES (0013, 1002, 0005, 0386, 0391);
+INSERT INTO `cq_portal` VALUES (0014, 1002, 0006, 0453, 0335);
+INSERT INTO `cq_portal` VALUES (0015, 1002, 0007, 0419, 0356);
+INSERT INTO `cq_portal` VALUES (0016, 1002, 0008, 0466, 0330);
+INSERT INTO `cq_portal` VALUES (0017, 1006, 0000, 0037, 0031);
+INSERT INTO `cq_portal` VALUES (0018, 1007, 0000, 0025, 0024);
+INSERT INTO `cq_portal` VALUES (0019, 1008, 0000, 0022, 0025);
+INSERT INTO `cq_portal` VALUES (0020, 1009, 0000, 0022, 0025);
+INSERT INTO `cq_portal` VALUES (0021, 1002, 0009, 0958, 0555);
+INSERT INTO `cq_portal` VALUES (0022, 1011, 0000, 0011, 0376);
+INSERT INTO `cq_portal` VALUES (0023, 1011, 0001, 0379, 0028);
+INSERT INTO `cq_portal` VALUES (0024, 1013, 0000, 0054, 0081);
+INSERT INTO `cq_portal` VALUES (0025, 1014, 0000, 0080, 0040);
+INSERT INTO `cq_portal` VALUES (0026, 1013, 0001, 0059, 0028);
+INSERT INTO `cq_portal` VALUES (0027, 1014, 0001, 0131, 0086);
+INSERT INTO `cq_portal` VALUES (0028, 1016, 0000, 0050, 0082);
+INSERT INTO `cq_portal` VALUES (0030, 1015, 0000, 0759, 0513);
+INSERT INTO `cq_portal` VALUES (0031, 1015, 0001, 0534, 0693);
+INSERT INTO `cq_portal` VALUES (0032, 1015, 0002, 0487, 0779);
+INSERT INTO `cq_portal` VALUES (0033, 1015, 0003, 0570, 0853);
+INSERT INTO `cq_portal` VALUES (0034, 1015, 0004, 0649, 0837);
+INSERT INTO `cq_portal` VALUES (0035, 1015, 0005, 0583, 0596);
+INSERT INTO `cq_portal` VALUES (0036, 1015, 0006, 0584, 0674);
+INSERT INTO `cq_portal` VALUES (0037, 1015, 0007, 0742, 0843);
+INSERT INTO `cq_portal` VALUES (0038, 1015, 0008, 0675, 0909);
+INSERT INTO `cq_portal` VALUES (0039, 1015, 0009, 0442, 0662);
+INSERT INTO `cq_portal` VALUES (0040, 1015, 0010, 0335, 0559);
+INSERT INTO `cq_portal` VALUES (0041, 1015, 0011, 0302, 0596);
+INSERT INTO `cq_portal` VALUES (0042, 1015, 0012, 0153, 0407);
+INSERT INTO `cq_portal` VALUES (0043, 1015, 0013, 0199, 0484);
+INSERT INTO `cq_portal` VALUES (0044, 1015, 0014, 0224, 0428);
+INSERT INTO `cq_portal` VALUES (0045, 1015, 0015, 0300, 0460);
+INSERT INTO `cq_portal` VALUES (0046, 1015, 0016, 0440, 0580);
+INSERT INTO `cq_portal` VALUES (0047, 1015, 0017, 0360, 0440);
+INSERT INTO `cq_portal` VALUES (0048, 1015, 0018, 0285, 0352);
+INSERT INTO `cq_portal` VALUES (0049, 1015, 0019, 0288, 0260);
+INSERT INTO `cq_portal` VALUES (0050, 1015, 0020, 0200, 0224);
+INSERT INTO `cq_portal` VALUES (0051, 1015, 0021, 0150, 0311);
+INSERT INTO `cq_portal` VALUES (0052, 1015, 0022, 0300, 0196);
+INSERT INTO `cq_portal` VALUES (0053, 1015, 0023, 0374, 0216);
+INSERT INTO `cq_portal` VALUES (0054, 1015, 0024, 0366, 0164);
+INSERT INTO `cq_portal` VALUES (0055, 1015, 0025, 0455, 0211);
+INSERT INTO `cq_portal` VALUES (0056, 1015, 0026, 0496, 0280);
+INSERT INTO `cq_portal` VALUES (0057, 1015, 0027, 0611, 0390);
+INSERT INTO `cq_portal` VALUES (0058, 1015, 0028, 1013, 0708);
+INSERT INTO `cq_portal` VALUES (0059, 1015, 0029, 0531, 0593);
+INSERT INTO `cq_portal` VALUES (0060, 1015, 0030, 0722, 0926);
+INSERT INTO `cq_portal` VALUES (0061, 1015, 0031, 0564, 0800);
+INSERT INTO `cq_portal` VALUES (0062, 1015, 0032, 0346, 0582);
+INSERT INTO `cq_portal` VALUES (0063, 1015, 0033, 0511, 0533);
+INSERT INTO `cq_portal` VALUES (0064, 1015, 0034, 0195, 0418);
+INSERT INTO `cq_portal` VALUES (0065, 1015, 0035, 0294, 0561);
+INSERT INTO `cq_portal` VALUES (0066, 1015, 0036, 0485, 0675);
+INSERT INTO `cq_portal` VALUES (0067, 1015, 0037, 0411, 0333);
+INSERT INTO `cq_portal` VALUES (0068, 1015, 0038, 0570, 0460);
+INSERT INTO `cq_portal` VALUES (0069, 1002, 0010, 0232, 0190);
+INSERT INTO `cq_portal` VALUES (0070, 1015, 0039, 1010, 0710);
+INSERT INTO `cq_portal` VALUES (0071, 1020, 0000, 0381, 0021);
+INSERT INTO `cq_portal` VALUES (0072, 1011, 0002, 0453, 0819);
+INSERT INTO `cq_portal` VALUES (0073, 1002, 0011, 0555, 0957);
+INSERT INTO `cq_portal` VALUES (0074, 1020, 0001, 0350, 0355);
+INSERT INTO `cq_portal` VALUES (0075, 1020, 0002, 0461, 0386);
+INSERT INTO `cq_portal` VALUES (0076, 1012, 0000, 0532, 0529);
+INSERT INTO `cq_portal` VALUES (0077, 1020, 0003, 0023, 0383);
+INSERT INTO `cq_portal` VALUES (0078, 1020, 0004, 0919, 0559);
+INSERT INTO `cq_portal` VALUES (0079, 1003, 0001, 0028, 0031);
+INSERT INTO `cq_portal` VALUES (0080, 1021, 0000, 0071, 0050);
+INSERT INTO `cq_portal` VALUES (0081, 1025, 0000, 0032, 0070);
+INSERT INTO `cq_portal` VALUES (0082, 1026, 0000, 0138, 0103);
+INSERT INTO `cq_portal` VALUES (0083, 1027, 0000, 0141, 0105);
+INSERT INTO `cq_portal` VALUES (0084, 1028, 0000, 0160, 0096);
+INSERT INTO `cq_portal` VALUES (0085, 1000, 0003, 0314, 0009);
+INSERT INTO `cq_portal` VALUES (0086, 1011, 0003, 0933, 0565);
+INSERT INTO `cq_portal` VALUES (0087, 1020, 0005, 0528, 0890);
+INSERT INTO `cq_portal` VALUES (0088, 1015, 0040, 0344, 0206);
+INSERT INTO `cq_portal` VALUES (0100, 1002, 0012, 0342, 0723);
+INSERT INTO `cq_portal` VALUES (0105, 1020, 0006, 0607, 0870);
+INSERT INTO `cq_portal` VALUES (0106, 1075, 0000, 0360, 0010);
+INSERT INTO `cq_portal` VALUES (0107, 1011, 0005, 0850, 0485);
+INSERT INTO `cq_portal` VALUES (0108, 1076, 0000, 0011, 0361);
+INSERT INTO `cq_portal` VALUES (0110, 1077, 0000, 0756, 0873);
+INSERT INTO `cq_portal` VALUES (0111, 1000, 0004, 0159, 0467);
+INSERT INTO `cq_portal` VALUES (0112, 1078, 0000, 0184, 0549);
+INSERT INTO `cq_portal` VALUES (0113, 1015, 0041, 0789, 0484);
+INSERT INTO `cq_portal` VALUES (0114, 1078, 0001, 0135, 0487);
+INSERT INTO `cq_portal` VALUES (0115, 1078, 0002, 0178, 0540);
+INSERT INTO `cq_portal` VALUES (0116, 1078, 0003, 0046, 0418);
+INSERT INTO `cq_portal` VALUES (0117, 1078, 0004, 0088, 0423);
+INSERT INTO `cq_portal` VALUES (0118, 1078, 0005, 0048, 0415);
+INSERT INTO `cq_portal` VALUES (0119, 1078, 0006, 0180, 0425);
+INSERT INTO `cq_portal` VALUES (0120, 1078, 0007, 0105, 0338);
+INSERT INTO `cq_portal` VALUES (0121, 1078, 0008, 0180, 0425);
+INSERT INTO `cq_portal` VALUES (0122, 1078, 0009, 0318, 0300);
+INSERT INTO `cq_portal` VALUES (0123, 1078, 0010, 0224, 0280);
+INSERT INTO `cq_portal` VALUES (0124, 1078, 0011, 0372, 0156);
+INSERT INTO `cq_portal` VALUES (0125, 1078, 0012, 0372, 0215);
+INSERT INTO `cq_portal` VALUES (0126, 1078, 0013, 0373, 0156);
+INSERT INTO `cq_portal` VALUES (0127, 1078, 0014, 0496, 0217);
+INSERT INTO `cq_portal` VALUES (0128, 1078, 0015, 0508, 0159);
+INSERT INTO `cq_portal` VALUES (0129, 1078, 0016, 0273, 0492);
+INSERT INTO `cq_portal` VALUES (0130, 1078, 0017, 0456, 0262);
+INSERT INTO `cq_portal` VALUES (0131, 1078, 0018, 0144, 0447);
+INSERT INTO `cq_portal` VALUES (0132, 1078, 0019, 0176, 0302);
+INSERT INTO `cq_portal` VALUES (0133, 1078, 0020, 0096, 0315);
+INSERT INTO `cq_portal` VALUES (0134, 1078, 0021, 0238, 0483);
+INSERT INTO `cq_portal` VALUES (0135, 1078, 0022, 0296, 0400);
+INSERT INTO `cq_portal` VALUES (0136, 1078, 0023, 0442, 0199);
+INSERT INTO `cq_portal` VALUES (0137, 1078, 0024, 0397, 0317);
+INSERT INTO `cq_portal` VALUES (0138, 1078, 0025, 0244, 0522);
+INSERT INTO `cq_portal` VALUES (0139, 1078, 0026, 0273, 0177);
+INSERT INTO `cq_portal` VALUES (0140, 1078, 0027, 0110, 0432);
+INSERT INTO `cq_portal` VALUES (0141, 1078, 0028, 0447, 0099);
+INSERT INTO `cq_portal` VALUES (0142, 1078, 0029, 0272, 0299);
+INSERT INTO `cq_portal` VALUES (0143, 1078, 0030, 0069, 0346);
+INSERT INTO `cq_portal` VALUES (0144, 1078, 0031, 0453, 0155);
+INSERT INTO `cq_portal` VALUES (0145, 1078, 0032, 0220, 0386);
+INSERT INTO `cq_portal` VALUES (0160, 1778, 0001, 0056, 0085);
+INSERT INTO `cq_portal` VALUES (0161, 1778, 0002, 0059, 0024);
+INSERT INTO `cq_portal` VALUES (0162, 1782, 0000, 0051, 0068);
+INSERT INTO `cq_portal` VALUES (0163, 1783, 0000, 0051, 0068);
+INSERT INTO `cq_portal` VALUES (0164, 1011, 0002, 0718, 0746);
+INSERT INTO `cq_portal` VALUES (0165, 1011, 0002, 0718, 0746);
+INSERT INTO `cq_portal` VALUES (0166, 1794, 0000, 0157, 0097);
+INSERT INTO `cq_portal` VALUES (0167, 2204, 0002, 0040, 0040);
+INSERT INTO `cq_portal` VALUES (0200, 1041, 0000, 0515, 0327);
+INSERT INTO `cq_portal` VALUES (0201, 1041, 0001, 0587, 0399);
+INSERT INTO `cq_portal` VALUES (0202, 1041, 0002, 0619, 0367);
+INSERT INTO `cq_portal` VALUES (0203, 1041, 0003, 0547, 0295);
+INSERT INTO `cq_portal` VALUES (0204, 1060, 0000, 0515, 0326);
+INSERT INTO `cq_portal` VALUES (0205, 1060, 0001, 0587, 0398);
+INSERT INTO `cq_portal` VALUES (0206, 1060, 0002, 0547, 0294);
+INSERT INTO `cq_portal` VALUES (0207, 1060, 0003, 0619, 0366);
+INSERT INTO `cq_portal` VALUES (0208, 1060, 0004, 0220, 0477);
+INSERT INTO `cq_portal` VALUES (0209, 1060, 0005, 0529, 0505);
+INSERT INTO `cq_portal` VALUES (0210, 1061, 0000, 0515, 0326);
+INSERT INTO `cq_portal` VALUES (0211, 1061, 0001, 0587, 0398);
+INSERT INTO `cq_portal` VALUES (0212, 1061, 0002, 0547, 0294);
+INSERT INTO `cq_portal` VALUES (0213, 1061, 0003, 0619, 0366);
+INSERT INTO `cq_portal` VALUES (0214, 1061, 0004, 0220, 0477);
+INSERT INTO `cq_portal` VALUES (0215, 1061, 0005, 0529, 0505);
+INSERT INTO `cq_portal` VALUES (0216, 1062, 0000, 0515, 0326);
+INSERT INTO `cq_portal` VALUES (0217, 1062, 0001, 0587, 0398);
+INSERT INTO `cq_portal` VALUES (0218, 1062, 0002, 0547, 0294);
+INSERT INTO `cq_portal` VALUES (0219, 1062, 0003, 0619, 0366);
+INSERT INTO `cq_portal` VALUES (0220, 1062, 0004, 0220, 0477);
+INSERT INTO `cq_portal` VALUES (0221, 1062, 0005, 0529, 0505);
+INSERT INTO `cq_portal` VALUES (0300, 1051, 0000, 0446, 0097);
+INSERT INTO `cq_portal` VALUES (0301, 1051, 0001, 0244, 0527);
+INSERT INTO `cq_portal` VALUES (0302, 1051, 0002, 0085, 0427);
+INSERT INTO `cq_portal` VALUES (0303, 1051, 0003, 0103, 0342);
+INSERT INTO `cq_portal` VALUES (0304, 1051, 0004, 0170, 0324);
+INSERT INTO `cq_portal` VALUES (0305, 1051, 0005, 0270, 0177);
+INSERT INTO `cq_portal` VALUES (0310, 1052, 0000, 0191, 0228);
+INSERT INTO `cq_portal` VALUES (0311, 1015, 0042, 0724, 0573);
+INSERT INTO `cq_portal` VALUES (0500, 1201, 0000, 0010, 0202);
+INSERT INTO `cq_portal` VALUES (0501, 1201, 0001, 0592, 0398);
+INSERT INTO `cq_portal` VALUES (0502, 1202, 0000, 0008, 0302);
+INSERT INTO `cq_portal` VALUES (0503, 1202, 0001, 0691, 0398);
+INSERT INTO `cq_portal` VALUES (0504, 1204, 0000, 0009, 0161);
+INSERT INTO `cq_portal` VALUES (0505, 1204, 0001, 1351, 1199);
+INSERT INTO `cq_portal` VALUES (0506, 1205, 0000, 0008, 0161);
+INSERT INTO `cq_portal` VALUES (0507, 1205, 0001, 1351, 1198);
+INSERT INTO `cq_portal` VALUES (0508, 1207, 0000, 0261, 0010);
+INSERT INTO `cq_portal` VALUES (0509, 1207, 0001, 0958, 1211);
+INSERT INTO `cq_portal` VALUES (0510, 1208, 0000, 0009, 0502);
+INSERT INTO `cq_portal` VALUES (0511, 1208, 0001, 1011, 0518);
+INSERT INTO `cq_portal` VALUES (0512, 1210, 0000, 0008, 0329);
+INSERT INTO `cq_portal` VALUES (0513, 1210, 0001, 1039, 0718);
+INSERT INTO `cq_portal` VALUES (0514, 1211, 0000, 0010, 0401);
+INSERT INTO `cq_portal` VALUES (0515, 1211, 0001, 0951, 0558);
+INSERT INTO `cq_portal` VALUES (0516, 1212, 0000, 0781, 0838);
+INSERT INTO `cq_portal` VALUES (0517, 1212, 0001, 0705, 0921);
+INSERT INTO `cq_portal` VALUES (0518, 1212, 0002, 0582, 0827);
+INSERT INTO `cq_portal` VALUES (0519, 1212, 0003, 0539, 0752);
+INSERT INTO `cq_portal` VALUES (0520, 1212, 0004, 0479, 0691);
+INSERT INTO `cq_portal` VALUES (0521, 1212, 0005, 0369, 0651);
+INSERT INTO `cq_portal` VALUES (0522, 1212, 0006, 0349, 0512);
+INSERT INTO `cq_portal` VALUES (0523, 1212, 0007, 0404, 0451);
+INSERT INTO `cq_portal` VALUES (0524, 1212, 0008, 0395, 0390);
+INSERT INTO `cq_portal` VALUES (0525, 1212, 0009, 0335, 0282);
+INSERT INTO `cq_portal` VALUES (0526, 1212, 0010, 0310, 0174);
+INSERT INTO `cq_portal` VALUES (0527, 1212, 0011, 0378, 0153);
+INSERT INTO `cq_portal` VALUES (0528, 1212, 0012, 0611, 0311);
+INSERT INTO `cq_portal` VALUES (0529, 1212, 0013, 0623, 0402);
+INSERT INTO `cq_portal` VALUES (0530, 1212, 0014, 0674, 0418);
+INSERT INTO `cq_portal` VALUES (0531, 1212, 0015, 0713, 0377);
+INSERT INTO `cq_portal` VALUES (0532, 1212, 0016, 0834, 0455);
+INSERT INTO `cq_portal` VALUES (0533, 1212, 0017, 0846, 0558);
+INSERT INTO `cq_portal` VALUES (0534, 1212, 0018, 0900, 0826);
+INSERT INTO `cq_portal` VALUES (0535, 1212, 0019, 0872, 0850);
+INSERT INTO `cq_portal` VALUES (0536, 1212, 0020, 0864, 0846);
+INSERT INTO `cq_portal` VALUES (0537, 1212, 0021, 0808, 0823);
+INSERT INTO `cq_portal` VALUES (0538, 1212, 0022, 0871, 0853);
+INSERT INTO `cq_portal` VALUES (0539, 1212, 0023, 0899, 0894);
+INSERT INTO `cq_portal` VALUES (0540, 1212, 0024, 0813, 0677);
+INSERT INTO `cq_portal` VALUES (0541, 1212, 0025, 0690, 0667);
+INSERT INTO `cq_portal` VALUES (0542, 1212, 0026, 0942, 1012);
+INSERT INTO `cq_portal` VALUES (0543, 1212, 0027, 0903, 1041);
+INSERT INTO `cq_portal` VALUES (0544, 1212, 0028, 1022, 1035);
+INSERT INTO `cq_portal` VALUES (0545, 1212, 0029, 1087, 1124);
+INSERT INTO `cq_portal` VALUES (0546, 1212, 0030, 1046, 0835);
+INSERT INTO `cq_portal` VALUES (0547, 1212, 0031, 1138, 0895);
+INSERT INTO `cq_portal` VALUES (0548, 1213, 0000, 0010, 0282);
+INSERT INTO `cq_portal` VALUES (0549, 1213, 0001, 1072, 0798);
+INSERT INTO `cq_portal` VALUES (0550, 1214, 0000, 0026, 0660);
+INSERT INTO `cq_portal` VALUES (0551, 1214, 0001, 0799, 1432);
+INSERT INTO `cq_portal` VALUES (0552, 1214, 0002, 0641, 0009);
+INSERT INTO `cq_portal` VALUES (0553, 1214, 0003, 1431, 0797);
+INSERT INTO `cq_portal` VALUES (0554, 1215, 0000, 0009, 0376);
+INSERT INTO `cq_portal` VALUES (0555, 1215, 0001, 0567, 0932);
+INSERT INTO `cq_portal` VALUES (0556, 1215, 0002, 0377, 0008);
+INSERT INTO `cq_portal` VALUES (0557, 1215, 0003, 0934, 0565);
+INSERT INTO `cq_portal` VALUES (0558, 1216, 0000, 0010, 0481);
+INSERT INTO `cq_portal` VALUES (0559, 1216, 0001, 0479, 0950);
+INSERT INTO `cq_portal` VALUES (0560, 1216, 0002, 0481, 0010);
+INSERT INTO `cq_portal` VALUES (0561, 1216, 0003, 0950, 0478);
+INSERT INTO `cq_portal` VALUES (0572, 1077, 0001, 0362, 0012);
+INSERT INTO `cq_portal` VALUES (0573, 1217, 0000, 0363, 0013);
+INSERT INTO `cq_portal` VALUES (0574, 1210, 0002, 0715, 1036);
+INSERT INTO `cq_portal` VALUES (0579, 1212, 0032, 1017, 1292);
+INSERT INTO `cq_portal` VALUES (0580, 1219, 0000, 0781, 0838);
+INSERT INTO `cq_portal` VALUES (0581, 1219, 0001, 0705, 0921);
+INSERT INTO `cq_portal` VALUES (0582, 1219, 0002, 0582, 0827);
+INSERT INTO `cq_portal` VALUES (0583, 1219, 0003, 0539, 0752);
+INSERT INTO `cq_portal` VALUES (0584, 1219, 0004, 0479, 0691);
+INSERT INTO `cq_portal` VALUES (0585, 1219, 0005, 0369, 0651);
+INSERT INTO `cq_portal` VALUES (0586, 1219, 0006, 0349, 0512);
+INSERT INTO `cq_portal` VALUES (0587, 1219, 0007, 0404, 0451);
+INSERT INTO `cq_portal` VALUES (0588, 1219, 0008, 0395, 0390);
+INSERT INTO `cq_portal` VALUES (0589, 1219, 0009, 0335, 0282);
+INSERT INTO `cq_portal` VALUES (0590, 1219, 0010, 0310, 0174);
+INSERT INTO `cq_portal` VALUES (0591, 1219, 0011, 0378, 0153);
+INSERT INTO `cq_portal` VALUES (0592, 1219, 0012, 0611, 0311);
+INSERT INTO `cq_portal` VALUES (0593, 1219, 0013, 0623, 0402);
+INSERT INTO `cq_portal` VALUES (0594, 1219, 0014, 0674, 0418);
+INSERT INTO `cq_portal` VALUES (0595, 1219, 0015, 0713, 0377);
+INSERT INTO `cq_portal` VALUES (0596, 1219, 0016, 0834, 0455);
+INSERT INTO `cq_portal` VALUES (0597, 1219, 0017, 0846, 0558);
+INSERT INTO `cq_portal` VALUES (0598, 1219, 0018, 0900, 0826);
+INSERT INTO `cq_portal` VALUES (0599, 1219, 0019, 0872, 0850);
+INSERT INTO `cq_portal` VALUES (0600, 1219, 0020, 0864, 0846);
+INSERT INTO `cq_portal` VALUES (0601, 1219, 0021, 0808, 0823);
+INSERT INTO `cq_portal` VALUES (0602, 1219, 0022, 0871, 0853);
+INSERT INTO `cq_portal` VALUES (0603, 1219, 0023, 0899, 0894);
+INSERT INTO `cq_portal` VALUES (0604, 1219, 0024, 0813, 0677);
+INSERT INTO `cq_portal` VALUES (0605, 1219, 0025, 0690, 0667);
+INSERT INTO `cq_portal` VALUES (0606, 1219, 0026, 0942, 1012);
+INSERT INTO `cq_portal` VALUES (0607, 1219, 0027, 0903, 1041);
+INSERT INTO `cq_portal` VALUES (0608, 1219, 0028, 1022, 1035);
+INSERT INTO `cq_portal` VALUES (0609, 1219, 0029, 1087, 1124);
+INSERT INTO `cq_portal` VALUES (0610, 1219, 0030, 1046, 0835);
+INSERT INTO `cq_portal` VALUES (0611, 1219, 0031, 1138, 0895);
+INSERT INTO `cq_portal` VALUES (0612, 1219, 0032, 1017, 1294);
+INSERT INTO `cq_portal` VALUES (0613, 1212, 0033, 0378, 0037);
+INSERT INTO `cq_portal` VALUES (0614, 1001, 0001, 0674, 0349);
+INSERT INTO `cq_portal` VALUES (0615, 1766, 0000, 0103, 0123);
+INSERT INTO `cq_portal` VALUES (0617, 7001, 0002, 0638, 0737);
+INSERT INTO `cq_portal` VALUES (0618, 7003, 0002, 0108, 0093);
+INSERT INTO `cq_portal` VALUES (0698, 7007, 0002, 0638, 0737);
+INSERT INTO `cq_portal` VALUES (0798, 7007, 0002, 0638, 0737);
+INSERT INTO `cq_portal` VALUES (0898, 2204, 0002, 0034, 0006);
+INSERT INTO `cq_portal` VALUES (0899, 2204, 0000, 0054, 0081);
+INSERT INTO `cq_portal` VALUES (0900, 7503, 0000, 0088, 0063);
+INSERT INTO `cq_portal` VALUES (0901, 1000, 0005, 0499, 0650);
+INSERT INTO `cq_portal` VALUES (0902, 1927, 0000, 0060, 0257);
+INSERT INTO `cq_portal` VALUES (0903, 1762, 0000, 0636, 0380);
+INSERT INTO `cq_portal` VALUES (0904, 1999, 0000, 0410, 0484);
+INSERT INTO `cq_portal` VALUES (0905, 1927, 0001, 0636, 0380);
+INSERT INTO `cq_portal` VALUES (0906, 1999, 0001, 0360, 0177);
+INSERT INTO `cq_portal` VALUES (0907, 1999, 0002, 0446, 0228);
+INSERT INTO `cq_portal` VALUES (0908, 1999, 0003, 0173, 0223);
+INSERT INTO `cq_portal` VALUES (0909, 1999, 0004, 0338, 0050);
+INSERT INTO `cq_portal` VALUES (0910, 1999, 0005, 0360, 0177);
+INSERT INTO `cq_portal` VALUES (0911, 1999, 0006, 0510, 0242);
+INSERT INTO `cq_portal` VALUES (0912, 1999, 0007, 0287, 0570);
+INSERT INTO `cq_portal` VALUES (0913, 1999, 0008, 0397, 0551);
+INSERT INTO `cq_portal` VALUES (0914, 1999, 0009, 0360, 0177);
+INSERT INTO `cq_portal` VALUES (0915, 1999, 0010, 0410, 0484);
+INSERT INTO `cq_portal` VALUES (0916, 1999, 0011, 0410, 0484);
+INSERT INTO `cq_portal` VALUES (0917, 2054, 0000, 0530, 0431);
+INSERT INTO `cq_portal` VALUES (0918, 1999, 0012, 0409, 0488);
+INSERT INTO `cq_portal` VALUES (0919, 1999, 0013, 0360, 0177);
+INSERT INTO `cq_portal` VALUES (0920, 1999, 0014, 0410, 0484);
+INSERT INTO `cq_portal` VALUES (0921, 2055, 0001, 0500, 0509);
+INSERT INTO `cq_portal` VALUES (0922, 1999, 0015, 0410, 0484);
+INSERT INTO `cq_portal` VALUES (0923, 2055, 0002, 0445, 0505);
+INSERT INTO `cq_portal` VALUES (0924, 2055, 0003, 0379, 0501);
+INSERT INTO `cq_portal` VALUES (0925, 2055, 0004, 0431, 0633);
+INSERT INTO `cq_portal` VALUES (0926, 2055, 0005, 0464, 0627);
+INSERT INTO `cq_portal` VALUES (0927, 2055, 0006, 0332, 0602);
+INSERT INTO `cq_portal` VALUES (0928, 2055, 0007, 0594, 0359);
+INSERT INTO `cq_portal` VALUES (0929, 2055, 0008, 0366, 0360);
+INSERT INTO `cq_portal` VALUES (0930, 2055, 0009, 0294, 0416);
+INSERT INTO `cq_portal` VALUES (0931, 2055, 0010, 0141, 0313);
+INSERT INTO `cq_portal` VALUES (0932, 2055, 0011, 0229, 0150);
+INSERT INTO `cq_portal` VALUES (0933, 2055, 0012, 0213, 0294);
+INSERT INTO `cq_portal` VALUES (0934, 2055, 0013, 0583, 0487);
+INSERT INTO `cq_portal` VALUES (0935, 2055, 0014, 0419, 0412);
+INSERT INTO `cq_portal` VALUES (0936, 2055, 0015, 0314, 0287);
+INSERT INTO `cq_portal` VALUES (0937, 2055, 0016, 0343, 0160);
+INSERT INTO `cq_portal` VALUES (0938, 2055, 0017, 0488, 0296);
+INSERT INTO `cq_portal` VALUES (0939, 2055, 0018, 0421, 0328);
+INSERT INTO `cq_portal` VALUES (0940, 2055, 0019, 0194, 0245);
+INSERT INTO `cq_portal` VALUES (0941, 2056, 0000, 0465, 0639);
+INSERT INTO `cq_portal` VALUES (0943, 2055, 0020, 0499, 0265);
+INSERT INTO `cq_portal` VALUES (0944, 2055, 0021, 0292, 0535);
+INSERT INTO `cq_portal` VALUES (0945, 2055, 0022, 0428, 0175);
+INSERT INTO `cq_portal` VALUES (0946, 2055, 0023, 0161, 0404);
+INSERT INTO `cq_portal` VALUES (0947, 2055, 0024, 0351, 0102);
+INSERT INTO `cq_portal` VALUES (0948, 2055, 0025, 0075, 0316);
+
+-- Records of `cq_region` (26 rows)
+INSERT INTO `cq_region` VALUES (0001, 1105, 0002, 0000, 0000, 0300, 0500, '0', 0010, 0999, 0010, 0000, 0);
+INSERT INTO `cq_region` VALUES (0002, 1106, 0002, 0000, 0000, 0300, 0500, '0', 0010, 0999, 0010, 0000, 0);
+INSERT INTO `cq_region` VALUES (0003, 1107, 0002, 0000, 0000, 0300, 0500, '0', 0010, 0999, 0010, 0000, 0);
+INSERT INTO `cq_region` VALUES (0035, 1025, 0002, 0000, 0000, 0184, 0184, '0', 0010, 0999, 0010, 0000, 0);
+INSERT INTO `cq_region` VALUES (0036, 1026, 0002, 0000, 0000, 0216, 0216, '0', 0010, 0999, 0010, 0000, 0);
+INSERT INTO `cq_region` VALUES (0037, 1027, 0002, 0000, 0000, 0216, 0216, '0', 0010, 0999, 0010, 0000, 0);
+INSERT INTO `cq_region` VALUES (0038, 1028, 0002, 0000, 0000, 0184, 0184, '0', 0010, 0999, 0010, 0000, 0);
+INSERT INTO `cq_region` VALUES (0039, 1012, 0002, 0000, 0000, 0588, 0588, '0', 0011, 0999, 0020, 0000, 0);
+INSERT INTO `cq_region` VALUES (0040, 1002, 0002, 0000, 0000, 0972, 0972, '0', 0002, 0000, 0020, 0000, 0);
+INSERT INTO `cq_region` VALUES (0041, 1011, 0002, 0000, 0000, 0944, 0944, '0', 0002, 0000, 0020, 0000, 0);
+INSERT INTO `cq_region` VALUES (0042, 1015, 0002, 0000, 0000, 1024, 1024, '0', 0002, 0000, 0020, 0000, 0);
+INSERT INTO `cq_region` VALUES (0043, 1078, 0002, 0000, 0000, 0592, 0592, '0', 0002, 0000, 0020, 0000, 0);
+INSERT INTO `cq_region` VALUES (0044, 1000, 0002, 0000, 0000, 0984, 0984, '0', 0002, 0000, 0020, 0000, 0);
+INSERT INTO `cq_region` VALUES (0045, 1076, 0002, 0000, 0000, 1000, 1000, '0', 0002, 0000, 0020, 0000, 0);
+INSERT INTO `cq_region` VALUES (0046, 1075, 0002, 0000, 0000, 1000, 1000, '0', 0002, 0000, 0020, 0000, 0);
+INSERT INTO `cq_region` VALUES (0047, 1020, 0002, 0000, 0000, 0932, 0932, '0', 0002, 0000, 0020, 0000, 0);
+INSERT INTO `cq_region` VALUES (0048, 1077, 0002, 0000, 0000, 1000, 1000, '0', 0002, 0000, 0020, 0000, 0);
+INSERT INTO `cq_region` VALUES (0050, 1038, 0003, 0140, 0134, 0001, 0001, '0', 0000, 0999, 0000, 0000, 0);
+INSERT INTO `cq_region` VALUES (0051, 1038, 0003, 0130, 0138, 0001, 0001, '0', 0000, 0999, 0000, 0000, 0);
+INSERT INTO `cq_region` VALUES (0052, 1038, 0003, 0144, 0124, 0001, 0001, '0', 0000, 0999, 0000, 0000, 0);
+INSERT INTO `cq_region` VALUES (0053, 1038, 0003, 0153, 0124, 0001, 0001, '0', 0000, 0999, 0000, 0000, 0);
+INSERT INTO `cq_region` VALUES (0054, 1038, 0003, 0161, 0124, 0001, 0001, '0', 0000, 0999, 0000, 0000, 0);
+INSERT INTO `cq_region` VALUES (0055, 1038, 0003, 0130, 0147, 0001, 0001, '0', 0000, 0999, 0000, 0000, 0);
+INSERT INTO `cq_region` VALUES (0056, 1038, 0003, 0130, 0155, 0001, 0001, '0', 0000, 0999, 0000, 0000, 0);
+INSERT INTO `cq_region` VALUES (0057, 2207, 0002, 0000, 0000, 0217, 0217, '0', 0000, 0999, 0000, 0000, 0);
+INSERT INTO `cq_region` VALUES (0058, 2057, 0007, 0439, 0324, 0088, 0088, '', 0000, 0000, 0000, 0000, 0);
+
+-- Records of `cq_levexp` (139 rows)
+INSERT INTO `cq_levexp` VALUES (0001, 24, 2, 0);
+INSERT INTO `cq_levexp` VALUES (0002, 36, 2, 0);
+INSERT INTO `cq_levexp` VALUES (0003, 48, 1, 0);
+INSERT INTO `cq_levexp` VALUES (0004, 72, 2, 0);
+INSERT INTO `cq_levexp` VALUES (0005, 120, 2, 0);
+INSERT INTO `cq_levexp` VALUES (0006, 192, 3, 0);
+INSERT INTO `cq_levexp` VALUES (0007, 240, 3, 0);
+INSERT INTO `cq_levexp` VALUES (0008, 480, 5, 0);
+INSERT INTO `cq_levexp` VALUES (0009, 720, 7, 0);
+INSERT INTO `cq_levexp` VALUES (0010, 1680, 14, 0);
+INSERT INTO `cq_levexp` VALUES (0011, 2400, 18, 0);
+INSERT INTO `cq_levexp` VALUES (0012, 2880, 20, 0);
+INSERT INTO `cq_levexp` VALUES (0013, 3600, 23, 0);
+INSERT INTO `cq_levexp` VALUES (0014, 4320, 26, 0);
+INSERT INTO `cq_levexp` VALUES (0015, 4529, 25, 0);
+INSERT INTO `cq_levexp` VALUES (0016, 6441, 34, 0);
+INSERT INTO `cq_levexp` VALUES (0017, 7487, 37, 0);
+INSERT INTO `cq_levexp` VALUES (0018, 9511, 44, 0);
+INSERT INTO `cq_levexp` VALUES (0019, 11322, 50, 0);
+INSERT INTO `cq_levexp` VALUES (0020, 13754, 57, 0);
+INSERT INTO `cq_levexp` VALUES (0021, 14103, 56, 0);
+INSERT INTO `cq_levexp` VALUES (0022, 15187, 58, 0);
+INSERT INTO `cq_levexp` VALUES (0023, 19547, 59, 0);
+INSERT INTO `cq_levexp` VALUES (0024, 22967, 66, 0);
+INSERT INTO `cq_levexp` VALUES (0025, 24171, 67, 0);
+INSERT INTO `cq_levexp` VALUES (0026, 24796, 66, 0);
+INSERT INTO `cq_levexp` VALUES (0027, 25344, 65, 0);
+INSERT INTO `cq_levexp` VALUES (0028, 29176, 72, 0);
+INSERT INTO `cq_levexp` VALUES (0029, 34687, 83, 0);
+INSERT INTO `cq_levexp` VALUES (0030, 39529, 92, 0);
+INSERT INTO `cq_levexp` VALUES (0031, 40490, 91, 0);
+INSERT INTO `cq_levexp` VALUES (0032, 42432, 92, 0);
+INSERT INTO `cq_levexp` VALUES (0033, 48838, 103, 0);
+INSERT INTO `cq_levexp` VALUES (0034, 57165, 117, 0);
+INSERT INTO `cq_levexp` VALUES (0035, 61197, 121, 0);
+INSERT INTO `cq_levexp` VALUES (0036, 62573, 121, 0);
+INSERT INTO `cq_levexp` VALUES (0037, 64896, 122, 0);
+INSERT INTO `cq_levexp` VALUES (0038, 73234, 134, 0);
+INSERT INTO `cq_levexp` VALUES (0039, 86792, 155, 0);
+INSERT INTO `cq_levexp` VALUES (0040, 92118, 160, 0);
+INSERT INTO `cq_levexp` VALUES (0041, 101348, 172, 0);
+INSERT INTO `cq_levexp` VALUES (0042, 113999, 188, 0);
+INSERT INTO `cq_levexp` VALUES (0043, 145705, 235, 0);
+INSERT INTO `cq_levexp` VALUES (0044, 170166, 269, 0);
+INSERT INTO `cq_levexp` VALUES (0045, 183296, 283, 0);
+INSERT INTO `cq_levexp` VALUES (0046, 187024, 282, 0);
+INSERT INTO `cq_levexp` VALUES (0047, 188160, 278, 0);
+INSERT INTO `cq_levexp` VALUES (0048, 215319, 312, 0);
+INSERT INTO `cq_levexp` VALUES (0049, 254556, 361, 0);
+INSERT INTO `cq_levexp` VALUES (0050, 271599, 302, 0);
+INSERT INTO `cq_levexp` VALUES (0051, 276972, 302, 0);
+INSERT INTO `cq_levexp` VALUES (0052, 295680, 316, 0);
+INSERT INTO `cq_levexp` VALUES (0053, 326488, 342, 0);
+INSERT INTO `cq_levexp` VALUES (0054, 380621, 392, 0);
+INSERT INTO `cq_levexp` VALUES (0055, 413208, 417, 0);
+INSERT INTO `cq_levexp` VALUES (0056, 420985, 418, 0);
+INSERT INTO `cq_levexp` VALUES (0057, 384217, 374, 0);
+INSERT INTO `cq_levexp` VALUES (0058, 483440, 463, 0);
+INSERT INTO `cq_levexp` VALUES (0059, 570692, 537, 0);
+INSERT INTO `cq_levexp` VALUES (0060, 610915, 566, 0);
+INSERT INTO `cq_levexp` VALUES (0061, 622243, 567, 0);
+INSERT INTO `cq_levexp` VALUES (0062, 645120, 578, 0);
+INSERT INTO `cq_levexp` VALUES (0063, 762192, 672, 0);
+INSERT INTO `cq_levexp` VALUES (0064, 887579, 770, 0);
+INSERT INTO `cq_levexp` VALUES (0065, 976121, 834, 0);
+INSERT INTO `cq_levexp` VALUES (0066, 994192, 837, 0);
+INSERT INTO `cq_levexp` VALUES (0067, 1021440, 847, 0);
+INSERT INTO `cq_levexp` VALUES (0068, 1130504, 924, 0);
+INSERT INTO `cq_levexp` VALUES (0069, 1315832, 1059, 0);
+INSERT INTO `cq_levexp` VALUES (0070, 1375598, 819, 0);
+INSERT INTO `cq_levexp` VALUES (0071, 1420140, 833, 0);
+INSERT INTO `cq_levexp` VALUES (0072, 1431531, 828, 0);
+INSERT INTO `cq_levexp` VALUES (0073, 1821372, 1040, 0);
+INSERT INTO `cq_levexp` VALUES (0074, 2119280, 1193, 0);
+INSERT INTO `cq_levexp` VALUES (0075, 2244110, 831, 0);
+INSERT INTO `cq_levexp` VALUES (0076, 2281838, 834, 0);
+INSERT INTO `cq_levexp` VALUES (0077, 2284800, 824, 0);
+INSERT INTO `cq_levexp` VALUES (0078, 2576590, 918, 0);
+INSERT INTO `cq_levexp` VALUES (0079, 3034561, 1067, 0);
+INSERT INTO `cq_levexp` VALUES (0080, 3179398, 1104, 0);
+INSERT INTO `cq_levexp` VALUES (0081, 3232760, 1109, 0);
+INSERT INTO `cq_levexp` VALUES (0082, 3360000, 1138, 0);
+INSERT INTO `cq_levexp` VALUES (0083, 3846056, 1287, 0);
+INSERT INTO `cq_levexp` VALUES (0084, 4473042, 1479, 0);
+INSERT INTO `cq_levexp` VALUES (0085, 4763862, 1557, 0);
+INSERT INTO `cq_levexp` VALUES (0086, 4843906, 1565, 0);
+INSERT INTO `cq_levexp` VALUES (0087, 4972800, 1588, 0);
+INSERT INTO `cq_levexp` VALUES (0088, 5440015, 1717, 0);
+INSERT INTO `cq_levexp` VALUES (0089, 6406633, 2000, 0);
+INSERT INTO `cq_levexp` VALUES (0090, 6744760, 2082, 0);
+INSERT INTO `cq_levexp` VALUES (0091, 6858263, 2093, 0);
+INSERT INTO `cq_levexp` VALUES (0092, 6988800, 1662, 0);
+INSERT INTO `cq_levexp` VALUES (0093, 7892705, 1877, 0);
+INSERT INTO `cq_levexp` VALUES (0094, 9175713, 2182, 0);
+INSERT INTO `cq_levexp` VALUES (0095, 9784847, 2326, 0);
+INSERT INTO `cq_levexp` VALUES (0096, 9945844, 2365, 0);
+INSERT INTO `cq_levexp` VALUES (0097, 10214400, 2429, 0);
+INSERT INTO `cq_levexp` VALUES (0098, 11161676, 2654, 0);
+INSERT INTO `cq_levexp` VALUES (0099, 12974012, 3085, 0);
+INSERT INTO `cq_levexp` VALUES (0100, 13678386, 3252, 0);
+INSERT INTO `cq_levexp` VALUES (0101, 13907405, 3307, 0);
+INSERT INTO `cq_levexp` VALUES (0102, 15284594, 3634, 0);
+INSERT INTO `cq_levexp` VALUES (0103, 19390158, 4610, 0);
+INSERT INTO `cq_levexp` VALUES (0104, 22535351, 5358, 0);
+INSERT INTO `cq_levexp` VALUES (0105, 24018096, 5710, 0);
+INSERT INTO `cq_levexp` VALUES (0106, 24359656, 5792, 0);
+INSERT INTO `cq_levexp` VALUES (0107, 25536000, 6071, 0);
+INSERT INTO `cq_levexp` VALUES (0108, 27489377, 6536, 0);
+INSERT INTO `cq_levexp` VALUES (0109, 38743194, 9211, 0);
+INSERT INTO `cq_levexp` VALUES (0110, 81766430, 9720, 0);
+INSERT INTO `cq_levexp` VALUES (0111, 90934937, 10810, 0);
+INSERT INTO `cq_levexp` VALUES (0112, 92225177, 10964, 0);
+INSERT INTO `cq_levexp` VALUES (0113, 93837977, 11155, 0);
+INSERT INTO `cq_levexp` VALUES (0114, 95450777, 11347, 0);
+INSERT INTO `cq_levexp` VALUES (0115, 96095897, 11424, 0);
+INSERT INTO `cq_levexp` VALUES (0116, 97063577, 11539, 0);
+INSERT INTO `cq_levexp` VALUES (0117, 98676377, 11730, 0);
+INSERT INTO `cq_levexp` VALUES (0118, 116116009, 13804, 0);
+INSERT INTO `cq_levexp` VALUES (0119, 143484997, 17057, 0);
+INSERT INTO `cq_levexp` VALUES (0120, 56454812, 6711, 0);
+INSERT INTO `cq_levexp` VALUES (0121, 67745774, 8054, 0);
+INSERT INTO `cq_levexp` VALUES (0122, 81294929, 9664, 0);
+INSERT INTO `cq_levexp` VALUES (0123, 97553914, 11597, 0);
+INSERT INTO `cq_levexp` VALUES (0124, 117064697, 13917, 0);
+INSERT INTO `cq_levexp` VALUES (0125, 140477637, 16700, 0);
+INSERT INTO `cq_levexp` VALUES (0126, 168573164, 20040, 0);
+INSERT INTO `cq_levexp` VALUES (0127, 202287797, 24048, 0);
+INSERT INTO `cq_levexp` VALUES (0128, 214748365, 25527, 0);
+INSERT INTO `cq_levexp` VALUES (0129, 8589134588, 25527, 0);
+INSERT INTO `cq_levexp` VALUES (0130, 8589134588, 102106, 0);
+INSERT INTO `cq_levexp` VALUES (0131, 25767403764, 153159, 0);
+INSERT INTO `cq_levexp` VALUES (0132, 77302211292, 229739, 0);
+INSERT INTO `cq_levexp` VALUES (0133, 231906633876, 344608, 0);
+INSERT INTO `cq_levexp` VALUES (0134, 347859950814, 516912, 0);
+INSERT INTO `cq_levexp` VALUES (0135, 521789926221, 775368, 0);
+INSERT INTO `cq_levexp` VALUES (0136, 782684889332, 1163052, 0);
+INSERT INTO `cq_levexp` VALUES (0137, 1174027333998, 1744578, 0);
+INSERT INTO `cq_levexp` VALUES (0138, 1761041000997, 2616867, 0);
+INSERT INTO `cq_levexp` VALUES (0139, 2641561501496, 3925301, 0);
+
+-- Records of `cq_point_allot` (600 rows)
+INSERT INTO `cq_point_allot` VALUES (0002, 0001, 0002, 0007, 0002, 0004, 0000);
+INSERT INTO `cq_point_allot` VALUES (0003, 0001, 0003, 0008, 0003, 0005, 0000);
+INSERT INTO `cq_point_allot` VALUES (0004, 0001, 0004, 0010, 0004, 0005, 0000);
+INSERT INTO `cq_point_allot` VALUES (0005, 0001, 0005, 0011, 0005, 0006, 0000);
+INSERT INTO `cq_point_allot` VALUES (0006, 0001, 0006, 0013, 0005, 0007, 0000);
+INSERT INTO `cq_point_allot` VALUES (0007, 0001, 0007, 0014, 0006, 0008, 0000);
+INSERT INTO `cq_point_allot` VALUES (0008, 0001, 0008, 0016, 0006, 0009, 0000);
+INSERT INTO `cq_point_allot` VALUES (0009, 0001, 0009, 0017, 0007, 0010, 0000);
+INSERT INTO `cq_point_allot` VALUES (0010, 0001, 0010, 0019, 0007, 0011, 0000);
+INSERT INTO `cq_point_allot` VALUES (0011, 0001, 0011, 0020, 0008, 0012, 0000);
+INSERT INTO `cq_point_allot` VALUES (0012, 0001, 0012, 0022, 0008, 0013, 0000);
+INSERT INTO `cq_point_allot` VALUES (0013, 0001, 0013, 0023, 0009, 0014, 0000);
+INSERT INTO `cq_point_allot` VALUES (0014, 0001, 0014, 0025, 0010, 0014, 0000);
+INSERT INTO `cq_point_allot` VALUES (0015, 0001, 0015, 0028, 0010, 0014, 0000);
+INSERT INTO `cq_point_allot` VALUES (0016, 0001, 0016, 0028, 0011, 0016, 0000);
+INSERT INTO `cq_point_allot` VALUES (0017, 0001, 0017, 0029, 0012, 0017, 0000);
+INSERT INTO `cq_point_allot` VALUES (0018, 0001, 0018, 0031, 0012, 0018, 0000);
+INSERT INTO `cq_point_allot` VALUES (0019, 0001, 0019, 0032, 0013, 0019, 0000);
+INSERT INTO `cq_point_allot` VALUES (0020, 0001, 0020, 0034, 0013, 0020, 0000);
+INSERT INTO `cq_point_allot` VALUES (0021, 0001, 0021, 0035, 0014, 0021, 0000);
+INSERT INTO `cq_point_allot` VALUES (0022, 0001, 0022, 0037, 0014, 0022, 0000);
+INSERT INTO `cq_point_allot` VALUES (0023, 0001, 0023, 0038, 0015, 0023, 0000);
+INSERT INTO `cq_point_allot` VALUES (0024, 0001, 0024, 0040, 0015, 0024, 0000);
+INSERT INTO `cq_point_allot` VALUES (0025, 0001, 0025, 0041, 0016, 0025, 0000);
+INSERT INTO `cq_point_allot` VALUES (0026, 0001, 0026, 0043, 0017, 0025, 0000);
+INSERT INTO `cq_point_allot` VALUES (0027, 0001, 0027, 0044, 0018, 0026, 0000);
+INSERT INTO `cq_point_allot` VALUES (0028, 0001, 0028, 0046, 0018, 0027, 0000);
+INSERT INTO `cq_point_allot` VALUES (0029, 0001, 0029, 0047, 0019, 0028, 0000);
+INSERT INTO `cq_point_allot` VALUES (0030, 0001, 0030, 0049, 0019, 0029, 0000);
+INSERT INTO `cq_point_allot` VALUES (0031, 0001, 0031, 0050, 0020, 0030, 0000);
+INSERT INTO `cq_point_allot` VALUES (0032, 0001, 0032, 0052, 0020, 0031, 0000);
+INSERT INTO `cq_point_allot` VALUES (0033, 0001, 0033, 0053, 0021, 0032, 0000);
+INSERT INTO `cq_point_allot` VALUES (0034, 0001, 0034, 0055, 0021, 0033, 0000);
+INSERT INTO `cq_point_allot` VALUES (0035, 0001, 0035, 0056, 0022, 0034, 0000);
+INSERT INTO `cq_point_allot` VALUES (0036, 0001, 0036, 0058, 0023, 0034, 0000);
+INSERT INTO `cq_point_allot` VALUES (0037, 0001, 0037, 0059, 0024, 0035, 0000);
+INSERT INTO `cq_point_allot` VALUES (0038, 0001, 0038, 0061, 0024, 0036, 0000);
+INSERT INTO `cq_point_allot` VALUES (0039, 0001, 0039, 0062, 0025, 0037, 0000);
+INSERT INTO `cq_point_allot` VALUES (0040, 0001, 0040, 0065, 0025, 0037, 0000);
+INSERT INTO `cq_point_allot` VALUES (0041, 0001, 0041, 0065, 0026, 0039, 0000);
+INSERT INTO `cq_point_allot` VALUES (0042, 0001, 0042, 0067, 0026, 0040, 0000);
+INSERT INTO `cq_point_allot` VALUES (0043, 0001, 0043, 0068, 0027, 0041, 0000);
+INSERT INTO `cq_point_allot` VALUES (0044, 0001, 0044, 0070, 0027, 0042, 0000);
+INSERT INTO `cq_point_allot` VALUES (0045, 0001, 0045, 0071, 0028, 0043, 0000);
+INSERT INTO `cq_point_allot` VALUES (0046, 0001, 0046, 0073, 0029, 0043, 0000);
+INSERT INTO `cq_point_allot` VALUES (0047, 0001, 0047, 0074, 0030, 0044, 0000);
+INSERT INTO `cq_point_allot` VALUES (0048, 0001, 0048, 0076, 0030, 0045, 0000);
+INSERT INTO `cq_point_allot` VALUES (0049, 0001, 0049, 0077, 0031, 0046, 0000);
+INSERT INTO `cq_point_allot` VALUES (0050, 0001, 0050, 0079, 0031, 0047, 0000);
+INSERT INTO `cq_point_allot` VALUES (0051, 0001, 0051, 0080, 0032, 0048, 0000);
+INSERT INTO `cq_point_allot` VALUES (0052, 0001, 0052, 0082, 0032, 0049, 0000);
+INSERT INTO `cq_point_allot` VALUES (0053, 0001, 0053, 0083, 0033, 0050, 0000);
+INSERT INTO `cq_point_allot` VALUES (0054, 0001, 0054, 0085, 0033, 0051, 0000);
+INSERT INTO `cq_point_allot` VALUES (0055, 0001, 0055, 0086, 0034, 0052, 0000);
+INSERT INTO `cq_point_allot` VALUES (0056, 0001, 0056, 0088, 0035, 0052, 0000);
+INSERT INTO `cq_point_allot` VALUES (0057, 0001, 0057, 0089, 0036, 0053, 0000);
+INSERT INTO `cq_point_allot` VALUES (0058, 0001, 0058, 0091, 0036, 0054, 0000);
+INSERT INTO `cq_point_allot` VALUES (0059, 0001, 0059, 0092, 0037, 0055, 0000);
+INSERT INTO `cq_point_allot` VALUES (0060, 0001, 0060, 0094, 0037, 0056, 0000);
+INSERT INTO `cq_point_allot` VALUES (0061, 0001, 0061, 0095, 0038, 0057, 0000);
+INSERT INTO `cq_point_allot` VALUES (0062, 0001, 0062, 0097, 0038, 0058, 0000);
+INSERT INTO `cq_point_allot` VALUES (0063, 0001, 0063, 0098, 0039, 0059, 0000);
+INSERT INTO `cq_point_allot` VALUES (0064, 0001, 0064, 0100, 0039, 0060, 0000);
+INSERT INTO `cq_point_allot` VALUES (0065, 0001, 0065, 0101, 0040, 0061, 0000);
+INSERT INTO `cq_point_allot` VALUES (0066, 0001, 0066, 0103, 0041, 0061, 0000);
+INSERT INTO `cq_point_allot` VALUES (0067, 0001, 0067, 0104, 0042, 0062, 0000);
+INSERT INTO `cq_point_allot` VALUES (0068, 0001, 0068, 0106, 0042, 0063, 0000);
+INSERT INTO `cq_point_allot` VALUES (0069, 0001, 0069, 0108, 0042, 0064, 0000);
+INSERT INTO `cq_point_allot` VALUES (0070, 0001, 0070, 0110, 0042, 0065, 0000);
+INSERT INTO `cq_point_allot` VALUES (0071, 0001, 0071, 0110, 0044, 0066, 0000);
+INSERT INTO `cq_point_allot` VALUES (0072, 0001, 0072, 0112, 0044, 0067, 0000);
+INSERT INTO `cq_point_allot` VALUES (0073, 0001, 0073, 0113, 0045, 0068, 0000);
+INSERT INTO `cq_point_allot` VALUES (0074, 0001, 0074, 0115, 0045, 0069, 0000);
+INSERT INTO `cq_point_allot` VALUES (0075, 0001, 0075, 0116, 0046, 0070, 0000);
+INSERT INTO `cq_point_allot` VALUES (0076, 0001, 0076, 0118, 0047, 0070, 0000);
+INSERT INTO `cq_point_allot` VALUES (0077, 0001, 0077, 0119, 0048, 0071, 0000);
+INSERT INTO `cq_point_allot` VALUES (0078, 0001, 0078, 0121, 0048, 0072, 0000);
+INSERT INTO `cq_point_allot` VALUES (0079, 0001, 0079, 0122, 0049, 0073, 0000);
+INSERT INTO `cq_point_allot` VALUES (0080, 0001, 0080, 0124, 0049, 0074, 0000);
+INSERT INTO `cq_point_allot` VALUES (0081, 0001, 0081, 0125, 0050, 0075, 0000);
+INSERT INTO `cq_point_allot` VALUES (0082, 0001, 0082, 0127, 0050, 0076, 0000);
+INSERT INTO `cq_point_allot` VALUES (0083, 0001, 0083, 0128, 0051, 0077, 0000);
+INSERT INTO `cq_point_allot` VALUES (0084, 0001, 0084, 0130, 0051, 0078, 0000);
+INSERT INTO `cq_point_allot` VALUES (0085, 0001, 0085, 0131, 0052, 0079, 0000);
+INSERT INTO `cq_point_allot` VALUES (0086, 0001, 0086, 0133, 0053, 0079, 0000);
+INSERT INTO `cq_point_allot` VALUES (0087, 0001, 0087, 0134, 0054, 0080, 0000);
+INSERT INTO `cq_point_allot` VALUES (0088, 0001, 0088, 0136, 0054, 0081, 0000);
+INSERT INTO `cq_point_allot` VALUES (0089, 0001, 0089, 0137, 0055, 0082, 0000);
+INSERT INTO `cq_point_allot` VALUES (0090, 0001, 0090, 0139, 0055, 0083, 0000);
+INSERT INTO `cq_point_allot` VALUES (0091, 0001, 0091, 0140, 0056, 0084, 0000);
+INSERT INTO `cq_point_allot` VALUES (0092, 0001, 0092, 0142, 0056, 0085, 0000);
+INSERT INTO `cq_point_allot` VALUES (0093, 0001, 0093, 0143, 0057, 0086, 0000);
+INSERT INTO `cq_point_allot` VALUES (0094, 0001, 0094, 0145, 0057, 0087, 0000);
+INSERT INTO `cq_point_allot` VALUES (0095, 0001, 0095, 0146, 0058, 0088, 0000);
+INSERT INTO `cq_point_allot` VALUES (0096, 0001, 0096, 0148, 0059, 0088, 0000);
+INSERT INTO `cq_point_allot` VALUES (0097, 0001, 0097, 0149, 0060, 0089, 0000);
+INSERT INTO `cq_point_allot` VALUES (0098, 0001, 0098, 0151, 0060, 0090, 0000);
+INSERT INTO `cq_point_allot` VALUES (0099, 0001, 0099, 0153, 0060, 0091, 0000);
+INSERT INTO `cq_point_allot` VALUES (0100, 0001, 0100, 0155, 0060, 0092, 0000);
+INSERT INTO `cq_point_allot` VALUES (0101, 0001, 0101, 0156, 0061, 0093, 0000);
+INSERT INTO `cq_point_allot` VALUES (0102, 0001, 0102, 0157, 0062, 0094, 0000);
+INSERT INTO `cq_point_allot` VALUES (0103, 0001, 0103, 0158, 0063, 0095, 0000);
+INSERT INTO `cq_point_allot` VALUES (0104, 0001, 0104, 0160, 0063, 0096, 0000);
+INSERT INTO `cq_point_allot` VALUES (0105, 0001, 0105, 0161, 0064, 0097, 0000);
+INSERT INTO `cq_point_allot` VALUES (0106, 0001, 0106, 0163, 0065, 0097, 0000);
+INSERT INTO `cq_point_allot` VALUES (0107, 0001, 0107, 0164, 0066, 0098, 0000);
+INSERT INTO `cq_point_allot` VALUES (0108, 0001, 0108, 0166, 0066, 0099, 0000);
+INSERT INTO `cq_point_allot` VALUES (0109, 0001, 0109, 0167, 0067, 0100, 0000);
+INSERT INTO `cq_point_allot` VALUES (0110, 0001, 0110, 0170, 0067, 0100, 0000);
+INSERT INTO `cq_point_allot` VALUES (0111, 0001, 0111, 0170, 0068, 0102, 0000);
+INSERT INTO `cq_point_allot` VALUES (0112, 0001, 0112, 0172, 0068, 0103, 0000);
+INSERT INTO `cq_point_allot` VALUES (0113, 0001, 0113, 0173, 0069, 0104, 0000);
+INSERT INTO `cq_point_allot` VALUES (0114, 0001, 0114, 0175, 0069, 0105, 0000);
+INSERT INTO `cq_point_allot` VALUES (0115, 0001, 0115, 0176, 0070, 0106, 0000);
+INSERT INTO `cq_point_allot` VALUES (0116, 0001, 0116, 0178, 0071, 0106, 0000);
+INSERT INTO `cq_point_allot` VALUES (0117, 0001, 0117, 0179, 0072, 0107, 0000);
+INSERT INTO `cq_point_allot` VALUES (0118, 0001, 0118, 0181, 0072, 0108, 0000);
+INSERT INTO `cq_point_allot` VALUES (0119, 0001, 0119, 0182, 0073, 0109, 0000);
+INSERT INTO `cq_point_allot` VALUES (0120, 0001, 0120, 0185, 0072, 0110, 0000);
+INSERT INTO `cq_point_allot` VALUES (0122, 0002, 0001, 0005, 0002, 0003, 0000);
+INSERT INTO `cq_point_allot` VALUES (0123, 0002, 0002, 0007, 0002, 0004, 0000);
+INSERT INTO `cq_point_allot` VALUES (0124, 0002, 0003, 0008, 0003, 0005, 0000);
+INSERT INTO `cq_point_allot` VALUES (0125, 0002, 0004, 0010, 0004, 0005, 0000);
+INSERT INTO `cq_point_allot` VALUES (0126, 0002, 0005, 0011, 0005, 0006, 0000);
+INSERT INTO `cq_point_allot` VALUES (0127, 0002, 0006, 0013, 0005, 0007, 0000);
+INSERT INTO `cq_point_allot` VALUES (0128, 0002, 0007, 0014, 0006, 0008, 0000);
+INSERT INTO `cq_point_allot` VALUES (0129, 0002, 0008, 0016, 0006, 0009, 0000);
+INSERT INTO `cq_point_allot` VALUES (0130, 0002, 0009, 0017, 0007, 0010, 0000);
+INSERT INTO `cq_point_allot` VALUES (0131, 0002, 0010, 0019, 0007, 0011, 0000);
+INSERT INTO `cq_point_allot` VALUES (0132, 0002, 0011, 0020, 0008, 0012, 0000);
+INSERT INTO `cq_point_allot` VALUES (0133, 0002, 0012, 0022, 0008, 0013, 0000);
+INSERT INTO `cq_point_allot` VALUES (0134, 0002, 0013, 0023, 0009, 0014, 0000);
+INSERT INTO `cq_point_allot` VALUES (0135, 0002, 0014, 0025, 0010, 0014, 0000);
+INSERT INTO `cq_point_allot` VALUES (0136, 0002, 0015, 0028, 0010, 0014, 0000);
+INSERT INTO `cq_point_allot` VALUES (0137, 0002, 0016, 0028, 0011, 0016, 0000);
+INSERT INTO `cq_point_allot` VALUES (0138, 0002, 0017, 0029, 0012, 0017, 0000);
+INSERT INTO `cq_point_allot` VALUES (0139, 0002, 0018, 0032, 0012, 0017, 0000);
+INSERT INTO `cq_point_allot` VALUES (0140, 0002, 0019, 0034, 0013, 0017, 0000);
+INSERT INTO `cq_point_allot` VALUES (0141, 0002, 0020, 0036, 0014, 0017, 0000);
+INSERT INTO `cq_point_allot` VALUES (0142, 0002, 0021, 0038, 0014, 0018, 0000);
+INSERT INTO `cq_point_allot` VALUES (0143, 0002, 0022, 0040, 0015, 0018, 0000);
+INSERT INTO `cq_point_allot` VALUES (0144, 0002, 0023, 0043, 0015, 0018, 0000);
+INSERT INTO `cq_point_allot` VALUES (0145, 0002, 0024, 0044, 0016, 0019, 0000);
+INSERT INTO `cq_point_allot` VALUES (0146, 0002, 0025, 0047, 0016, 0019, 0000);
+INSERT INTO `cq_point_allot` VALUES (0147, 0002, 0026, 0049, 0017, 0019, 0000);
+INSERT INTO `cq_point_allot` VALUES (0148, 0002, 0027, 0051, 0018, 0019, 0000);
+INSERT INTO `cq_point_allot` VALUES (0149, 0002, 0028, 0053, 0018, 0020, 0000);
+INSERT INTO `cq_point_allot` VALUES (0150, 0002, 0029, 0055, 0019, 0020, 0000);
+INSERT INTO `cq_point_allot` VALUES (0151, 0002, 0030, 0057, 0020, 0020, 0000);
+INSERT INTO `cq_point_allot` VALUES (0152, 0002, 0031, 0059, 0020, 0021, 0000);
+INSERT INTO `cq_point_allot` VALUES (0153, 0002, 0032, 0061, 0021, 0021, 0000);
+INSERT INTO `cq_point_allot` VALUES (0154, 0002, 0033, 0064, 0021, 0021, 0000);
+INSERT INTO `cq_point_allot` VALUES (0155, 0002, 0034, 0066, 0022, 0021, 0000);
+INSERT INTO `cq_point_allot` VALUES (0156, 0002, 0035, 0068, 0022, 0022, 0000);
+INSERT INTO `cq_point_allot` VALUES (0157, 0002, 0036, 0070, 0023, 0022, 0000);
+INSERT INTO `cq_point_allot` VALUES (0158, 0002, 0037, 0072, 0024, 0022, 0000);
+INSERT INTO `cq_point_allot` VALUES (0159, 0002, 0038, 0074, 0025, 0022, 0000);
+INSERT INTO `cq_point_allot` VALUES (0160, 0002, 0039, 0077, 0025, 0022, 0000);
+INSERT INTO `cq_point_allot` VALUES (0161, 0002, 0040, 0080, 0025, 0022, 0000);
+INSERT INTO `cq_point_allot` VALUES (0162, 0002, 0041, 0081, 0026, 0023, 0000);
+INSERT INTO `cq_point_allot` VALUES (0163, 0002, 0042, 0082, 0027, 0024, 0000);
+INSERT INTO `cq_point_allot` VALUES (0164, 0002, 0043, 0085, 0027, 0024, 0000);
+INSERT INTO `cq_point_allot` VALUES (0165, 0002, 0044, 0087, 0028, 0024, 0000);
+INSERT INTO `cq_point_allot` VALUES (0166, 0002, 0045, 0089, 0028, 0025, 0000);
+INSERT INTO `cq_point_allot` VALUES (0167, 0002, 0046, 0091, 0029, 0025, 0000);
+INSERT INTO `cq_point_allot` VALUES (0168, 0002, 0047, 0093, 0030, 0025, 0000);
+INSERT INTO `cq_point_allot` VALUES (0169, 0002, 0048, 0095, 0030, 0026, 0000);
+INSERT INTO `cq_point_allot` VALUES (0170, 0002, 0049, 0097, 0031, 0026, 0000);
+INSERT INTO `cq_point_allot` VALUES (0171, 0002, 0050, 0100, 0031, 0026, 0000);
+INSERT INTO `cq_point_allot` VALUES (0172, 0002, 0051, 0102, 0032, 0026, 0000);
+INSERT INTO `cq_point_allot` VALUES (0173, 0002, 0052, 0104, 0032, 0027, 0000);
+INSERT INTO `cq_point_allot` VALUES (0174, 0002, 0053, 0106, 0033, 0027, 0000);
+INSERT INTO `cq_point_allot` VALUES (0175, 0002, 0054, 0108, 0034, 0027, 0000);
+INSERT INTO `cq_point_allot` VALUES (0176, 0002, 0055, 0110, 0034, 0028, 0000);
+INSERT INTO `cq_point_allot` VALUES (0177, 0002, 0056, 0112, 0035, 0028, 0000);
+INSERT INTO `cq_point_allot` VALUES (0178, 0002, 0057, 0114, 0036, 0028, 0000);
+INSERT INTO `cq_point_allot` VALUES (0179, 0002, 0058, 0116, 0036, 0029, 0000);
+INSERT INTO `cq_point_allot` VALUES (0180, 0002, 0059, 0118, 0037, 0029, 0000);
+INSERT INTO `cq_point_allot` VALUES (0181, 0002, 0060, 0120, 0038, 0029, 0000);
+INSERT INTO `cq_point_allot` VALUES (0182, 0002, 0061, 0122, 0038, 0030, 0000);
+INSERT INTO `cq_point_allot` VALUES (0183, 0002, 0062, 0124, 0039, 0030, 0000);
+INSERT INTO `cq_point_allot` VALUES (0184, 0002, 0063, 0127, 0039, 0030, 0000);
+INSERT INTO `cq_point_allot` VALUES (0185, 0002, 0064, 0129, 0040, 0030, 0000);
+INSERT INTO `cq_point_allot` VALUES (0186, 0002, 0065, 0131, 0040, 0031, 0000);
+INSERT INTO `cq_point_allot` VALUES (0187, 0002, 0066, 0133, 0041, 0031, 0000);
+INSERT INTO `cq_point_allot` VALUES (0188, 0002, 0067, 0135, 0042, 0031, 0000);
+INSERT INTO `cq_point_allot` VALUES (0189, 0002, 0068, 0137, 0043, 0031, 0000);
+INSERT INTO `cq_point_allot` VALUES (0190, 0002, 0069, 0139, 0043, 0032, 0000);
+INSERT INTO `cq_point_allot` VALUES (0191, 0002, 0070, 0140, 0045, 0032, 0000);
+INSERT INTO `cq_point_allot` VALUES (0192, 0002, 0071, 0143, 0045, 0032, 0000);
+INSERT INTO `cq_point_allot` VALUES (0193, 0002, 0072, 0145, 0045, 0033, 0000);
+INSERT INTO `cq_point_allot` VALUES (0194, 0002, 0073, 0148, 0045, 0033, 0000);
+INSERT INTO `cq_point_allot` VALUES (0195, 0002, 0074, 0150, 0046, 0033, 0000);
+INSERT INTO `cq_point_allot` VALUES (0196, 0002, 0075, 0152, 0046, 0034, 0000);
+INSERT INTO `cq_point_allot` VALUES (0197, 0002, 0076, 0154, 0047, 0034, 0000);
+INSERT INTO `cq_point_allot` VALUES (0198, 0002, 0077, 0156, 0048, 0034, 0000);
+INSERT INTO `cq_point_allot` VALUES (0199, 0002, 0078, 0158, 0048, 0035, 0000);
+INSERT INTO `cq_point_allot` VALUES (0200, 0002, 0079, 0160, 0049, 0035, 0000);
+INSERT INTO `cq_point_allot` VALUES (0201, 0002, 0080, 0162, 0050, 0035, 0000);
+INSERT INTO `cq_point_allot` VALUES (0202, 0002, 0081, 0164, 0050, 0036, 0000);
+INSERT INTO `cq_point_allot` VALUES (0203, 0002, 0082, 0166, 0051, 0036, 0000);
+INSERT INTO `cq_point_allot` VALUES (0204, 0002, 0083, 0169, 0051, 0036, 0000);
+INSERT INTO `cq_point_allot` VALUES (0205, 0002, 0084, 0171, 0052, 0036, 0000);
+INSERT INTO `cq_point_allot` VALUES (0206, 0002, 0085, 0173, 0052, 0037, 0000);
+INSERT INTO `cq_point_allot` VALUES (0207, 0002, 0086, 0175, 0053, 0037, 0000);
+INSERT INTO `cq_point_allot` VALUES (0208, 0002, 0087, 0177, 0054, 0037, 0000);
+INSERT INTO `cq_point_allot` VALUES (0209, 0002, 0088, 0179, 0054, 0038, 0000);
+INSERT INTO `cq_point_allot` VALUES (0210, 0002, 0089, 0181, 0055, 0038, 0000);
+INSERT INTO `cq_point_allot` VALUES (0211, 0002, 0090, 0184, 0055, 0038, 0000);
+INSERT INTO `cq_point_allot` VALUES (0212, 0002, 0091, 0186, 0056, 0038, 0000);
+INSERT INTO `cq_point_allot` VALUES (0213, 0002, 0092, 0188, 0056, 0039, 0000);
+INSERT INTO `cq_point_allot` VALUES (0214, 0002, 0093, 0190, 0057, 0039, 0000);
+INSERT INTO `cq_point_allot` VALUES (0215, 0002, 0094, 0192, 0058, 0039, 0000);
+INSERT INTO `cq_point_allot` VALUES (0216, 0002, 0095, 0194, 0058, 0040, 0000);
+INSERT INTO `cq_point_allot` VALUES (0217, 0002, 0096, 0196, 0059, 0040, 0000);
+INSERT INTO `cq_point_allot` VALUES (0218, 0002, 0097, 0198, 0060, 0040, 0000);
+INSERT INTO `cq_point_allot` VALUES (0219, 0002, 0098, 0200, 0060, 0041, 0000);
+INSERT INTO `cq_point_allot` VALUES (0220, 0002, 0099, 0203, 0060, 0041, 0000);
+INSERT INTO `cq_point_allot` VALUES (0221, 0002, 0100, 0205, 0060, 0042, 0000);
+INSERT INTO `cq_point_allot` VALUES (0222, 0002, 0101, 0207, 0061, 0042, 0000);
+INSERT INTO `cq_point_allot` VALUES (0223, 0002, 0102, 0209, 0062, 0042, 0000);
+INSERT INTO `cq_point_allot` VALUES (0224, 0002, 0103, 0211, 0063, 0042, 0000);
+INSERT INTO `cq_point_allot` VALUES (0225, 0002, 0104, 0213, 0064, 0042, 0000);
+INSERT INTO `cq_point_allot` VALUES (0226, 0002, 0105, 0215, 0064, 0043, 0000);
+INSERT INTO `cq_point_allot` VALUES (0227, 0002, 0106, 0217, 0065, 0043, 0000);
+INSERT INTO `cq_point_allot` VALUES (0228, 0002, 0107, 0219, 0065, 0044, 0000);
+INSERT INTO `cq_point_allot` VALUES (0229, 0002, 0108, 0221, 0065, 0045, 0000);
+INSERT INTO `cq_point_allot` VALUES (0230, 0002, 0109, 0223, 0065, 0046, 0000);
+INSERT INTO `cq_point_allot` VALUES (0231, 0002, 0110, 0225, 0065, 0047, 0000);
+INSERT INTO `cq_point_allot` VALUES (0232, 0002, 0111, 0227, 0066, 0047, 0000);
+INSERT INTO `cq_point_allot` VALUES (0233, 0002, 0112, 0229, 0067, 0047, 0000);
+INSERT INTO `cq_point_allot` VALUES (0234, 0002, 0113, 0232, 0067, 0047, 0000);
+INSERT INTO `cq_point_allot` VALUES (0235, 0002, 0114, 0234, 0068, 0047, 0000);
+INSERT INTO `cq_point_allot` VALUES (0236, 0002, 0115, 0236, 0069, 0047, 0000);
+INSERT INTO `cq_point_allot` VALUES (0237, 0002, 0116, 0238, 0070, 0047, 0000);
+INSERT INTO `cq_point_allot` VALUES (0238, 0002, 0117, 0240, 0071, 0047, 0000);
+INSERT INTO `cq_point_allot` VALUES (0239, 0002, 0118, 0242, 0072, 0047, 0000);
+INSERT INTO `cq_point_allot` VALUES (0240, 0002, 0119, 0244, 0073, 0047, 0000);
+INSERT INTO `cq_point_allot` VALUES (0241, 0002, 0120, 0245, 0075, 0047, 0000);
+INSERT INTO `cq_point_allot` VALUES (0242, 0010, 0001, 0000, 0002, 0003, 0005);
+INSERT INTO `cq_point_allot` VALUES (0243, 0010, 0002, 0000, 0003, 0004, 0006);
+INSERT INTO `cq_point_allot` VALUES (0244, 0010, 0003, 0000, 0003, 0005, 0008);
+INSERT INTO `cq_point_allot` VALUES (0245, 0010, 0004, 0000, 0004, 0006, 0009);
+INSERT INTO `cq_point_allot` VALUES (0246, 0010, 0005, 0000, 0004, 0007, 0011);
+INSERT INTO `cq_point_allot` VALUES (0247, 0010, 0006, 0000, 0005, 0008, 0012);
+INSERT INTO `cq_point_allot` VALUES (0248, 0010, 0007, 0000, 0006, 0008, 0014);
+INSERT INTO `cq_point_allot` VALUES (0249, 0010, 0008, 0000, 0006, 0009, 0016);
+INSERT INTO `cq_point_allot` VALUES (0250, 0010, 0009, 0000, 0007, 0010, 0017);
+INSERT INTO `cq_point_allot` VALUES (0251, 0010, 0010, 0000, 0007, 0011, 0019);
+INSERT INTO `cq_point_allot` VALUES (0252, 0010, 0011, 0000, 0008, 0012, 0020);
+INSERT INTO `cq_point_allot` VALUES (0253, 0010, 0012, 0000, 0009, 0013, 0021);
+INSERT INTO `cq_point_allot` VALUES (0254, 0010, 0013, 0000, 0009, 0014, 0023);
+INSERT INTO `cq_point_allot` VALUES (0255, 0010, 0014, 0000, 0010, 0015, 0024);
+INSERT INTO `cq_point_allot` VALUES (0256, 0010, 0015, 0000, 0010, 0017, 0025);
+INSERT INTO `cq_point_allot` VALUES (0257, 0010, 0016, 0000, 0011, 0017, 0027);
+INSERT INTO `cq_point_allot` VALUES (0258, 0010, 0017, 0000, 0012, 0017, 0029);
+INSERT INTO `cq_point_allot` VALUES (0259, 0010, 0018, 0000, 0012, 0017, 0032);
+INSERT INTO `cq_point_allot` VALUES (0260, 0010, 0019, 0000, 0013, 0017, 0034);
+INSERT INTO `cq_point_allot` VALUES (0261, 0010, 0020, 0000, 0014, 0017, 0036);
+INSERT INTO `cq_point_allot` VALUES (0262, 0010, 0021, 0000, 0014, 0018, 0038);
+INSERT INTO `cq_point_allot` VALUES (0263, 0010, 0022, 0000, 0015, 0018, 0040);
+INSERT INTO `cq_point_allot` VALUES (0264, 0010, 0023, 0000, 0015, 0018, 0043);
+INSERT INTO `cq_point_allot` VALUES (0265, 0010, 0024, 0000, 0016, 0019, 0044);
+INSERT INTO `cq_point_allot` VALUES (0266, 0010, 0025, 0000, 0016, 0019, 0047);
+INSERT INTO `cq_point_allot` VALUES (0267, 0010, 0026, 0000, 0017, 0019, 0049);
+INSERT INTO `cq_point_allot` VALUES (0268, 0010, 0027, 0000, 0018, 0019, 0051);
+INSERT INTO `cq_point_allot` VALUES (0269, 0010, 0028, 0000, 0018, 0020, 0053);
+INSERT INTO `cq_point_allot` VALUES (0270, 0010, 0029, 0000, 0019, 0020, 0055);
+INSERT INTO `cq_point_allot` VALUES (0271, 0010, 0030, 0000, 0020, 0020, 0057);
+INSERT INTO `cq_point_allot` VALUES (0272, 0010, 0031, 0000, 0020, 0021, 0059);
+INSERT INTO `cq_point_allot` VALUES (0273, 0010, 0032, 0000, 0021, 0021, 0061);
+INSERT INTO `cq_point_allot` VALUES (0274, 0010, 0033, 0000, 0021, 0021, 0064);
+INSERT INTO `cq_point_allot` VALUES (0275, 0010, 0034, 0000, 0022, 0021, 0066);
+INSERT INTO `cq_point_allot` VALUES (0276, 0010, 0035, 0000, 0022, 0022, 0068);
+INSERT INTO `cq_point_allot` VALUES (0277, 0010, 0036, 0000, 0023, 0022, 0070);
+INSERT INTO `cq_point_allot` VALUES (0278, 0010, 0037, 0000, 0024, 0022, 0072);
+INSERT INTO `cq_point_allot` VALUES (0279, 0010, 0038, 0000, 0025, 0022, 0074);
+INSERT INTO `cq_point_allot` VALUES (0280, 0010, 0039, 0000, 0025, 0022, 0077);
+INSERT INTO `cq_point_allot` VALUES (0281, 0010, 0040, 0000, 0025, 0022, 0080);
+INSERT INTO `cq_point_allot` VALUES (0282, 0010, 0041, 0000, 0026, 0023, 0081);
+INSERT INTO `cq_point_allot` VALUES (0283, 0010, 0042, 0000, 0027, 0024, 0082);
+INSERT INTO `cq_point_allot` VALUES (0284, 0010, 0043, 0000, 0027, 0024, 0085);
+INSERT INTO `cq_point_allot` VALUES (0285, 0010, 0044, 0000, 0028, 0024, 0087);
+INSERT INTO `cq_point_allot` VALUES (0286, 0010, 0045, 0000, 0028, 0025, 0089);
+INSERT INTO `cq_point_allot` VALUES (0287, 0010, 0046, 0000, 0029, 0025, 0091);
+INSERT INTO `cq_point_allot` VALUES (0288, 0010, 0047, 0000, 0030, 0025, 0093);
+INSERT INTO `cq_point_allot` VALUES (0289, 0010, 0048, 0000, 0030, 0026, 0095);
+INSERT INTO `cq_point_allot` VALUES (0290, 0010, 0049, 0000, 0031, 0026, 0097);
+INSERT INTO `cq_point_allot` VALUES (0291, 0010, 0050, 0000, 0031, 0026, 0100);
+INSERT INTO `cq_point_allot` VALUES (0292, 0010, 0051, 0000, 0032, 0026, 0102);
+INSERT INTO `cq_point_allot` VALUES (0293, 0010, 0052, 0000, 0032, 0027, 0104);
+INSERT INTO `cq_point_allot` VALUES (0294, 0010, 0053, 0000, 0033, 0027, 0106);
+INSERT INTO `cq_point_allot` VALUES (0295, 0010, 0054, 0000, 0034, 0027, 0108);
+INSERT INTO `cq_point_allot` VALUES (0296, 0010, 0055, 0000, 0034, 0028, 0110);
+INSERT INTO `cq_point_allot` VALUES (0297, 0010, 0056, 0000, 0035, 0028, 0112);
+INSERT INTO `cq_point_allot` VALUES (0298, 0010, 0057, 0000, 0036, 0028, 0114);
+INSERT INTO `cq_point_allot` VALUES (0299, 0010, 0058, 0000, 0036, 0029, 0116);
+INSERT INTO `cq_point_allot` VALUES (0300, 0010, 0059, 0000, 0037, 0029, 0118);
+INSERT INTO `cq_point_allot` VALUES (0301, 0010, 0060, 0000, 0038, 0029, 0120);
+INSERT INTO `cq_point_allot` VALUES (0302, 0010, 0061, 0000, 0038, 0030, 0122);
+INSERT INTO `cq_point_allot` VALUES (0303, 0010, 0062, 0000, 0039, 0030, 0124);
+INSERT INTO `cq_point_allot` VALUES (0304, 0010, 0063, 0000, 0039, 0030, 0127);
+INSERT INTO `cq_point_allot` VALUES (0305, 0010, 0064, 0000, 0040, 0030, 0129);
+INSERT INTO `cq_point_allot` VALUES (0306, 0010, 0065, 0000, 0040, 0031, 0131);
+INSERT INTO `cq_point_allot` VALUES (0307, 0010, 0066, 0000, 0041, 0031, 0133);
+INSERT INTO `cq_point_allot` VALUES (0308, 0010, 0067, 0000, 0042, 0031, 0135);
+INSERT INTO `cq_point_allot` VALUES (0309, 0010, 0068, 0000, 0043, 0031, 0137);
+INSERT INTO `cq_point_allot` VALUES (0310, 0010, 0069, 0000, 0043, 0032, 0139);
+INSERT INTO `cq_point_allot` VALUES (0311, 0010, 0070, 0000, 0045, 0032, 0140);
+INSERT INTO `cq_point_allot` VALUES (0312, 0010, 0071, 0000, 0045, 0032, 0143);
+INSERT INTO `cq_point_allot` VALUES (0313, 0010, 0072, 0000, 0045, 0033, 0145);
+INSERT INTO `cq_point_allot` VALUES (0314, 0010, 0073, 0000, 0045, 0033, 0148);
+INSERT INTO `cq_point_allot` VALUES (0315, 0010, 0074, 0000, 0046, 0033, 0150);
+INSERT INTO `cq_point_allot` VALUES (0316, 0010, 0075, 0000, 0046, 0034, 0152);
+INSERT INTO `cq_point_allot` VALUES (0317, 0010, 0076, 0000, 0047, 0034, 0154);
+INSERT INTO `cq_point_allot` VALUES (0318, 0010, 0077, 0000, 0048, 0034, 0156);
+INSERT INTO `cq_point_allot` VALUES (0319, 0010, 0078, 0000, 0048, 0035, 0158);
+INSERT INTO `cq_point_allot` VALUES (0320, 0010, 0079, 0000, 0049, 0035, 0160);
+INSERT INTO `cq_point_allot` VALUES (0321, 0010, 0080, 0000, 0050, 0035, 0162);
+INSERT INTO `cq_point_allot` VALUES (0322, 0010, 0081, 0000, 0050, 0036, 0164);
+INSERT INTO `cq_point_allot` VALUES (0323, 0010, 0082, 0000, 0051, 0036, 0166);
+INSERT INTO `cq_point_allot` VALUES (0324, 0010, 0083, 0000, 0051, 0036, 0169);
+INSERT INTO `cq_point_allot` VALUES (0325, 0010, 0084, 0000, 0052, 0036, 0171);
+INSERT INTO `cq_point_allot` VALUES (0326, 0010, 0085, 0000, 0052, 0037, 0173);
+INSERT INTO `cq_point_allot` VALUES (0327, 0010, 0086, 0000, 0053, 0037, 0175);
+INSERT INTO `cq_point_allot` VALUES (0328, 0010, 0087, 0000, 0054, 0037, 0177);
+INSERT INTO `cq_point_allot` VALUES (0329, 0010, 0088, 0000, 0054, 0038, 0179);
+INSERT INTO `cq_point_allot` VALUES (0330, 0010, 0089, 0000, 0055, 0038, 0181);
+INSERT INTO `cq_point_allot` VALUES (0331, 0010, 0090, 0000, 0055, 0038, 0184);
+INSERT INTO `cq_point_allot` VALUES (0332, 0010, 0091, 0000, 0056, 0038, 0186);
+INSERT INTO `cq_point_allot` VALUES (0333, 0010, 0092, 0000, 0056, 0039, 0188);
+INSERT INTO `cq_point_allot` VALUES (0334, 0010, 0093, 0000, 0057, 0039, 0190);
+INSERT INTO `cq_point_allot` VALUES (0335, 0010, 0094, 0000, 0058, 0039, 0192);
+INSERT INTO `cq_point_allot` VALUES (0336, 0010, 0095, 0000, 0058, 0040, 0194);
+INSERT INTO `cq_point_allot` VALUES (0337, 0010, 0096, 0000, 0059, 0040, 0196);
+INSERT INTO `cq_point_allot` VALUES (0338, 0010, 0097, 0000, 0060, 0040, 0198);
+INSERT INTO `cq_point_allot` VALUES (0339, 0010, 0098, 0000, 0060, 0041, 0200);
+INSERT INTO `cq_point_allot` VALUES (0340, 0010, 0099, 0000, 0060, 0041, 0203);
+INSERT INTO `cq_point_allot` VALUES (0341, 0010, 0100, 0000, 0060, 0042, 0205);
+INSERT INTO `cq_point_allot` VALUES (0342, 0010, 0101, 0000, 0061, 0042, 0207);
+INSERT INTO `cq_point_allot` VALUES (0343, 0010, 0102, 0000, 0062, 0042, 0209);
+INSERT INTO `cq_point_allot` VALUES (0344, 0010, 0103, 0000, 0063, 0042, 0211);
+INSERT INTO `cq_point_allot` VALUES (0345, 0010, 0104, 0000, 0064, 0042, 0213);
+INSERT INTO `cq_point_allot` VALUES (0346, 0010, 0105, 0000, 0064, 0043, 0215);
+INSERT INTO `cq_point_allot` VALUES (0347, 0010, 0106, 0000, 0065, 0043, 0217);
+INSERT INTO `cq_point_allot` VALUES (0348, 0010, 0107, 0000, 0065, 0044, 0219);
+INSERT INTO `cq_point_allot` VALUES (0349, 0010, 0108, 0000, 0065, 0045, 0221);
+INSERT INTO `cq_point_allot` VALUES (0350, 0010, 0109, 0000, 0065, 0046, 0223);
+INSERT INTO `cq_point_allot` VALUES (0351, 0010, 0110, 0000, 0065, 0047, 0225);
+INSERT INTO `cq_point_allot` VALUES (0352, 0010, 0111, 0000, 0066, 0047, 0227);
+INSERT INTO `cq_point_allot` VALUES (0353, 0010, 0112, 0000, 0067, 0047, 0229);
+INSERT INTO `cq_point_allot` VALUES (0354, 0010, 0113, 0000, 0067, 0047, 0232);
+INSERT INTO `cq_point_allot` VALUES (0355, 0010, 0114, 0000, 0068, 0047, 0234);
+INSERT INTO `cq_point_allot` VALUES (0356, 0010, 0115, 0000, 0069, 0047, 0236);
+INSERT INTO `cq_point_allot` VALUES (0357, 0010, 0116, 0000, 0070, 0047, 0238);
+INSERT INTO `cq_point_allot` VALUES (0358, 0010, 0117, 0000, 0071, 0047, 0240);
+INSERT INTO `cq_point_allot` VALUES (0359, 0010, 0118, 0000, 0072, 0047, 0242);
+INSERT INTO `cq_point_allot` VALUES (0360, 0010, 0119, 0000, 0073, 0047, 0244);
+INSERT INTO `cq_point_allot` VALUES (0361, 0010, 0120, 0000, 0075, 0047, 0245);
+INSERT INTO `cq_point_allot` VALUES (0362, 0001, 0001, 0005, 0002, 0003, 0000);
+INSERT INTO `cq_point_allot` VALUES (0363, 0004, 0001, 0002, 0007, 0001, 0000);
+INSERT INTO `cq_point_allot` VALUES (0364, 0004, 0002, 0003, 0009, 0001, 0000);
+INSERT INTO `cq_point_allot` VALUES (0365, 0004, 0003, 0004, 0011, 0001, 0000);
+INSERT INTO `cq_point_allot` VALUES (0366, 0004, 0004, 0004, 0013, 0002, 0000);
+INSERT INTO `cq_point_allot` VALUES (0367, 0004, 0005, 0005, 0015, 0002, 0000);
+INSERT INTO `cq_point_allot` VALUES (0368, 0004, 0006, 0005, 0018, 0002, 0000);
+INSERT INTO `cq_point_allot` VALUES (0369, 0004, 0007, 0006, 0020, 0002, 0000);
+INSERT INTO `cq_point_allot` VALUES (0370, 0004, 0008, 0007, 0021, 0003, 0000);
+INSERT INTO `cq_point_allot` VALUES (0371, 0004, 0009, 0008, 0023, 0003, 0000);
+INSERT INTO `cq_point_allot` VALUES (0372, 0004, 0010, 0008, 0026, 0003, 0000);
+INSERT INTO `cq_point_allot` VALUES (0373, 0004, 0011, 0008, 0028, 0004, 0000);
+INSERT INTO `cq_point_allot` VALUES (0374, 0004, 0012, 0009, 0030, 0004, 0000);
+INSERT INTO `cq_point_allot` VALUES (0375, 0004, 0013, 0010, 0032, 0004, 0000);
+INSERT INTO `cq_point_allot` VALUES (0376, 0004, 0014, 0010, 0034, 0005, 0000);
+INSERT INTO `cq_point_allot` VALUES (0377, 0004, 0015, 0012, 0035, 0005, 0000);
+INSERT INTO `cq_point_allot` VALUES (0378, 0004, 0016, 0012, 0038, 0005, 0000);
+INSERT INTO `cq_point_allot` VALUES (0379, 0004, 0017, 0012, 0040, 0006, 0000);
+INSERT INTO `cq_point_allot` VALUES (0380, 0004, 0018, 0013, 0042, 0006, 0000);
+INSERT INTO `cq_point_allot` VALUES (0381, 0004, 0019, 0013, 0045, 0006, 0000);
+INSERT INTO `cq_point_allot` VALUES (0382, 0004, 0020, 0014, 0046, 0007, 0000);
+INSERT INTO `cq_point_allot` VALUES (0383, 0004, 0021, 0014, 0049, 0007, 0000);
+INSERT INTO `cq_point_allot` VALUES (0384, 0004, 0022, 0015, 0051, 0007, 0000);
+INSERT INTO `cq_point_allot` VALUES (0385, 0004, 0023, 0016, 0053, 0007, 0000);
+INSERT INTO `cq_point_allot` VALUES (0386, 0004, 0024, 0016, 0055, 0008, 0000);
+INSERT INTO `cq_point_allot` VALUES (0387, 0004, 0025, 0017, 0057, 0008, 0000);
+INSERT INTO `cq_point_allot` VALUES (0388, 0004, 0026, 0017, 0059, 0009, 0000);
+INSERT INTO `cq_point_allot` VALUES (0389, 0004, 0027, 0018, 0061, 0009, 0000);
+INSERT INTO `cq_point_allot` VALUES (0390, 0004, 0028, 0019, 0063, 0009, 0000);
+INSERT INTO `cq_point_allot` VALUES (0391, 0004, 0029, 0019, 0065, 0010, 0000);
+INSERT INTO `cq_point_allot` VALUES (0392, 0004, 0030, 0020, 0067, 0010, 0000);
+INSERT INTO `cq_point_allot` VALUES (0393, 0004, 0031, 0020, 0070, 0010, 0000);
+INSERT INTO `cq_point_allot` VALUES (0394, 0004, 0032, 0021, 0072, 0010, 0000);
+INSERT INTO `cq_point_allot` VALUES (0395, 0004, 0033, 0022, 0074, 0010, 0000);
+INSERT INTO `cq_point_allot` VALUES (0396, 0004, 0034, 0022, 0076, 0011, 0000);
+INSERT INTO `cq_point_allot` VALUES (0397, 0004, 0035, 0023, 0078, 0011, 0000);
+INSERT INTO `cq_point_allot` VALUES (0398, 0004, 0036, 0023, 0080, 0012, 0000);
+INSERT INTO `cq_point_allot` VALUES (0399, 0004, 0037, 0024, 0082, 0012, 0000);
+INSERT INTO `cq_point_allot` VALUES (0400, 0004, 0038, 0025, 0084, 0012, 0000);
+INSERT INTO `cq_point_allot` VALUES (0401, 0004, 0039, 0025, 0087, 0012, 0000);
+INSERT INTO `cq_point_allot` VALUES (0402, 0004, 0040, 0025, 0090, 0012, 0000);
+INSERT INTO `cq_point_allot` VALUES (0403, 0004, 0041, 0026, 0091, 0013, 0000);
+INSERT INTO `cq_point_allot` VALUES (0404, 0004, 0042, 0027, 0093, 0013, 0000);
+INSERT INTO `cq_point_allot` VALUES (0405, 0004, 0043, 0028, 0095, 0013, 0000);
+INSERT INTO `cq_point_allot` VALUES (0406, 0004, 0044, 0029, 0097, 0013, 0000);
+INSERT INTO `cq_point_allot` VALUES (0407, 0004, 0045, 0029, 0099, 0014, 0000);
+INSERT INTO `cq_point_allot` VALUES (0408, 0004, 0046, 0029, 0101, 0015, 0000);
+INSERT INTO `cq_point_allot` VALUES (0409, 0004, 0047, 0030, 0103, 0015, 0000);
+INSERT INTO `cq_point_allot` VALUES (0410, 0004, 0048, 0031, 0105, 0015, 0000);
+INSERT INTO `cq_point_allot` VALUES (0411, 0004, 0049, 0031, 0107, 0016, 0000);
+INSERT INTO `cq_point_allot` VALUES (0412, 0004, 0050, 0032, 0109, 0016, 0000);
+INSERT INTO `cq_point_allot` VALUES (0413, 0004, 0051, 0032, 0112, 0016, 0000);
+INSERT INTO `cq_point_allot` VALUES (0414, 0004, 0052, 0033, 0114, 0016, 0000);
+INSERT INTO `cq_point_allot` VALUES (0415, 0004, 0053, 0034, 0116, 0016, 0000);
+INSERT INTO `cq_point_allot` VALUES (0416, 0004, 0054, 0034, 0118, 0017, 0000);
+INSERT INTO `cq_point_allot` VALUES (0417, 0004, 0055, 0035, 0120, 0017, 0000);
+INSERT INTO `cq_point_allot` VALUES (0418, 0004, 0056, 0035, 0122, 0018, 0000);
+INSERT INTO `cq_point_allot` VALUES (0419, 0004, 0057, 0036, 0124, 0018, 0000);
+INSERT INTO `cq_point_allot` VALUES (0420, 0004, 0058, 0037, 0126, 0018, 0000);
+INSERT INTO `cq_point_allot` VALUES (0421, 0004, 0059, 0037, 0128, 0019, 0000);
+INSERT INTO `cq_point_allot` VALUES (0422, 0004, 0060, 0038, 0130, 0019, 0000);
+INSERT INTO `cq_point_allot` VALUES (0423, 0004, 0061, 0038, 0133, 0019, 0000);
+INSERT INTO `cq_point_allot` VALUES (0424, 0004, 0062, 0039, 0135, 0019, 0000);
+INSERT INTO `cq_point_allot` VALUES (0425, 0004, 0063, 0040, 0137, 0019, 0000);
+INSERT INTO `cq_point_allot` VALUES (0426, 0004, 0064, 0040, 0139, 0020, 0000);
+INSERT INTO `cq_point_allot` VALUES (0427, 0004, 0065, 0041, 0141, 0020, 0000);
+INSERT INTO `cq_point_allot` VALUES (0428, 0004, 0066, 0041, 0143, 0021, 0000);
+INSERT INTO `cq_point_allot` VALUES (0429, 0004, 0067, 0042, 0145, 0021, 0000);
+INSERT INTO `cq_point_allot` VALUES (0430, 0004, 0068, 0043, 0147, 0021, 0000);
+INSERT INTO `cq_point_allot` VALUES (0431, 0004, 0069, 0043, 0149, 0022, 0000);
+INSERT INTO `cq_point_allot` VALUES (0432, 0004, 0070, 0045, 0150, 0022, 0000);
+INSERT INTO `cq_point_allot` VALUES (0433, 0004, 0071, 0045, 0153, 0022, 0000);
+INSERT INTO `cq_point_allot` VALUES (0434, 0004, 0072, 0045, 0156, 0022, 0000);
+INSERT INTO `cq_point_allot` VALUES (0435, 0004, 0073, 0046, 0158, 0022, 0000);
+INSERT INTO `cq_point_allot` VALUES (0436, 0004, 0074, 0046, 0160, 0023, 0000);
+INSERT INTO `cq_point_allot` VALUES (0437, 0004, 0075, 0047, 0162, 0023, 0000);
+INSERT INTO `cq_point_allot` VALUES (0438, 0004, 0076, 0048, 0164, 0023, 0000);
+INSERT INTO `cq_point_allot` VALUES (0439, 0004, 0077, 0048, 0166, 0024, 0000);
+INSERT INTO `cq_point_allot` VALUES (0440, 0004, 0078, 0049, 0168, 0024, 0000);
+INSERT INTO `cq_point_allot` VALUES (0441, 0004, 0079, 0049, 0170, 0025, 0000);
+INSERT INTO `cq_point_allot` VALUES (0442, 0004, 0080, 0050, 0172, 0025, 0000);
+INSERT INTO `cq_point_allot` VALUES (0443, 0004, 0081, 0051, 0174, 0025, 0000);
+INSERT INTO `cq_point_allot` VALUES (0444, 0004, 0082, 0051, 0177, 0025, 0000);
+INSERT INTO `cq_point_allot` VALUES (0445, 0004, 0083, 0052, 0179, 0025, 0000);
+INSERT INTO `cq_point_allot` VALUES (0446, 0004, 0084, 0052, 0181, 0026, 0000);
+INSERT INTO `cq_point_allot` VALUES (0447, 0004, 0085, 0053, 0183, 0026, 0000);
+INSERT INTO `cq_point_allot` VALUES (0448, 0004, 0086, 0054, 0185, 0026, 0000);
+INSERT INTO `cq_point_allot` VALUES (0449, 0004, 0087, 0054, 0187, 0027, 0000);
+INSERT INTO `cq_point_allot` VALUES (0450, 0004, 0088, 0055, 0189, 0027, 0000);
+INSERT INTO `cq_point_allot` VALUES (0451, 0004, 0089, 0055, 0191, 0028, 0000);
+INSERT INTO `cq_point_allot` VALUES (0452, 0004, 0090, 0056, 0193, 0028, 0000);
+INSERT INTO `cq_point_allot` VALUES (0453, 0004, 0091, 0057, 0195, 0028, 0000);
+INSERT INTO `cq_point_allot` VALUES (0454, 0004, 0092, 0057, 0198, 0028, 0000);
+INSERT INTO `cq_point_allot` VALUES (0455, 0004, 0093, 0058, 0200, 0028, 0000);
+INSERT INTO `cq_point_allot` VALUES (0456, 0004, 0094, 0058, 0202, 0029, 0000);
+INSERT INTO `cq_point_allot` VALUES (0457, 0004, 0095, 0059, 0204, 0029, 0000);
+INSERT INTO `cq_point_allot` VALUES (0458, 0004, 0096, 0060, 0206, 0029, 0000);
+INSERT INTO `cq_point_allot` VALUES (0459, 0004, 0097, 0060, 0208, 0030, 0000);
+INSERT INTO `cq_point_allot` VALUES (0460, 0004, 0098, 0061, 0210, 0030, 0000);
+INSERT INTO `cq_point_allot` VALUES (0461, 0004, 0099, 0060, 0213, 0031, 0000);
+INSERT INTO `cq_point_allot` VALUES (0462, 0004, 0100, 0060, 0215, 0032, 0000);
+INSERT INTO `cq_point_allot` VALUES (0463, 0004, 0101, 0061, 0217, 0032, 0000);
+INSERT INTO `cq_point_allot` VALUES (0464, 0004, 0102, 0062, 0219, 0032, 0000);
+INSERT INTO `cq_point_allot` VALUES (0465, 0004, 0103, 0063, 0221, 0032, 0000);
+INSERT INTO `cq_point_allot` VALUES (0466, 0004, 0104, 0064, 0223, 0032, 0000);
+INSERT INTO `cq_point_allot` VALUES (0467, 0004, 0105, 0065, 0225, 0032, 0000);
+INSERT INTO `cq_point_allot` VALUES (0468, 0004, 0106, 0066, 0227, 0032, 0000);
+INSERT INTO `cq_point_allot` VALUES (0469, 0004, 0107, 0066, 0229, 0033, 0000);
+INSERT INTO `cq_point_allot` VALUES (0470, 0004, 0108, 0067, 0231, 0033, 0000);
+INSERT INTO `cq_point_allot` VALUES (0471, 0004, 0109, 0067, 0233, 0034, 0000);
+INSERT INTO `cq_point_allot` VALUES (0472, 0004, 0110, 0068, 0235, 0034, 0000);
+INSERT INTO `cq_point_allot` VALUES (0473, 0004, 0111, 0069, 0237, 0034, 0000);
+INSERT INTO `cq_point_allot` VALUES (0474, 0004, 0112, 0069, 0240, 0034, 0000);
+INSERT INTO `cq_point_allot` VALUES (0475, 0004, 0113, 0070, 0242, 0034, 0000);
+INSERT INTO `cq_point_allot` VALUES (0476, 0004, 0114, 0070, 0244, 0035, 0000);
+INSERT INTO `cq_point_allot` VALUES (0477, 0004, 0115, 0071, 0246, 0035, 0000);
+INSERT INTO `cq_point_allot` VALUES (0478, 0004, 0116, 0071, 0249, 0035, 0000);
+INSERT INTO `cq_point_allot` VALUES (0479, 0004, 0117, 0072, 0250, 0036, 0000);
+INSERT INTO `cq_point_allot` VALUES (0480, 0004, 0118, 0073, 0252, 0036, 0000);
+INSERT INTO `cq_point_allot` VALUES (0481, 0004, 0119, 0073, 0254, 0037, 0000);
+INSERT INTO `cq_point_allot` VALUES (0482, 0004, 0120, 0074, 0256, 0037, 0000);
+INSERT INTO `cq_point_allot` VALUES (0483, 0005, 0001, 0002, 0007, 0001, 0000);
+INSERT INTO `cq_point_allot` VALUES (0484, 0005, 0002, 0003, 0009, 0001, 0000);
+INSERT INTO `cq_point_allot` VALUES (0485, 0005, 0003, 0004, 0011, 0002, 0000);
+INSERT INTO `cq_point_allot` VALUES (0486, 0005, 0004, 0004, 0013, 0003, 0000);
+INSERT INTO `cq_point_allot` VALUES (0487, 0005, 0005, 0005, 0017, 0004, 0000);
+INSERT INTO `cq_point_allot` VALUES (0488, 0005, 0006, 0005, 0018, 0005, 0000);
+INSERT INTO `cq_point_allot` VALUES (0489, 0005, 0007, 0006, 0020, 0006, 0000);
+INSERT INTO `cq_point_allot` VALUES (0490, 0005, 0008, 0007, 0021, 0006, 0000);
+INSERT INTO `cq_point_allot` VALUES (0491, 0005, 0009, 0008, 0023, 0006, 0000);
+INSERT INTO `cq_point_allot` VALUES (0492, 0005, 0010, 0008, 0028, 0006, 0000);
+INSERT INTO `cq_point_allot` VALUES (0493, 0005, 0011, 0008, 0029, 0006, 0000);
+INSERT INTO `cq_point_allot` VALUES (0494, 0005, 0012, 0009, 0030, 0007, 0000);
+INSERT INTO `cq_point_allot` VALUES (0495, 0005, 0013, 0010, 0032, 0007, 0000);
+INSERT INTO `cq_point_allot` VALUES (0496, 0005, 0014, 0010, 0034, 0007, 0000);
+INSERT INTO `cq_point_allot` VALUES (0497, 0005, 0015, 0012, 0039, 0007, 0000);
+INSERT INTO `cq_point_allot` VALUES (0498, 0005, 0016, 0012, 0040, 0010, 0000);
+INSERT INTO `cq_point_allot` VALUES (0499, 0005, 0017, 0012, 0041, 0013, 0000);
+INSERT INTO `cq_point_allot` VALUES (0500, 0005, 0018, 0013, 0042, 0014, 0000);
+INSERT INTO `cq_point_allot` VALUES (0501, 0005, 0019, 0013, 0045, 0014, 0000);
+INSERT INTO `cq_point_allot` VALUES (0502, 0005, 0020, 0014, 0050, 0014, 0000);
+INSERT INTO `cq_point_allot` VALUES (0503, 0005, 0021, 0014, 0051, 0014, 0000);
+INSERT INTO `cq_point_allot` VALUES (0504, 0005, 0022, 0015, 0052, 0014, 0000);
+INSERT INTO `cq_point_allot` VALUES (0505, 0005, 0023, 0016, 0053, 0015, 0000);
+INSERT INTO `cq_point_allot` VALUES (0506, 0005, 0024, 0016, 0055, 0015, 0000);
+INSERT INTO `cq_point_allot` VALUES (0507, 0005, 0025, 0017, 0062, 0015, 0000);
+INSERT INTO `cq_point_allot` VALUES (0508, 0005, 0026, 0017, 0063, 0015, 0000);
+INSERT INTO `cq_point_allot` VALUES (0509, 0005, 0027, 0018, 0064, 0015, 0000);
+INSERT INTO `cq_point_allot` VALUES (0510, 0005, 0028, 0019, 0067, 0015, 0000);
+INSERT INTO `cq_point_allot` VALUES (0511, 0005, 0029, 0019, 0068, 0016, 0000);
+INSERT INTO `cq_point_allot` VALUES (0512, 0005, 0030, 0020, 0073, 0016, 0000);
+INSERT INTO `cq_point_allot` VALUES (0513, 0005, 0031, 0020, 0074, 0016, 0000);
+INSERT INTO `cq_point_allot` VALUES (0514, 0005, 0032, 0021, 0075, 0016, 0000);
+INSERT INTO `cq_point_allot` VALUES (0515, 0005, 0033, 0022, 0076, 0016, 0000);
+INSERT INTO `cq_point_allot` VALUES (0516, 0005, 0034, 0022, 0079, 0017, 0000);
+INSERT INTO `cq_point_allot` VALUES (0517, 0005, 0035, 0023, 0084, 0017, 0000);
+INSERT INTO `cq_point_allot` VALUES (0518, 0005, 0036, 0023, 0085, 0017, 0000);
+INSERT INTO `cq_point_allot` VALUES (0519, 0005, 0037, 0024, 0086, 0017, 0000);
+INSERT INTO `cq_point_allot` VALUES (0520, 0005, 0038, 0025, 0088, 0017, 0000);
+INSERT INTO `cq_point_allot` VALUES (0521, 0005, 0039, 0025, 0093, 0018, 0000);
+INSERT INTO `cq_point_allot` VALUES (0522, 0005, 0040, 0025, 0097, 0018, 0000);
+INSERT INTO `cq_point_allot` VALUES (0523, 0005, 0041, 0026, 0099, 0018, 0000);
+INSERT INTO `cq_point_allot` VALUES (0524, 0005, 0042, 0027, 0100, 0018, 0000);
+INSERT INTO `cq_point_allot` VALUES (0525, 0005, 0043, 0028, 0105, 0019, 0000);
+INSERT INTO `cq_point_allot` VALUES (0526, 0005, 0044, 0029, 0106, 0019, 0000);
+INSERT INTO `cq_point_allot` VALUES (0527, 0005, 0045, 0029, 0107, 0019, 0000);
+INSERT INTO `cq_point_allot` VALUES (0528, 0005, 0046, 0029, 0109, 0019, 0000);
+INSERT INTO `cq_point_allot` VALUES (0529, 0005, 0047, 0030, 0111, 0020, 0000);
+INSERT INTO `cq_point_allot` VALUES (0530, 0005, 0048, 0031, 0112, 0020, 0000);
+INSERT INTO `cq_point_allot` VALUES (0531, 0005, 0049, 0031, 0115, 0020, 0000);
+INSERT INTO `cq_point_allot` VALUES (0532, 0005, 0050, 0032, 0118, 0020, 0000);
+INSERT INTO `cq_point_allot` VALUES (0533, 0005, 0051, 0032, 0120, 0020, 0000);
+INSERT INTO `cq_point_allot` VALUES (0534, 0005, 0052, 0033, 0123, 0021, 0000);
+INSERT INTO `cq_point_allot` VALUES (0535, 0005, 0053, 0034, 0125, 0021, 0000);
+INSERT INTO `cq_point_allot` VALUES (0536, 0005, 0054, 0034, 0127, 0022, 0000);
+INSERT INTO `cq_point_allot` VALUES (0537, 0005, 0055, 0035, 0129, 0022, 0000);
+INSERT INTO `cq_point_allot` VALUES (0538, 0005, 0056, 0035, 0131, 0023, 0000);
+INSERT INTO `cq_point_allot` VALUES (0539, 0005, 0057, 0036, 0133, 0023, 0000);
+INSERT INTO `cq_point_allot` VALUES (0540, 0005, 0058, 0037, 0135, 0024, 0000);
+INSERT INTO `cq_point_allot` VALUES (0541, 0005, 0059, 0037, 0137, 0024, 0000);
+INSERT INTO `cq_point_allot` VALUES (0542, 0005, 0060, 0038, 0140, 0025, 0000);
+INSERT INTO `cq_point_allot` VALUES (0543, 0005, 0061, 0038, 0142, 0025, 0000);
+INSERT INTO `cq_point_allot` VALUES (0544, 0005, 0062, 0039, 0145, 0026, 0000);
+INSERT INTO `cq_point_allot` VALUES (0545, 0005, 0063, 0040, 0147, 0026, 0000);
+INSERT INTO `cq_point_allot` VALUES (0546, 0005, 0064, 0040, 0149, 0027, 0000);
+INSERT INTO `cq_point_allot` VALUES (0547, 0005, 0065, 0041, 0152, 0027, 0000);
+INSERT INTO `cq_point_allot` VALUES (0548, 0005, 0066, 0041, 0155, 0028, 0000);
+INSERT INTO `cq_point_allot` VALUES (0549, 0005, 0067, 0042, 0157, 0028, 0000);
+INSERT INTO `cq_point_allot` VALUES (0550, 0005, 0068, 0043, 0159, 0029, 0000);
+INSERT INTO `cq_point_allot` VALUES (0551, 0005, 0069, 0043, 0161, 0029, 0000);
+INSERT INTO `cq_point_allot` VALUES (0552, 0005, 0070, 0045, 0163, 0032, 0000);
+INSERT INTO `cq_point_allot` VALUES (0553, 0005, 0071, 0045, 0165, 0032, 0000);
+INSERT INTO `cq_point_allot` VALUES (0554, 0005, 0072, 0045, 0167, 0032, 0000);
+INSERT INTO `cq_point_allot` VALUES (0555, 0005, 0073, 0046, 0169, 0032, 0000);
+INSERT INTO `cq_point_allot` VALUES (0556, 0005, 0074, 0046, 0172, 0033, 0000);
+INSERT INTO `cq_point_allot` VALUES (0557, 0005, 0075, 0047, 0174, 0033, 0000);
+INSERT INTO `cq_point_allot` VALUES (0558, 0005, 0076, 0048, 0176, 0033, 0000);
+INSERT INTO `cq_point_allot` VALUES (0559, 0005, 0077, 0048, 0178, 0033, 0000);
+INSERT INTO `cq_point_allot` VALUES (0560, 0005, 0078, 0049, 0181, 0034, 0000);
+INSERT INTO `cq_point_allot` VALUES (0561, 0005, 0079, 0049, 0183, 0034, 0000);
+INSERT INTO `cq_point_allot` VALUES (0562, 0005, 0080, 0050, 0185, 0035, 0000);
+INSERT INTO `cq_point_allot` VALUES (0563, 0005, 0081, 0051, 0187, 0035, 0000);
+INSERT INTO `cq_point_allot` VALUES (0564, 0005, 0082, 0051, 0189, 0036, 0000);
+INSERT INTO `cq_point_allot` VALUES (0565, 0005, 0083, 0052, 0191, 0036, 0000);
+INSERT INTO `cq_point_allot` VALUES (0566, 0005, 0084, 0052, 0195, 0037, 0000);
+INSERT INTO `cq_point_allot` VALUES (0567, 0005, 0085, 0053, 0197, 0037, 0000);
+INSERT INTO `cq_point_allot` VALUES (0568, 0005, 0086, 0054, 0199, 0038, 0000);
+INSERT INTO `cq_point_allot` VALUES (0569, 0005, 0087, 0054, 0201, 0038, 0000);
+INSERT INTO `cq_point_allot` VALUES (0570, 0005, 0088, 0055, 0203, 0039, 0000);
+INSERT INTO `cq_point_allot` VALUES (0571, 0005, 0089, 0055, 0205, 0039, 0000);
+INSERT INTO `cq_point_allot` VALUES (0572, 0005, 0090, 0056, 0208, 0040, 0000);
+INSERT INTO `cq_point_allot` VALUES (0573, 0005, 0091, 0057, 0211, 0041, 0000);
+INSERT INTO `cq_point_allot` VALUES (0574, 0005, 0092, 0057, 0213, 0041, 0000);
+INSERT INTO `cq_point_allot` VALUES (0575, 0005, 0093, 0058, 0215, 0042, 0000);
+INSERT INTO `cq_point_allot` VALUES (0576, 0005, 0094, 0058, 0217, 0042, 0000);
+INSERT INTO `cq_point_allot` VALUES (0577, 0005, 0095, 0059, 0219, 0043, 0000);
+INSERT INTO `cq_point_allot` VALUES (0578, 0005, 0096, 0060, 0221, 0043, 0000);
+INSERT INTO `cq_point_allot` VALUES (0579, 0005, 0097, 0060, 0223, 0044, 0000);
+INSERT INTO `cq_point_allot` VALUES (0580, 0005, 0098, 0061, 0225, 0044, 0000);
+INSERT INTO `cq_point_allot` VALUES (0581, 0005, 0099, 0060, 0227, 0045, 0000);
+INSERT INTO `cq_point_allot` VALUES (0582, 0005, 0100, 0060, 0231, 0046, 0000);
+INSERT INTO `cq_point_allot` VALUES (0583, 0005, 0101, 0061, 0233, 0046, 0000);
+INSERT INTO `cq_point_allot` VALUES (0584, 0005, 0102, 0062, 0235, 0046, 0000);
+INSERT INTO `cq_point_allot` VALUES (0585, 0005, 0103, 0063, 0237, 0047, 0000);
+INSERT INTO `cq_point_allot` VALUES (0586, 0005, 0104, 0064, 0239, 0047, 0000);
+INSERT INTO `cq_point_allot` VALUES (0587, 0005, 0105, 0065, 0242, 0048, 0000);
+INSERT INTO `cq_point_allot` VALUES (0588, 0005, 0106, 0066, 0245, 0048, 0000);
+INSERT INTO `cq_point_allot` VALUES (0589, 0005, 0107, 0066, 0247, 0049, 0000);
+INSERT INTO `cq_point_allot` VALUES (0590, 0005, 0108, 0067, 0249, 0049, 0000);
+INSERT INTO `cq_point_allot` VALUES (0591, 0005, 0109, 0067, 0251, 0050, 0000);
+INSERT INTO `cq_point_allot` VALUES (0592, 0005, 0110, 0068, 0253, 0050, 0000);
+INSERT INTO `cq_point_allot` VALUES (0593, 0005, 0111, 0069, 0255, 0054, 0000);
+INSERT INTO `cq_point_allot` VALUES (0594, 0005, 0112, 0069, 0257, 0056, 0000);
+INSERT INTO `cq_point_allot` VALUES (0595, 0005, 0113, 0070, 0259, 0058, 0000);
+INSERT INTO `cq_point_allot` VALUES (0596, 0005, 0114, 0070, 0261, 0058, 0000);
+INSERT INTO `cq_point_allot` VALUES (0597, 0005, 0115, 0071, 0264, 0060, 0000);
+INSERT INTO `cq_point_allot` VALUES (0598, 0005, 0116, 0071, 0266, 0062, 0000);
+INSERT INTO `cq_point_allot` VALUES (0599, 0005, 0117, 0072, 0269, 0064, 0000);
+INSERT INTO `cq_point_allot` VALUES (0600, 0005, 0118, 0073, 0271, 0066, 0000);
+INSERT INTO `cq_point_allot` VALUES (0601, 0005, 0119, 0073, 0273, 0068, 0000);
+INSERT INTO `cq_point_allot` VALUES (0602, 0005, 0120, 0074, 0275, 0070, 0000);
+
+-- ------------------------------------------------------
+-- Table structure for table `cq_item` (Live Player Items & Warehouses)
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `cq_item`;
+CREATE TABLE `cq_item` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `type` int(10) unsigned NOT NULL DEFAULT '0',
+  `owner_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `player_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `amount` smallint(5) unsigned NOT NULL DEFAULT '100',
+  `amount_limit` smallint(5) unsigned NOT NULL DEFAULT '100',
+  `ident` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `position` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `gem1` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `gem2` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `magic1` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `magic2` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `magic3` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `data` int(10) unsigned NOT NULL DEFAULT '0',
+  `reduce_dmg` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `add_life` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `anti_monster` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `chk_sum` int(10) unsigned NOT NULL DEFAULT '0',
+  `plunder` datetime DEFAULT NULL,
+  `SpecialFlag` int(10) unsigned NOT NULL DEFAULT '0',
+  `color` int(10) unsigned NOT NULL DEFAULT '3',
+  `Addlevel_exp` int(10) unsigned NOT NULL DEFAULT '0',
+  `monopoly` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `syndicate` int(10) unsigned NOT NULL DEFAULT '0',
+  `del_time` int(11) NOT NULL DEFAULT '0',
+  `save_time` datetime DEFAULT NULL,
+  `accumulate_num` int(10) unsigned NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  KEY `idx_player` (`player_id`),
+  KEY `idx_owner_pos` (`owner_id`,`position`)
+) ENGINE=InnoDB AUTO_INCREMENT=10000000 DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------
+-- Table structure for table `cq_itemtype` (Item Templates - Auto-supplemented from ini/itemtype.dat)
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `cq_itemtype`;
+CREATE TABLE `cq_itemtype` (
+  `id` int(10) unsigned NOT NULL DEFAULT '0',
+  `name` varchar(32) NOT NULL DEFAULT '',
+  `req_profession` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `req_weaponskill` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `req_level` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `req_sex` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `req_force` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `req_speed` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `req_health` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `req_soul` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `monopoly` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `price` int(10) unsigned NOT NULL DEFAULT '0',
+  `id_action` int(10) unsigned NOT NULL DEFAULT '0',
+  `attack_max` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `attack_min` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `defense` smallint(6) NOT NULL DEFAULT '0',
+  `dexterity` smallint(6) NOT NULL DEFAULT '0',
+  `dodge` smallint(6) NOT NULL DEFAULT '0',
+  `life` smallint(6) NOT NULL DEFAULT '0',
+  `mana` smallint(6) NOT NULL DEFAULT '0',
+  `amount` smallint(5) unsigned NOT NULL DEFAULT '1',
+  `amount_limit` smallint(5) unsigned NOT NULL DEFAULT '1',
+  `ident` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `gem1` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `gem2` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `magic1` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `magic2` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `magic3` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `data` int(10) unsigned NOT NULL DEFAULT '0',
+  `magic_atk` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `magic_def` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `atk_range` smallint(5) unsigned NOT NULL DEFAULT '1',
+  `atk_speed` smallint(5) unsigned NOT NULL DEFAULT '800',
+  `fray_mode` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `repair_mode` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `type_mask` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `emoney_price` int(10) unsigned NOT NULL DEFAULT '0',
+  `emoney_mono_price` int(10) unsigned NOT NULL DEFAULT '0',
+  `save_time` int(11) NOT NULL DEFAULT '0',
+  `accumulate_limit` int(10) unsigned NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------
+-- Table structure for table `cq_itemaddition` (+1..+12 Bonus Stats - Auto-supplemented from ini/ItemAdd.ini)
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `cq_itemaddition`;
+CREATE TABLE `cq_itemaddition` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `typeid` int(10) unsigned NOT NULL DEFAULT '0',
+  `level` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `life` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `attack_max` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `attack_min` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `defense` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `magic_atk` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `magic_def` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `dexterity` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `dodge` smallint(5) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_type_level` (`typeid`,`level`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------
+-- Table structure for table `cq_goods` (NPC & Mall Shops - Auto-supplemented from ini/Shop.dat)
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `cq_goods`;
+CREATE TABLE `cq_goods` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ownerid` int(10) unsigned NOT NULL DEFAULT '0',
+  `itemtype` int(10) unsigned NOT NULL DEFAULT '0',
+  `moneytype` int(10) unsigned NOT NULL DEFAULT '0',
+  `monopoly` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_owner_item` (`ownerid`,`itemtype`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Essential Retail Core Items (Scrolls, Potions, Meteors, DragonBalls, +Stones, Gems, Starter Gear)
+INSERT INTO `cq_itemtype` (`id`, `name`, `req_profession`, `req_level`, `price`, `life`, `mana`, `amount`, `amount_limit`, `data`, `emoney_price`, `accumulate_limit`) VALUES
+(1000000, 'Stancher', 0, 1, 15, 80, 0, 1, 1, 0, 0, 1),
+(1000010, 'CureAll', 0, 1, 40, 200, 0, 1, 1, 0, 0, 1),
+(1000020, 'Panacea', 0, 1, 100, 500, 0, 1, 1, 0, 0, 1),
+(1000030, ' Ginseng', 0, 1, 350, 1000, 0, 1, 1, 0, 0, 1),
+(1001000, 'Agrypnotic', 0, 1, 30, 0, 70, 1, 1, 0, 0, 1),
+(1001010, 'Refresher', 0, 1, 80, 0, 190, 1, 1, 0, 0, 1),
+(1001020, 'ale', 0, 1, 200, 0, 520, 1, 1, 0, 0, 1),
+(1001030, 'Vanilla', 0, 1, 850, 0, 1650, 1, 1, 0, 0, 1),
+(1002000, 'Amrita', 0, 1, 2000, 2000, 0, 1, 1, 0, 0, 1),
+(1002010, 'SoulPill', 0, 1, 2500, 3000, 0, 1, 1, 0, 0, 1),
+(1002020, 'odyssy', 0, 1, 2800, 0, 2800, 1, 1, 0, 0, 1),
+(1050000, 'ArrowPack', 0, 1, 50, 0, 0, 500, 500, 0, 0, 1),
+(1060020, 'TwinCityScroll', 0, 1, 100, 0, 0, 1, 1, 1002, 0, 10),
+(1060021, 'PhoenixScroll', 0, 1, 100, 0, 0, 1, 1, 1011, 0, 10),
+(1060022, 'ApeScroll', 0, 1, 100, 0, 0, 1, 1, 1020, 0, 10),
+(1060023, 'DesertScroll', 0, 1, 100, 0, 0, 1, 1, 1000, 0, 10),
+(1060024, 'BirdScroll', 0, 1, 100, 0, 0, 1, 1, 1015, 0, 10),
+(1060100, 'MeteorTear', 0, 1, 50000, 0, 0, 1, 1, 0, 0, 1),
+(1088000, 'DragonBall', 0, 1, 500000, 0, 0, 1, 1, 0, 215, 1),
+(1088001, 'Meteor', 0, 1, 50000, 0, 0, 1, 1, 0, 12, 1),
+(1088002, 'MeteorScroll', 0, 1, 500000, 0, 0, 1, 1, 0, 120, 1),
+(720027, 'MeteorScrollPack', 0, 1, 500000, 0, 0, 1, 1, 0, 120, 1),
+(720028, 'DBScroll', 0, 1, 5000000, 0, 0, 1, 1, 0, 2150, 1),
+(723700, 'ExpBall', 0, 1, 100000, 0, 0, 1, 1, 0, 27, 1),
+(723017, 'ExpPotion', 0, 1, 100000, 0, 0, 1, 1, 0, 27, 1),
+(723584, 'ConquerPointsBag', 0, 1, 0, 0, 0, 1, 1, 270, 0, 1),
+(730001, '+1Stone', 0, 1, 10000, 0, 0, 1, 1, 0, 10, 1),
+(730002, '+2Stone', 0, 1, 40000, 0, 0, 1, 1, 0, 40, 1),
+(730003, '+3Stone', 0, 1, 120000, 0, 0, 1, 1, 0, 120, 1),
+(730004, '+4Stone', 0, 1, 360000, 0, 0, 1, 1, 0, 360, 1),
+(730005, '+5Stone', 0, 1, 1080000, 0, 0, 1, 1, 0, 1080, 1),
+(730006, '+6Stone', 0, 1, 3240000, 0, 0, 1, 1, 0, 3240, 1),
+(730007, '+7Stone', 0, 1, 9720000, 0, 0, 1, 1, 0, 9720, 1),
+(730008, '+8Stone', 0, 1, 29160000, 0, 0, 1, 1, 0, 29160, 1),
+(700001, 'NormalPhoenixGem', 0, 1, 10000, 0, 0, 1, 1, 0, 0, 1),
+(700002, 'RefinedPhoenixGem', 0, 1, 50000, 0, 0, 1, 1, 0, 0, 1),
+(700003, 'SuperPhoenixGem', 0, 1, 250000, 0, 0, 1, 1, 0, 0, 1),
+(700011, 'NormalDragonGem', 0, 1, 10000, 0, 0, 1, 1, 0, 0, 1),
+(700012, 'RefinedDragonGem', 0, 1, 50000, 0, 0, 1, 1, 0, 0, 1),
+(700013, 'SuperDragonGem', 0, 1, 250000, 0, 0, 1, 1, 0, 0, 1),
+(700021, 'NormalFuryGem', 0, 1, 10000, 0, 0, 1, 1, 0, 0, 1),
+(700022, 'RefinedFuryGem', 0, 1, 50000, 0, 0, 1, 1, 0, 0, 1),
+(700023, 'SuperFuryGem', 0, 1, 250000, 0, 0, 1, 1, 0, 0, 1),
+(700031, 'NormalRainbowGem', 0, 1, 10000, 0, 0, 1, 1, 0, 0, 1),
+(700032, 'RefinedRainbowGem', 0, 1, 50000, 0, 0, 1, 1, 0, 0, 1),
+(700033, 'SuperRainbowGem', 0, 1, 250000, 0, 0, 1, 1, 0, 0, 1),
+(700041, 'NormalKylinGem', 0, 1, 10000, 0, 0, 1, 1, 0, 0, 1),
+(700042, 'RefinedKylinGem', 0, 1, 50000, 0, 0, 1, 1, 0, 0, 1),
+(700043, 'SuperKylinGem', 0, 1, 250000, 0, 0, 1, 1, 0, 0, 1),
+(700051, 'NormalVioletGem', 0, 1, 10000, 0, 0, 1, 1, 0, 0, 1),
+(700052, 'RefinedVioletGem', 0, 1, 50000, 0, 0, 1, 1, 0, 0, 1),
+(700053, 'SuperVioletGem', 0, 1, 250000, 0, 0, 1, 1, 0, 0, 1),
+(700061, 'NormalMoonGem', 0, 1, 10000, 0, 0, 1, 1, 0, 0, 1),
+(700062, 'RefinedMoonGem', 0, 1, 50000, 0, 0, 1, 1, 0, 0, 1),
+(700063, 'SuperMoonGem', 0, 1, 250000, 0, 0, 1, 1, 0, 0, 1),
+(700071, 'NormalTortoiseGem', 0, 1, 10000, 0, 0, 1, 1, 0, 0, 1),
+(700072, 'RefinedTortoiseGem', 0, 1, 50000, 0, 0, 1, 1, 0, 0, 1),
+(700073, 'SuperTortoiseGem', 0, 1, 250000, 0, 0, 1, 1, 0, 0, 1),
+(700101, 'NormalThunderGem', 0, 1, 10000, 0, 0, 1, 1, 0, 0, 1),
+(700102, 'RefinedThunderGem', 0, 1, 50000, 0, 0, 1, 1, 0, 0, 1),
+(700103, 'SuperThunderGem', 0, 1, 250000, 0, 0, 1, 1, 0, 0, 1),
+(700121, 'NormalGloryGem', 0, 1, 10000, 0, 0, 1, 1, 0, 0, 1),
+(700122, 'RefinedGloryGem', 0, 1, 50000, 0, 0, 1, 1, 0, 0, 1),
+(700123, 'SuperGloryGem', 0, 1, 250000, 0, 0, 1, 1, 0, 0, 1),
+(132005, 'Tunic', 0, 1, 100, 0, 0, 3000, 3000, 0, 0, 1),
+(410301, 'Blade', 0, 1, 100, 0, 0, 3500, 3500, 0, 0, 1),
+(420301, 'Sword', 0, 1, 100, 0, 0, 3500, 3500, 0, 0, 1),
+(421301, 'Backsword', 100, 1, 100, 0, 0, 3500, 3500, 0, 0, 1),
+(500301, 'Bow', 40, 1, 100, 0, 0, 3500, 3500, 0, 0, 1),
+(601301, 'Katana', 50, 1, 100, 0, 0, 3500, 3500, 0, 0, 1),
+(300000, 'Steed', 0, 1, 100000, 0, 0, 100, 100, 0, 270, 1),
+(201009, 'HeavenFan', 0, 70, 100000, 0, 0, 6000, 6000, 0, 0, 1),
+(202009, 'StarTower', 0, 70, 100000, 0, 0, 6000, 6000, 0, 0, 1);
+
+-- ------------------------------------------------------
+-- Table structure for table `cq_monstertype` (Patch 5187 Retail Monsters & Guards)
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `cq_monstertype`;
+CREATE TABLE `cq_monstertype` (
+  `id` int(10) unsigned NOT NULL DEFAULT '0',
+  `name` varchar(30) NOT NULL DEFAULT '',
+  `type` int(10) unsigned NOT NULL DEFAULT '0',
+  `lookface` int(10) unsigned NOT NULL DEFAULT '0',
+  `life` int(10) unsigned NOT NULL DEFAULT '1',
+  `mana` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `attack_max` int(10) unsigned NOT NULL DEFAULT '1',
+  `attack_min` int(10) unsigned NOT NULL DEFAULT '1',
+  `defence` int(10) unsigned NOT NULL DEFAULT '0',
+  `dexterity` int(10) unsigned NOT NULL DEFAULT '0',
+  `dodge` int(10) unsigned NOT NULL DEFAULT '0',
+  `helmet_type` int(10) unsigned NOT NULL DEFAULT '0',
+  `armor_type` int(10) unsigned NOT NULL DEFAULT '0',
+  `weaponr_type` int(10) unsigned NOT NULL DEFAULT '0',
+  `weaponl_type` int(10) unsigned NOT NULL DEFAULT '0',
+  `attack_range` int(10) unsigned NOT NULL DEFAULT '1',
+  `view_range` int(10) unsigned NOT NULL DEFAULT '6',
+  `escape_life` int(10) unsigned NOT NULL DEFAULT '0',
+  `attack_speed` int(10) unsigned NOT NULL DEFAULT '1000',
+  `move_speed` int(10) unsigned NOT NULL DEFAULT '500',
+  `level` int(10) unsigned NOT NULL DEFAULT '1',
+  `attack_user` int(10) unsigned NOT NULL DEFAULT '3',
+  `drop_money` int(10) unsigned NOT NULL DEFAULT '0',
+  `drop_itemtype` int(10) unsigned NOT NULL DEFAULT '0',
+  `size_add` int(10) unsigned NOT NULL DEFAULT '0',
+  `action` int(10) unsigned NOT NULL DEFAULT '0',
+  `run_speed` int(10) unsigned NOT NULL DEFAULT '500',
+  `drop_armet` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `drop_necklace` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `drop_armor` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `drop_ring` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `drop_weapon` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `drop_shield` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `drop_shoes` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `drop_hp` int(10) unsigned NOT NULL DEFAULT '0',
+  `drop_mp` int(10) unsigned NOT NULL DEFAULT '0',
+  `magic_type` int(10) unsigned NOT NULL DEFAULT '0',
+  `magic_def` int(10) unsigned NOT NULL DEFAULT '0',
+  `magic_hitrate` int(10) unsigned NOT NULL DEFAULT '100',
+  `ai_type` int(10) unsigned NOT NULL DEFAULT '0',
+  `defence2` int(10) unsigned NOT NULL DEFAULT '10000',
+  `stc_type` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `anti_monster` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `extra_battlelev` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `extra_exp` smallint(6) NOT NULL DEFAULT '0',
+  `extra_damage` smallint(6) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------
+-- Table structure for table `cq_generator` (Retail Monster & Guard Spawns)
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `cq_generator`;
+CREATE TABLE `cq_generator` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `mapid` int(10) unsigned NOT NULL DEFAULT '0',
+  `bound_x` int(10) unsigned NOT NULL DEFAULT '0',
+  `bound_y` int(10) unsigned NOT NULL DEFAULT '0',
+  `bound_cx` int(10) unsigned NOT NULL DEFAULT '0',
+  `bound_cy` int(10) unsigned NOT NULL DEFAULT '0',
+  `max_npc` int(10) unsigned NOT NULL DEFAULT '0',
+  `rest_secs` int(10) unsigned NOT NULL DEFAULT '0',
+  `max_per_gen` int(10) unsigned NOT NULL DEFAULT '0',
+  `npctype` int(10) unsigned NOT NULL DEFAULT '0',
+  `timer_begin` int(10) unsigned NOT NULL DEFAULT '0',
+  `timer_end` int(10) unsigned NOT NULL DEFAULT '0',
+  `born_x` int(10) unsigned NOT NULL DEFAULT '0',
+  `born_y` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `idx_mapid` (`mapid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------
+-- Table structure for table `cq_rebirth` (Retail 1st & 2nd Rebirth Paths - 6 Classes up to Ninja)
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `cq_rebirth`;
+CREATE TABLE `cq_rebirth` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `need_prof` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `new_prof` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `need_level` tinyint(3) unsigned NOT NULL DEFAULT '120',
+  `new_level` tinyint(3) unsigned NOT NULL DEFAULT '15',
+  `metempsychosis` tinyint(3) unsigned NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Records of `cq_monstertype` (579 rows)
+INSERT INTO `cq_monstertype` VALUES (1, 'Pheasant', 1, 104, 33, 0, 6, 5, 0, 0, 36, 0, 0, 0, 0, 1, 6, 0, 1000, 500, 1, 3, 5000, 0, 0, 20900, 500, 99, 99, 99, 99, 99, 99, 99, 1000000, 1001000, 0, 0, 0, 0, 10000, 1, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (2, 'Turtledove', 1, 304, 81, 0, 16, 15, 0, 0, 37, 0, 0, 0, 0, 1, 6, 0, 1000, 500, 7, 3, 5000, 0, 0, 20900, 500, 99, 0, 99, 0, 0, 99, 1, 1000000, 1001000, 0, 0, 0, 0, 10000, 2, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (3, 'Robin', 1, 132, 183, 0, 35, 31, 0, 2, 36, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 12, 3, 5000, 0, 0, 20900, 500, 0, 1, 0, 1, 1, 99, 3, 1000000, 1001000, 0, 0, 0, 0, 10000, 3, 6, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (4, 'Apparition', 1, 108, 303, 0, 46, 42, 0, 2, 69, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 17, 3, 5000, 0, 1, 20900, 500, 1, 2, 1, 2, 2, 99, 3, 1000000, 1001000, 0, 0, 0, 0, 10000, 4, 7, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (5, 'Poltergeist', 1, 108, 548, 0, 60, 53, 0, 4, 71, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 22, 3, 5000, 0, 1, 20900, 500, 1, 3, 1, 3, 3, 99, 5, 1000010, 1001010, 0, 0, 0, 0, 10000, 5, 8, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (6, 'WingedSnake', 1, 203, 667, 0, 73, 65, 0, 4, 73, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 27, 3, 5000, 0, 1, 20900, 500, 2, 4, 2, 4, 4, 99, 5, 1000010, 1001010, 0, 0, 0, 0, 10000, 6, 9, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (7, 'Bandit', 1, 201, 817, 0, 89, 81, 0, 10, 75, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 32, 3, 5000, 0, 1, 20900, 500, 3, 5, 2, 5, 5, 99, 7, 1000010, 1001010, 0, 0, 0, 0, 10000, 7, 10, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (8, 'Ratling', 1, 202, 999, 0, 114, 103, 0, 14, 78, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 37, 3, 5000, 0, 1, 20900, 500, 3, 6, 3, 6, 6, 99, 7, 1000010, 1001010, 0, 0, 0, 0, 10000, 8, 11, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (9, 'FireSpirit', 1, 202, 1828, 0, 133, 119, 0, 15, 75, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 42, 3, 5000, 0, 1, 20900, 500, 4, 7, 3, 7, 7, 0, 9, 1000020, 1001020, 0, 0, 0, 0, 10000, 9, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (10, 'Macaque', 1, 156, 2199, 0, 173, 156, 0, 18, 78, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 47, 3, 5000, 0, 1, 20900, 500, 4, 8, 4, 8, 8, 1, 9, 1000020, 1001020, 0, 0, 0, 0, 10000, 10, 12, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (11, 'GiantApe', 1, 156, 2643, 0, 222, 200, 0, 18, 79, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 52, 3, 5000, 0, 2, 20900, 500, 5, 9, 5, 9, 9, 2, 11, 1000020, 1001020, 0, 0, 0, 0, 10000, 11, 13, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (12, 'ThunderApe', 1, 103, 3184, 0, 281, 253, 0, 18, 82, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 57, 3, 5000, 0, 1, 20900, 500, 5, 11, 5, 11, 11, 3, 11, 1000020, 1001020, 0, 0, 0, 0, 10000, 12, 14, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (13, 'Snakeman', 1, 204, 4771, 0, 350, 315, 0, 21, 83, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 62, 3, 5000, 0, 1, 20900, 500, 6, 12, 6, 12, 12, 3, 13, 1000030, 1001030, 0, 0, 0, 0, 10000, 13, 16, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (14, 'SandMonster', 1, 131, 5760, 0, 439, 397, 0, 21, 87, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 67, 3, 5000, 0, 3, 20900, 500, 6, 13, 6, 13, 13, 4, 13, 1000030, 1001030, 0, 0, 0, 0, 10000, 14, 15, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (15, 'HillMonster', 1, 105, 7358, 0, 496, 448, 0, 25, 83, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 72, 3, 5000, 0, 2, 20900, 500, 6, 14, 6, 14, 14, 4, 15, 1000030, 1001030, 0, 0, 0, 0, 10000, 15, 17, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (16, 'RockMonster', 1, 105, 8459, 0, 589, 532, 0, 25, 86, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 77, 3, 5000, 0, 2, 20900, 500, 7, 15, 6, 15, 15, 5, 15, 1000030, 1001030, 0, 0, 0, 0, 10000, 16, 18, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (17, 'BladeGhost', 1, 200, 11673, 0, 691, 624, 0, 28, 87, 0, 0, 0, 0, 1, 12, 0, 1000, 500, 82, 3, 5000, 0, 1, 20900, 500, 7, 16, 7, 16, 16, 6, 17, 1002000, 1001040, 0, 0, 0, 0, 10000, 17, 2, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (18, 'Birdman', 1, 205, 13422, 0, 810, 731, 0, 28, 85, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 87, 3, 5000, 0, 1, 20900, 500, 8, 17, 7, 17, 17, 7, 17, 1002000, 1001040, 0, 0, 0, 0, 10000, 18, 19, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (19, 'HawKing', 1, 205, 15432, 0, 946, 855, 0, 28, 85, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 92, 3, 5000, 0, 1, 20900, 500, 8, 18, 8, 18, 18, 7, 19, 1002000, 1001040, 0, 0, 0, 0, 10000, 19, 20, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (20, 'TombBat', 1, 206, 24472, 0, 1253, 1134, 0, 30, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 102, 3, 5000, 0, 1, 20900, 500, 8, 20, 9, 20, 20, 8, 21, 1002010, 1002030, 0, 0, 0, 0, 10000, 20, 1, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (21, 'FlyingRooster', 1, 304, 3300, 0, 8, 7, 4, 0, 36, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 3, 3, 0, 0, 0, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1000000, 1001000, 0, 70, 0, 0, 10000, 1, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (22, 'BlueCooer', 1, 304, 8100, 0, 20, 19, 12, 0, 37, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 10, 3, 0, 0, 0, 0, 500, 99, 0, 99, 0, 0, 99, 99, 1000010, 1001000, 0, 70, 0, 0, 10000, 2, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (23, 'GameBird', 1, 332, 18300, 0, 44, 39, 34, 2, 36, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 15, 3, 0, 0, 0, 0, 500, 0, 1, 0, 1, 1, 99, 0, 1000020, 1001000, 0, 70, 0, 0, 10000, 3, 6, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (24, 'WarGhost', 1, 308, 30300, 0, 58, 53, 48, 2, 69, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 20, 3, 0, 0, 1, 0, 500, 1, 2, 1, 2, 2, 99, 1, 1000020, 1001010, 0, 70, 0, 0, 10000, 5, 7, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (25, 'BattleGhost', 1, 308, 54800, 0, 75, 67, 74, 4, 71, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 25, 3, 0, 0, 1, 0, 500, 1, 3, 1, 3, 3, 99, 1, 1000030, 1001010, 0, 70, 0, 0, 10000, 5, 8, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (26, 'FireSnake', 1, 403, 66700, 0, 92, 82, 98, 4, 73, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 30, 3, 0, 0, 1, 0, 400, 2, 4, 2, 4, 4, 99, 2, 1000030, 1001020, 0, 70, 0, 0, 10000, 0, 9, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (27, 'CateranBoss', 1, 401, 81700, 0, 112, 102, 120, 6, 75, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 35, 3, 0, 0, 1, 0, 400, 3, 5, 2, 5, 5, 99, 2, 1000030, 1001020, 0, 70, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (28, 'BlueElf', 1, 402, 999, 0, 143, 129, 160, 6, 78, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 40, 3, 0, 0, 1, 0, 400, 3, 6, 3, 6, 6, 99, 3, 1002000, 1001020, 0, 70, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (29, 'ElfKing', 1, 402, 1828, 0, 167, 149, 200, 6, 75, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 45, 3, 0, 0, 1, 0, 400, 4, 7, 3, 7, 7, 0, 3, 1002000, 1001020, 0, 70, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (30, 'SmartMonkey', 1, 356, 2199, 0, 217, 195, 250, 5, 78, 0, 0, 0, 0, 9, 8, 0, 1000, 500, 50, 3, 0, 0, 3, 0, 400, 4, 8, 4, 8, 8, 1, 4, 1002000, 1001020, 1001, 70, 100, 0, 10000, 0, 12, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (31, 'RoaringApe', 1, 356, 2643, 0, 278, 250, 300, 3, 79, 0, 0, 0, 0, 9, 8, 0, 1000, 500, 55, 3, 0, 0, 2, 0, 400, 5, 9, 5, 9, 9, 2, 4, 1002010, 1001020, 1150, 70, 100, 0, 10000, 0, 13, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (32, 'SnowApe', 1, 303, 3184, 0, 352, 317, 350, 5, 82, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 60, 3, 0, 0, 1, 0, 400, 5, 11, 5, 11, 11, 3, 5, 1002010, 1001020, 0, 70, 0, 0, 10000, 0, 14, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (33, 'CrazySnake', 1, 404, 4771, 0, 438, 394, 400, 3, 83, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 65, 3, 0, 0, 1, 0, 400, 6, 12, 6, 12, 12, 3, 5, 1002010, 1001020, 0, 70, 0, 0, 10000, 0, 16, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (34, 'SandDevil', 1, 131, 5760, 0, 549, 497, 450, 4, 87, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 70, 3, 0, 0, 3, 0, 400, 6, 13, 6, 13, 13, 4, 6, 1002010, 1001020, 0, 60, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (35, 'MountMonster', 1, 305, 7358, 0, 620, 560, 450, 3, 83, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 75, 3, 0, 0, 2, 0, 400, 6, 14, 6, 14, 14, 4, 6, 1002010, 1001020, 0, 60, 0, 0, 10000, 0, 18, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (36, 'StoneMonster', 1, 305, 8459, 0, 737, 665, 512, 8, 86, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 80, 3, 0, 0, 2, 0, 400, 7, 15, 6, 15, 15, 5, 7, 1002010, 1001020, 0, 60, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (37, 'BladeMonster', 1, 400, 11673, 0, 864, 780, 550, 7, 87, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 85, 3, 0, 0, 1, 0, 400, 7, 16, 7, 16, 16, 6, 7, 1002020, 1001020, 0, 60, 0, 0, 10000, 0, 2, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (38, 'BirdKing', 1, 405, 13422, 0, 1013, 914, 600, 11, 91, 0, 0, 0, 0, 9, 8, 0, 1000, 500, 90, 3, 0, 0, 1, 0, 400, 8, 17, 7, 17, 17, 7, 8, 1002020, 1001020, 1002, 60, 30, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (39, 'SilverHawk', 1, 405, 15432, 0, 1183, 1069, 700, 11, 92, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 95, 3, 0, 0, 1, 0, 400, 8, 18, 8, 18, 18, 7, 8, 1002020, 1001020, 0, 60, 0, 0, 10000, 19, 20, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (40, 'Robber', 1, 401, 20697, 0, 1504, 1125, 800, 13, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 100, 3, 0, 0, 1, 0, 400, 8, 19, 8, 19, 19, 8, 8, 1002020, 1001020, 0, 60, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (51, 'MonolithMonster', 1, 136, 7358, 0, 140, 120, 0, 3, 83, 0, 0, 0, 0, 1, 15, 0, 1000, 500, 42, 3, 0, 0, 2, 0, 1000, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (55, 'BanditL97', 1, 201, 20697, 0, 1203, 900, 0, 30, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 97, 3, 5000, 0, 1, 0, 500, 8, 19, 8, 19, 19, 8, 19, 1002010, 1002030, 0, 0, 0, 0, 10000, 55, 21, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (56, 'BloodyBat', 1, 148, 28140, 0, 1602, 1200, 0, 30, 85, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 107, 3, 5000, 0, 1, 20900, 500, 9, 21, 9, 21, 21, 9, 21, 1002010, 1002030, 0, 0, 0, 0, 10000, 56, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (57, 'BullMonster', 1, 117, 35050, 0, 1880, 1300, 0, 33, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 112, 3, 5000, 0, 2, 20900, 500, 9, 22, 9, 22, 22, 9, 23, 1002020, 1002040, 0, 0, 0, 0, 10000, 57, 4, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (58, 'RedDevilL117', 1, 197, 60460, 0, 2228, 1500, 0, 33, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 117, 3, 5000, 0, 1, 20900, 500, 9, 21, 9, 21, 21, 9, 23, 1002020, 1002040, 0, 0, 0, 0, 10000, 58, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (59, '59', 1, 536, 1000, 0, 46, 40, 0, 3, 83, 0, 0, 0, 0, 1, 15, 0, 1000, 500, 15, 3, 5000, 0, 2, 0, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (64, 'HeavyGhostL23', 1, 508, 1096, 0, 63, 56, 0, 4, 71, 0, 0, 0, 0, 2, 15, 0, 1000, 500, 23, 3, 5000, 0, 1, 20900, 200, 1, 3, 1, 3, 3, 99, 1, 1000030, 1001010, 0, 0, 0, 0, 10000, 5, 8, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (65, 'WingedSnakeL28', 1, 603, 1334, 0, 77, 69, 0, 4, 73, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 28, 3, 5000, 0, 1, 20900, 100, 2, 4, 2, 4, 4, 99, 2, 1000030, 1001020, 0, 0, 0, 0, 10000, 6, 9, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (66, 'BanditL33', 1, 601, 2451, 0, 94, 86, 0, 6, 75, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 33, 3, 5000, 0, 1, 20900, 100, 3, 5, 2, 5, 5, 99, 2, 1000030, 1001020, 0, 0, 0, 0, 10000, 7, 10, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (67, 'FireRatL38', 1, 602, 2997, 0, 120, 109, 0, 6, 78, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 38, 3, 5000, 0, 1, 20900, 100, 3, 6, 3, 6, 6, 99, 3, 1002000, 1001020, 0, 0, 0, 0, 10000, 8, 11, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (68, 'FireSpiritL43', 1, 602, 5484, 0, 140, 125, 0, 6, 75, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 43, 3, 5000, 0, 1, 20900, 100, 4, 7, 3, 7, 7, 0, 3, 1002000, 1001020, 0, 0, 0, 0, 10000, 9, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (69, 'MacaqueL48', 1, 556, 6597, 0, 182, 164, 0, 5, 78, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 48, 3, 5000, 0, 1, 20900, 100, 4, 8, 4, 8, 8, 1, 4, 1002000, 1001020, 0, 0, 0, 0, 10000, 10, 12, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (70, 'GiantApeL53', 1, 556, 7929, 0, 234, 210, 0, 3, 79, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 53, 3, 5000, 0, 2, 20900, 100, 5, 9, 5, 9, 9, 2, 4, 1002010, 1001020, 0, 0, 0, 0, 10000, 11, 13, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (71, 'ThunderApeL58', 1, 503, 9552, 0, 296, 266, 0, 5, 82, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 58, 3, 5000, 0, 1, 20900, 100, 5, 11, 5, 11, 11, 3, 5, 1002010, 1001020, 0, 0, 0, 0, 10000, 12, 14, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (72, 'SnakemanL63', 1, 604, 14313, 0, 368, 331, 0, 3, 83, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 63, 3, 5000, 0, 1, 20900, 100, 6, 12, 6, 12, 12, 3, 5, 1002010, 1001020, 0, 0, 0, 0, 10000, 13, 16, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (73, 'SandMonsterL68', 1, 531, 17280, 0, 461, 417, 0, 4, 87, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 68, 3, 5000, 0, 3, 20900, 100, 6, 13, 6, 13, 13, 4, 6, 1002010, 1001020, 0, 0, 0, 0, 10000, 14, 15, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (74, 'HillMonsterL73', 1, 505, 22074, 0, 521, 471, 0, 3, 83, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 73, 3, 5000, 0, 2, 20900, 100, 6, 14, 6, 14, 14, 4, 6, 1002010, 1001020, 0, 0, 0, 0, 10000, 15, 17, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (75, 'RockMonsterL78', 1, 505, 16918, 0, 619, 559, 0, 8, 86, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 78, 3, 5000, 0, 2, 20900, 100, 7, 15, 6, 15, 15, 5, 7, 1002010, 1001020, 0, 0, 0, 0, 10000, 16, 18, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (76, 'BladeGhostL83', 1, 200, 23346, 0, 726, 656, 0, 7, 87, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 83, 3, 5000, 0, 1, 20900, 100, 7, 16, 7, 16, 16, 6, 7, 1002020, 1001020, 0, 0, 100, 0, 10000, 17, 2, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (77, 'BirdmanL88', 1, 605, 26844, 0, 851, 768, 0, 11, 91, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 88, 3, 5000, 0, 1, 20900, 100, 8, 17, 7, 17, 17, 7, 8, 1002020, 1001020, 0, 0, 0, 0, 10000, 18, 19, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (78, 'HawkL93', 1, 605, 30864, 0, 994, 898, 0, 11, 92, 0, 0, 0, 0, 2, 18, 0, 1000, 250, 93, 3, 5000, 0, 1, 20900, 100, 8, 18, 8, 18, 18, 7, 8, 1002020, 1001020, 0, 0, 0, 0, 10000, 19, 20, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (79, 'BanditL98', 1, 601, 41394, 0, 1263, 945, 0, 13, 86, 0, 0, 0, 0, 1, 18, 0, 1000, 500, 98, 3, 5000, 0, 1, 20900, 100, 8, 19, 8, 19, 19, 8, 8, 1002020, 1001020, 0, 0, 0, 0, 10000, 55, 21, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (80, 'TombBatL103', 1, 606, 48944, 0, 1316, 1191, 0, 13, 86, 0, 0, 0, 0, 2, 18, 0, 1000, 500, 103, 3, 5000, 0, 3, 20900, 100, 8, 20, 9, 20, 20, 8, 9, 1002020, 1001020, 0, 0, 0, 0, 10000, 20, 1, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (81, 'BloodyBatL108', 1, 548, 56280, 0, 1682, 1260, 0, 13, 89, 0, 0, 0, 0, 1, 18, 0, 1000, 500, 108, 3, 5000, 0, 1, 20900, 100, 9, 21, 9, 21, 21, 9, 9, 1002020, 1001020, 0, 0, 0, 0, 10000, 56, 23, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (82, 'BullMonsterL113', 1, 517, 65535, 0, 1974, 1365, 0, 19, 86, 0, 0, 0, 0, 1, 18, 0, 1000, 500, 113, 3, 5000, 0, 2, 20900, 100, 9, 22, 9, 22, 22, 9, 9, 1002020, 1001020, 0, 0, 0, 0, 10000, 57, 4, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (83, 'RedDevilL118', 1, 597, 65535, 0, 2339, 1575, 0, 19, 86, 0, 0, 0, 0, 1, 18, 0, 1000, 500, 118, 3, 5000, 0, 1, 20900, 100, 9, 21, 9, 21, 21, 9, 9, 1002020, 1001020, 0, 0, 0, 0, 10000, 58, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (84, 'Banditti', 1, 201, 40000, 0, 1326, 992, 900, 13, 86, 0, 0, 0, 0, 1, 10, 1000, 1000, 500, 98, 3, 5000, 0, 1, 20900, 300, 8, 19, 8, 19, 19, 8, 8, 1002020, 1001020, 0, 60, 0, 0, 10000, 0, 21, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (85, 'BanditKing', 1, 201, 45000, 0, 1389, 1039, 1000, 13, 86, 0, 0, 0, 0, 1, 20, 40000, 1000, 500, 103, 3, 5000, 0, 3, 20900, 100, 8, 19, 8, 19, 19, 8, 8, 1002020, 1001020, 0, 70, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (86, 'VampireBat', 1, 148, 50000, 0, 1766, 1323, 900, 13, 89, 0, 0, 0, 0, 1, 10, 1500, 1000, 500, 108, 3, 5000, 0, 1, 20900, 300, 9, 21, 9, 21, 21, 9, 9, 1002020, 1001020, 0, 60, 0, 0, 10000, 56, 23, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (87, 'VampireKing', 1, 148, 55000, 0, 1850, 1386, 1000, 13, 89, 0, 0, 0, 0, 1, 20, 50000, 1000, 500, 113, 3, 5000, 0, 2, 20900, 100, 9, 21, 9, 21, 21, 9, 9, 1002020, 1001020, 0, 70, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (88, 'BloodyDevil', 1, 197, 60000, 0, 2455, 1653, 900, 19, 86, 0, 0, 0, 0, 1, 10, 2000, 1000, 500, 118, 3, 5000, 0, 1, 20900, 300, 9, 21, 9, 21, 21, 9, 9, 1002020, 1001020, 0, 60, 0, 0, 10000, 58, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (89, 'DevilKing', 1, 197, 65000, 0, 2572, 1732, 1000, 19, 86, 0, 0, 0, 0, 1, 20, 120000, 1000, 500, 130, 3, 5000, 0, 1, 20900, 100, 9, 21, 9, 21, 21, 9, 9, 1002020, 1001020, 0, 70, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (90, 'FlyingBat', 1, 406, 24472, 0, 1567, 1418, 900, 13, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 105, 3, 5000, 0, 3, 20900, 400, 8, 20, 9, 20, 20, 8, 9, 1002020, 1001020, 0, 60, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (91, 'BloodyKing', 1, 348, 28140, 0, 2003, 1500, 1000, 13, 89, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 110, 3, 5000, 0, 2, 20900, 400, 9, 21, 9, 21, 21, 9, 9, 1002020, 1001020, 0, 60, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (92, 'BullDevil', 1, 317, 35050, 0, 2350, 1625, 1200, 19, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 115, 3, 5000, 0, 2, 20900, 400, 9, 22, 9, 22, 22, 9, 9, 1002020, 1001020, 0, 60, 0, 0, 10000, 0, 4, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (93, 'GreenDevil', 1, 397, 60460, 0, 2785, 1875, 1200, 19, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 120, 3, 5000, 0, 1, 20900, 400, 9, 21, 9, 21, 21, 9, 9, 1002020, 1001020, 0, 60, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (100, 'Skeleton', 1, 211, 30000, 0, 2500, 2500, 30, 20, 50, 0, 0, 0, 0, 11, 12, 2000, 2000, 1000, 70, 3, 5000, 0, 2, 20900, 500, 7, 15, 6, 15, 15, 5, 7, 1002010, 1001020, 0, 50, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (101, 'GhostWarrior', 1, 211, 20000, 0, 2500, 2500, 500, 15, 50, 0, 0, 0, 0, 4, 15, 500, 1000, 5000, 80, 3, 5000, 0, 2, 20900, 100, 7, 15, 6, 15, 15, 5, 7, 1002010, 1001020, 0, 30, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (102, 'SkeletonKing', 1, 211, 50000, 0, 2500, 2500, 100, 20, 50, 0, 0, 0, 0, 12, 12, 3000, 2000, 1000, 120, 3, 5000, 0, 1, 20900, 500, 7, 15, 6, 15, 15, 5, 7, 1002010, 1001020, 0, 50, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (103, 'GhostAres', 1, 211, 60000, 0, 2500, 2500, 200, 20, 50, 0, 0, 0, 0, 12, 12, 5000, 2000, 1000, 120, 3, 5000, 0, 2, 0, 500, 7, 15, 6, 15, 15, 5, 7, 1002010, 1001020, 0, 70, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (105, 'RockMonsterL17', 1, 136, 606, 0, 50, 42, 0, 2, 69, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 17, 3, 5000, 0, 2, 0, 1000, 1, 2, 1, 2, 2, 99, 3, 1000020, 1001010, 0, 0, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (106, 'RockMonsterL42', 1, 136, 3656, 0, 146, 119, 0, 6, 75, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 42, 3, 5000, 0, 2, 0, 1000, 4, 7, 3, 7, 7, 0, 9, 1002000, 1001020, 0, 0, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (107, 'RockMonsterL72', 1, 136, 14716, 0, 545, 448, 0, 3, 83, 0, 0, 0, 0, 1, 15, 0, 1000, 1000, 72, 3, 5000, 0, 2, 0, 1000, 6, 14, 6, 14, 14, 4, 15, 1002010, 1001020, 0, 0, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (108, 'RockMonsterL92', 1, 136, 30864, 0, 1040, 855, 0, 11, 92, 0, 0, 0, 0, 1, 15, 0, 1000, 1000, 92, 3, 5000, 0, 2, 0, 1000, 8, 18, 8, 18, 18, 7, 19, 1002020, 1001020, 0, 0, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (110, 'WindSnake', 1, 203, 400, 0, 73, 65, 0, 4, 73, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 27, 3, 5000, 0, 1, 0, 500, 2, 4, 2, 4, 4, 99, 5, 1000010, 1001010, 0, 0, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (111, 'AlienBandit', 1, 201, 600, 0, 89, 81, 0, 6, 75, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 32, 3, 5000, 0, 1, 0, 500, 3, 5, 2, 5, 5, 99, 7, 1000010, 1001010, 0, 0, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (112, 'FireRat', 1, 202, 800, 0, 114, 103, 0, 6, 78, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 37, 3, 5000, 0, 1, 0, 500, 3, 6, 3, 6, 6, 99, 7, 1000010, 1001010, 0, 0, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (113, 'FireSpirit', 1, 202, 1500, 0, 133, 119, 0, 6, 75, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 42, 3, 5000, 0, 1, 0, 500, 4, 7, 3, 7, 7, 0, 9, 1000020, 1001020, 0, 0, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (120, 'MinMacaque', 1, 156, 1759, 0, 173, 156, 0, 5, 78, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 47, 3, 5000, 0, 1, 20900, 500, 4, 8, 4, 8, 8, 1, 9, 1000020, 1001020, 0, 0, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (121, 'ElfApe', 1, 156, 2114, 0, 222, 200, 0, 3, 79, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 52, 3, 5000, 0, 2, 0, 500, 5, 9, 5, 9, 9, 2, 11, 1000020, 1001020, 0, 0, 0, 0, 10000, 0, 13, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (122, 'SlowApe', 1, 103, 2547, 0, 281, 253, 0, 5, 82, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 57, 3, 5000, 0, 1, 0, 500, 5, 11, 5, 11, 11, 3, 11, 1000020, 1001020, 0, 0, 0, 0, 10000, 0, 14, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (123, 'SnakeMonster', 1, 204, 3817, 0, 350, 315, 0, 3, 83, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 62, 3, 5000, 0, 1, 0, 500, 6, 12, 6, 12, 12, 3, 13, 1000030, 1001030, 0, 0, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (124, 'SandElf', 1, 131, 4608, 0, 439, 397, 0, 21, 87, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 67, 3, 5000, 0, 3, 0, 500, 6, 13, 6, 13, 13, 4, 13, 1000030, 1001030, 0, 0, 0, 0, 10000, 0, 15, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (125, 'LapidatingMob', 1, 105, 5886, 0, 496, 448, 0, 25, 83, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 72, 3, 5000, 0, 2, 0, 500, 6, 14, 6, 14, 14, 4, 15, 1000030, 1001030, 0, 0, 0, 0, 10000, 0, 17, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (126, 'ToughMonster', 1, 105, 6767, 0, 589, 532, 0, 25, 86, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 77, 3, 5000, 0, 2, 0, 500, 7, 15, 6, 15, 15, 5, 15, 1000030, 1001030, 0, 0, 0, 0, 10000, 0, 18, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (127, 'EvilBlade', 1, 200, 9338, 0, 691, 624, 0, 28, 87, 0, 0, 0, 0, 1, 12, 0, 1000, 500, 82, 3, 5000, 0, 1, 0, 500, 7, 16, 7, 16, 16, 6, 17, 1002000, 1001040, 0, 0, 0, 0, 10000, 0, 2, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (200, 'DevilKing', 1, 197, 65000, 0, 800, 800, 0, 19, 75, 0, 0, 0, 0, 1, 10, 0, 2000, 500, 117, 3, 5000, 0, 1, 0, 100, 9, 21, 9, 21, 22, 9, 21, 1002020, 1002030, 1001, 0, 50, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (201, 'DevilKingL118', 1, 197, 65000, 0, 900, 900, 0, 19, 75, 0, 0, 0, 0, 1, 10, 0, 2000, 500, 118, 3, 5000, 0, 1, 0, 100, 9, 21, 9, 21, 22, 9, 21, 1002020, 1002030, 1002, 0, 50, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (251, '0jl', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 5000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 10000, 0, 0, 0, 0, 0);
+INSERT INTO `cq_monstertype` VALUES (500, 'Birdman', 1, 205, 13422, 0, 810, 731, 0, 28, 85, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 87, 3, 5000, 0, 1, 10000050, 500, 8, 17, 7, 17, 17, 7, 17, 1002000, 1001040, 0, 0, 0, 0, 10000, 18, 19, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (900, 'Guard1', 1, 900, 65535, 0, 70000, 70000, 100000, 65535, 65535, 0, 0, 0, 0, 15, 15, 0, 5000, 5000, 150, 15, 0, 0, 1, 0, 500, 0, 0, 0, 0, 0, 0, 0, 1002020, 1001020, 8036, 0, 100, 0, 100, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (910, 'Guard3', 1, 910, 5000, 0, 1000, 500, 50000, 250, 85, 0, 0, 0, 0, 2, 15, 0, 1000, 1000, 60, 55, 5000, 0, 1, 0, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8036, 90, 100, 0, 1000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (911, 'Guard2', 1, 910, 5000, 0, 5000, 2000, 50000, 250, 85, 0, 0, 0, 0, 2, 15, 0, 1000, 1000, 60, 8242, 5000, 0, 1, 0, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 90, 0, 0, 1000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (1400, 'HugeSnake', 1, 203, 1828, 0, 60, 60, 20, 15, 70, 0, 0, 0, 0, 1, 8, 0, 2000, 500, 42, 3, 5000, 0, 1, 0, 500, 4, 7, 3, 7, 7, 0, 9, 1000020, 1001020, 1000, 0, 100, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (1401, 'BanditLeader', 1, 201, 2643, 0, 100, 100, 20, 18, 70, 0, 0, 0, 0, 1, 8, 0, 2000, 500, 52, 3, 5000, 0, 2, 0, 500, 5, 9, 5, 9, 9, 2, 11, 1000020, 1001020, 1000, 20, 100, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (1402, 'HugeSpirit', 1, 202, 3184, 0, 160, 160, 50, 5, 70, 0, 0, 0, 0, 1, 8, 0, 2000, 500, 57, 3, 5000, 0, 1, 0, 400, 5, 11, 5, 11, 11, 3, 5, 1002010, 1001020, 1000, 20, 100, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (1403, 'CateranSoldier', 1, 401, 4771, 0, 220, 220, 50, 3, 70, 0, 0, 0, 0, 1, 8, 0, 2000, 500, 62, 3, 5000, 0, 1, 0, 400, 6, 12, 6, 12, 12, 3, 5, 1002010, 1001020, 1000, 20, 100, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (1404, 'SeniorCateran', 1, 401, 5760, 0, 260, 260, 80, 4, 70, 0, 0, 0, 0, 1, 8, 0, 2000, 500, 67, 3, 5000, 0, 0, 0, 400, 6, 13, 6, 13, 13, 4, 6, 1002010, 1001020, 1000, 20, 100, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (1405, 'CateranLeader', 1, 211, 7358, 0, 300, 300, 80, 3, 70, 0, 0, 0, 0, 1, 8, 0, 2000, 500, 72, 3, 5000, 0, 2, 0, 400, 6, 14, 6, 14, 14, 4, 6, 1002010, 1001020, 1000, 20, 100, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (1406, 'ChiefCateran', 1, 211, 8459, 0, 360, 360, 100, 8, 70, 0, 0, 0, 0, 1, 8, 0, 2000, 500, 78, 3, 5000, 0, 2, 0, 400, 7, 15, 6, 15, 15, 5, 7, 1002010, 1001020, 1000, 20, 100, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (1407, 'HugeApe', 1, 156, 11673, 0, 440, 440, 100, 7, 70, 0, 0, 0, 0, 1, 8, 0, 2000, 500, 82, 3, 5000, 0, 1, 0, 400, 7, 16, 7, 16, 16, 6, 7, 1002020, 1001020, 1000, 20, 100, 0, 10000, 0, 3, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (1408, 'SeniorApe', 1, 103, 13422, 0, 500, 500, 150, 11, 70, 0, 0, 0, 0, 9, 8, 0, 2000, 500, 88, 3, 5000, 0, 1, 0, 400, 8, 17, 7, 17, 17, 7, 8, 1002020, 1001020, 1000, 20, 100, 0, 10000, 0, 3, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (1409, 'AlienApe', 1, 503, 15432, 0, 600, 600, 150, 11, 70, 0, 0, 0, 0, 1, 10, 0, 2000, 1000, 92, 3, 5000, 0, 1, 0, 400, 8, 18, 8, 18, 18, 7, 8, 1002020, 1001020, 1000, 20, 100, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (1410, 'SeniorSnakeman', 1, 204, 20697, 0, 620, 620, 200, 13, 70, 0, 0, 0, 0, 1, 10, 0, 2000, 1000, 97, 3, 5000, 0, 1, 0, 400, 8, 19, 8, 19, 19, 8, 8, 1002020, 1001020, 1000, 20, 100, 0, 10000, 0, 21, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (1411, 'Serpent', 1, 404, 24472, 0, 5300, 3800, 200, 13, 70, 0, 0, 0, 0, 1, 10, 0, 2000, 1000, 137, 3, 5000, 0, 1, 0, 400, 8, 20, 9, 20, 20, 8, 9, 1002020, 1001020, 1000, 20, 100, 0, 10000, 0, 22, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (1412, 'SeniorSerpent', 1, 604, 28140, 0, 800, 800, 250, 13, 70, 0, 0, 0, 0, 1, 10, 0, 2000, 1000, 107, 3, 5000, 0, 1, 0, 400, 9, 21, 9, 21, 21, 9, 9, 1002020, 1001020, 1000, 20, 100, 0, 10000, 0, 23, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (1413, 'AlienSerpent150', 1, 244, 35050, 0, 900, 900, 250, 19, 70, 0, 0, 0, 0, 1, 10, 0, 2000, 1000, 150, 3, 5000, 0, 1, 0, 400, 9, 22, 9, 22, 22, 9, 9, 1002020, 1001020, 1000, 20, 100, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (1414, 'BasiliskLV175', 1, 244, 60460, 0, 1000, 1000, 300, 19, 70, 0, 0, 0, 0, 1, 10, 0, 2000, 1000, 175, 3, 5000, 0, 1, 0, 400, 9, 21, 9, 21, 21, 9, 9, 1002020, 1001020, 1000, 20, 100, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (1610, 'Goblin', 1, 133, 33, 0, 6, 5, 0, 0, 36, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 1, 3, 5000, 0, 0, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1000000, 1001000, 0, 0, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (2000, '2000', 1, 214, 50000, 0, 282, 179, 130, 50, 9, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 60, 3, 5000, 0, 1, 0, 200, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 34, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2001, '2001', 1, 214, 50000, 0, 395, 245, 160, 55, 12, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 60, 3, 5000, 0, 1, 0, 200, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 45, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2002, '2002', 1, 214, 50000, 0, 616, 367, 210, 60, 15, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 60, 3, 5000, 0, 1, 0, 200, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 53, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2003, '2003', 1, 214, 50000, 0, 724, 429, 290, 65, 15, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 60, 3, 5000, 0, 1, 0, 200, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 53, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2005, '2005', 1, 213, 1048, 0, 930, 656, 290, 80, 40, 0, 0, 0, 0, 1, 8, 0, 500, 1000, 60, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 45, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2006, '2006', 1, 213, 1130, 0, 1062, 750, 320, 80, 40, 0, 0, 0, 0, 1, 8, 0, 500, 1000, 65, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 46, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2007, '2007', 1, 213, 1205, 0, 1292, 910, 510, 80, 40, 0, 0, 0, 0, 1, 8, 0, 500, 1000, 70, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 50, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2008, '2008', 1, 213, 1279, 0, 1428, 1000, 600, 80, 40, 0, 0, 0, 0, 1, 8, 0, 500, 1000, 75, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 53, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2009, '2009', 1, 213, 1476, 0, 1570, 1100, 700, 80, 40, 0, 0, 0, 0, 1, 8, 0, 500, 500, 80, 3, 5000, 0, 1, 0, 300, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 55, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2010, '2010', 1, 274, 50000, 0, 1231, 704, 530, 70, 20, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 60, 3, 5000, 0, 1, 0, 200, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 50, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2011, '2011', 1, 274, 50000, 0, 1673, 941, 800, 70, 25, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 60, 3, 5000, 0, 1, 0, 200, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 53, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2012, '2012', 1, 274, 50000, 0, 1991, 1107, 950, 70, 30, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 60, 3, 5000, 0, 1, 0, 200, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 55, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2013, '2013', 1, 374, 50000, 0, 2226, 1235, 1600, 70, 35, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 60, 3, 5000, 0, 1, 0, 200, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 55, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2020, '2020', 1, 207, 3000, 0, 182, 122, 1300, 100, 35, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 55, 35, 5000, 0, 1, 0, 200, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 94, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2021, '2021', 1, 207, 3000, 0, 200, 134, 1400, 100, 40, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 65, 35, 5000, 0, 1, 0, 200, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 96, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2022, '2022', 1, 267, 3000, 0, 240, 160, 1500, 100, 45, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 75, 35, 5000, 0, 1, 0, 200, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 97, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2023, '2023', 1, 267, 3000, 0, 258, 172, 1600, 100, 50, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 85, 35, 5000, 0, 1, 0, 200, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 98, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2024, '2024', 1, 267, 3000, 0, 300, 200, 1900, 100, 55, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 95, 35, 5000, 0, 1, 0, 200, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 99, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2030, '2030', 1, 217, 4000, 0, 1215, 610, 100, 100, 30, 0, 0, 0, 0, 7, 8, 0, 500, 100, 80, 3, 5000, 0, 7, 0, 200, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 96, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2031, '2031', 1, 217, 4000, 0, 1310, 650, 400, 100, 30, 0, 0, 0, 0, 7, 8, 0, 500, 100, 90, 3, 5000, 0, 7, 0, 200, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 97, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2032, '2032', 1, 277, 4000, 0, 1420, 710, 650, 100, 30, 0, 0, 0, 0, 8, 8, 0, 500, 100, 100, 3, 5000, 0, 8, 0, 200, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 98, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2033, '2033', 1, 277, 4000, 0, 1555, 780, 720, 110, 30, 0, 0, 0, 0, 9, 8, 0, 500, 100, 110, 3, 5000, 0, 9, 0, 200, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 98, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2034, '2034', 1, 377, 4000, 0, 1660, 840, 1200, 120, 30, 0, 0, 0, 0, 9, 8, 0, 500, 100, 120, 3, 5000, 0, 9, 0, 200, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 99, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2040, '2040', 1, 273, 1629, 0, 1700, 1200, 880, 80, 40, 0, 0, 0, 0, 1, 8, 0, 500, 500, 85, 3, 5000, 0, 1, 0, 300, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 57, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2041, '2041', 1, 273, 1803, 0, 1900, 1300, 1540, 80, 40, 0, 0, 0, 0, 1, 8, 0, 500, 500, 95, 3, 5000, 0, 1, 0, 300, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 59, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2042, '2042', 1, 273, 1998, 0, 2100, 1500, 1880, 80, 40, 0, 0, 0, 0, 1, 8, 0, 500, 500, 105, 3, 5000, 0, 1, 0, 300, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 61, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2043, '2043', 1, 373, 2088, 0, 2300, 1600, 1970, 80, 40, 0, 0, 0, 0, 1, 8, 0, 500, 500, 115, 3, 5000, 0, 1, 0, 300, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 63, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2090, '2090', 1, 266, 33, 0, 6, 5, 0, 0, 36, 0, 0, 0, 0, 1, 6, 0, 1000, 500, 1, 3, 5000, 0, 1, 0, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2091, '2091', 1, 165, 33, 0, 6, 5, 0, 0, 36, 0, 0, 0, 0, 1, 6, 0, 1000, 500, 1, 3, 5000, 0, 1, 0, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2092, '2092', 1, 263, 33, 0, 6, 5, 0, 0, 36, 0, 0, 0, 0, 1, 6, 0, 1000, 500, 1, 3, 5000, 0, 1, 0, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2093, '2093', 1, 445, 11000, 0, 1000, 1000, 0, 100, 33, 0, 0, 0, 0, 9, 10, 0, 1300, 500, 97, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 3014, 96, 70, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2094, '2094', 1, 804, 18000, 0, 1300, 1300, 0, 100, 37, 0, 0, 0, 0, 9, 10, 0, 1300, 500, 112, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002020, 1001020, 3019, 99, 70, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2095, 'DickHeadhh!', 1, 604, 30000, 0, 6000, 3900, 0, 100, 35, 0, 0, 0, 0, 9, 10, 0, 1300, 500, 102, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002020, 1001020, 3019, 99, 70, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2100, '2100', 1, 231, 33, 0, 6, 5, 0, 0, 36, 0, 0, 0, 0, 1, 6, 0, 1000, 500, 1, 3, 5000, 0, 0, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1000000, 1001000, 0, 0, 0, 0, 10000, 1, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2101, '2101', 1, 232, 183, 0, 35, 31, 0, 2, 36, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 12, 3, 5000, 0, 0, 0, 500, 0, 1, 0, 1, 1, 99, 3, 1000000, 1001000, 0, 0, 0, 0, 10000, 3, 6, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2102, '2102', 1, 233, 183, 0, 35, 31, 0, 2, 36, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 12, 3, 5000, 0, 0, 0, 500, 0, 1, 0, 1, 1, 99, 3, 1000000, 1001000, 0, 0, 0, 0, 10000, 3, 6, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2104, '2104', 1, 126, 300, 0, 20, 19, 0, 10, 75, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 10, 3, 5000, 0, 1, 0, 500, 3, 5, 2, 5, 5, 99, 7, 1000010, 1001010, 0, 0, 0, 0, 10000, 7, 10, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2105, '2105', 1, 260, 300, 0, 58, 53, 0, 10, 75, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 10, 3, 5000, 0, 1, 0, 500, 3, 5, 2, 5, 5, 99, 7, 1000010, 1001010, 0, 0, 0, 0, 10000, 7, 10, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2106, '2106', 1, 325, 500, 0, 92, 82, 0, 10, 75, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 20, 3, 5000, 0, 1, 0, 500, 3, 5, 2, 5, 5, 99, 7, 1000010, 1001010, 0, 0, 0, 0, 10000, 7, 10, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2107, '2107', 1, 329, 500, 0, 92, 82, 0, 10, 75, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 20, 3, 5000, 0, 1, 0, 500, 3, 5, 2, 5, 5, 99, 7, 1000010, 1001010, 0, 0, 0, 0, 10000, 7, 10, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2108, '2108', 1, 354, 1000, 0, 92, 82, 0, 10, 75, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 30, 3, 5000, 0, 1, 0, 500, 3, 5, 2, 5, 5, 99, 7, 1000010, 1001010, 0, 0, 0, 0, 10000, 7, 10, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2109, '2109', 1, 357, 1000, 0, 92, 82, 0, 10, 75, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 30, 3, 5000, 0, 1, 0, 500, 3, 5, 2, 5, 5, 99, 7, 1000010, 1001010, 0, 0, 0, 0, 10000, 7, 10, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2130, '2130', 1, 197, 500, 0, 100, 20, 100, 46, 90, 0, 0, 0, 0, 3, 20, 0, 1000, 500, 120, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2131, '2131', 1, 157, 500, 0, 100, 20, 100, 46, 90, 0, 0, 0, 0, 3, 20, 0, 1000, 500, 120, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2132, '2132', 1, 209, 500, 0, 100, 20, 100, 46, 90, 0, 0, 0, 0, 3, 20, 0, 1000, 500, 120, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2133, 'ArenaGuard', 1, 900, 15000, 0, 1504, 1125, 800, 13, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 130, 3, 5000, 0, 1, 5003700, 400, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 15, 0, 0, 10000, 0, 0, 255, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2134, 'ArenaGuard', 1, 900, 15000, 0, 1504, 1125, 800, 13, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 130, 3, 5000, 0, 1, 5003710, 400, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 15, 0, 0, 10000, 0, 0, 255, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2135, 'ArenaGuard', 1, 900, 15000, 0, 1504, 1125, 800, 13, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 120, 3, 5000, 0, 1, 5003720, 400, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 15, 0, 0, 10000, 0, 0, 225, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2136, 'ArenaGuard', 1, 900, 15000, 0, 1504, 1125, 800, 13, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 110, 3, 5000, 0, 1, 5003730, 400, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 15, 0, 0, 10000, 0, 0, 170, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2137, 'ArenaGuard', 1, 900, 15000, 0, 1504, 1125, 800, 13, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 110, 3, 5000, 0, 1, 5003740, 400, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 15, 0, 0, 10000, 0, 0, 150, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2138, 'ArenaGuard', 1, 900, 15000, 0, 1504, 1125, 800, 13, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 100, 3, 5000, 0, 1, 5003750, 400, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 15, 0, 0, 10000, 0, 0, 120, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2139, 'ArenaGuard', 1, 900, 15000, 0, 1504, 1125, 800, 13, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 100, 3, 5000, 0, 1, 5003760, 400, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 15, 0, 0, 10000, 0, 0, 100, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2140, '2140', 1, 201, 817, 0, 89, 81, 0, 10, 75, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 22, 3, 5000, 0, 1, 0, 500, 3, 5, 2, 5, 5, 99, 7, 1000010, 1001010, 0, 0, 0, 0, 10000, 7, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2141, '2141', 1, 160, 1600, 0, 133, 121, 0, 10, 75, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 32, 3, 5000, 0, 1, 0, 500, 3, 5, 2, 5, 5, 99, 7, 1000010, 1001010, 0, 0, 0, 0, 10000, 7, 10, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2142, '2142', 1, 201, 817, 0, 89, 81, 0, 10, 75, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 32, 3, 5000, 0, 1, 0, 500, 3, 5, 2, 5, 5, 99, 7, 1000010, 1001010, 0, 0, 0, 0, 10000, 7, 10, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2143, '2143', 1, 232, 2199, 0, 173, 156, 0, 18, 78, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 47, 3, 5000, 0, 1, 0, 500, 4, 8, 4, 8, 8, 1, 9, 1000020, 1001020, 0, 0, 0, 0, 10000, 10, 12, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2146, '2146', 1, 240, 33, 0, 6, 5, 0, 0, 0, 0, 0, 0, 0, 1, 10, 0, 1000, 500, 1, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1000000, 1001000, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2147, '2147', 1, 225, 100, 0, 30, 20, 3700, 82, 86, 0, 0, 0, 0, 1, 18, 0, 1000, 1000, 50, 3, 5000, 0, 1, 0, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 99, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2148, '2148', 1, 463, 1000, 0, 50, 30, 3700, 82, 86, 0, 0, 0, 0, 1, 18, 0, 1000, 1000, 50, 3, 5000, 0, 1, 0, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 99, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2149, '2149', 1, 397, 20697, 0, 1203, 900, 0, 30, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 60, 3, 5000, 0, 1, 0, 500, 8, 19, 8, 19, 19, 8, 19, 1002010, 1002030, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2150, '2150', 1, 130, 1500, 0, 628, 500, 0, 46, 85, 0, 0, 0, 0, 1, 15, 3489, 1000, 500, 75, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2151, '2151', 1, 126, 5000, 0, 900, 800, 0, 18, 78, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 75, 3, 5000, 0, 1, 0, 500, 4, 8, 4, 8, 8, 1, 9, 1000020, 1001020, 0, 0, 0, 0, 10000, 10, 12, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2152, '2152', 1, 126, 10000, 0, 900, 800, 0, 18, 78, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 75, 3, 5000, 0, 1, 0, 500, 4, 8, 4, 8, 8, 1, 9, 1000020, 1001020, 0, 0, 0, 0, 10000, 10, 12, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2153, '2153', 1, 130, 1000, 0, 100, 500, 0, 50, 85, 0, 0, 0, 0, 15, 15, 0, 1000, 1000, 75, 15, 5000, 0, 1, 0, 500, 0, 0, 0, 0, 0, 0, 0, 1000020, 1001020, 8036, 0, 100, 0, 1000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2154, '2154', 1, 242, 1000, 0, 100, 500, 0, 50, 85, 0, 0, 0, 0, 15, 15, 0, 1000, 1000, 75, 15, 5000, 0, 1, 0, 500, 0, 0, 0, 0, 0, 0, 0, 1000020, 1001020, 8036, 0, 100, 0, 1000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2155, '2155', 1, 242, 1500, 0, 628, 500, 0, 46, 85, 0, 0, 0, 0, 1, 15, 3489, 1000, 500, 75, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2156, '2156', 1, 311, 500, 0, 20, 19, 12, 0, 37, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 10, 3, 5000, 0, 0, 0, 500, 99, 0, 99, 0, 0, 99, 99, 1000010, 1001000, 0, 70, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2157, '2157', 1, 404, 65535, 0, 2000, 1500, 100, 46, 85, 0, 0, 0, 0, 3, 20, 0, 1000, 500, 110, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 0, 50, 0, 1500, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2158, '2158', 1, 602, 5484, 0, 140, 125, 0, 6, 75, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 43, 3, 5000, 0, 1, 0, 100, 4, 7, 3, 7, 7, 0, 3, 1002000, 1001020, 0, 0, 0, 0, 10000, 10, 12, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2159, '2159', 1, 353, 65535, 0, 5000, 3000, 500, 46, 85, 0, 0, 0, 0, 3, 20, 0, 1000, 500, 110, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 0, 50, 0, 1500, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2160, '2160', 1, 360, 65535, 0, 6000, 4000, 1000, 46, 85, 0, 0, 0, 0, 3, 20, 0, 1000, 500, 110, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 0, 50, 0, 800, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2161, '2161', 1, 354, 65535, 0, 5000, 3000, 500, 46, 85, 0, 0, 0, 0, 3, 20, 0, 1000, 500, 110, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 0, 50, 0, 1500, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2162, '2162', 1, 308, 5484, 0, 368, 331, 0, 3, 83, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 43, 3, 5000, 0, 1, 0, 100, 6, 12, 6, 12, 12, 3, 5, 1002010, 1001020, 0, 0, 0, 0, 10000, 13, 16, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2163, '2163', 1, 604, 14113, 0, 368, 331, 0, 3, 83, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 63, 3, 5000, 0, 1, 0, 100, 6, 12, 6, 12, 12, 3, 5, 1002010, 1001020, 0, 0, 0, 0, 10000, 13, 16, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2164, '2164', 1, 401, 817, 0, 112, 102, 120, 6, 75, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 35, 3, 5000, 0, 1, 0, 400, 3, 5, 2, 5, 5, 99, 2, 1000030, 1001020, 0, 70, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2165, '2165', 1, 400, 11673, 0, 864, 780, 550, 7, 87, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 85, 3, 5000, 0, 1, 0, 400, 7, 16, 7, 16, 16, 6, 7, 1002020, 1001020, 0, 60, 0, 0, 10000, 2, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2166, '2166', 1, 354, 65535, 0, 5000, 3000, 500, 46, 85, 0, 0, 0, 0, 3, 20, 0, 1000, 500, 110, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 0, 50, 0, 1500, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2167, '2167', 1, 204, 14335, 0, 1832, 1620, 597, 47, 100, 0, 0, 0, 0, 1, 18, 0, 2000, 500, 108, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 30, 0, 0, 1500, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2168, '2168', 1, 201, 14335, 0, 1832, 1620, 597, 47, 100, 0, 0, 0, 0, 1, 18, 0, 2000, 500, 108, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 30, 0, 0, 1500, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2169, '2169', 1, 910, 14335, 0, 1832, 1620, 597, 18, 78, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 108, 3, 5000, 0, 1, 0, 500, 4, 8, 4, 8, 8, 1, 9, 1000020, 1001020, 0, 0, 0, 0, 800, 10, 12, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2170, '2170', 1, 244, 65535, 0, 4785, 3875, 1200, 18, 78, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 108, 3, 5000, 0, 1, 0, 500, 4, 8, 4, 8, 8, 1, 9, 1000020, 1001020, 0, 0, 0, 0, 800, 10, 12, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2171, '2171', 1, 152, 65535, 0, 4785, 3875, 1200, 18, 78, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 108, 3, 5000, 0, 1, 0, 500, 4, 8, 4, 8, 8, 1, 9, 1000020, 1001020, 0, 0, 0, 0, 800, 10, 12, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2172, '2172', 1, 277, 65535, 0, 5785, 4875, 1200, 18, 78, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 108, 3, 5000, 0, 1, 0, 500, 4, 8, 4, 8, 8, 1, 9, 1000020, 1001020, 0, 0, 0, 0, 800, 10, 12, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2173, '2173', 1, 230, 65535, 0, 4785, 3875, 1200, 18, 78, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 108, 3, 5000, 0, 1, 0, 500, 4, 8, 4, 8, 8, 1, 9, 1000020, 1001020, 0, 0, 0, 0, 800, 10, 12, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2178, '2178', 1, 353, 65535, 0, 5000, 3000, 500, 46, 85, 0, 0, 0, 0, 3, 20, 0, 1000, 500, 110, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 0, 50, 0, 1500, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2179, '2179', 1, 357, 2100, 0, 120, 119, 12, 0, 37, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 47, 3, 5000, 0, 0, 0, 500, 99, 0, 99, 0, 0, 99, 99, 1000010, 1001000, 0, 70, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2180, '2180', 1, 508, 2100, 0, 120, 119, 12, 0, 37, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 47, 3, 5000, 0, 0, 0, 500, 99, 0, 99, 0, 0, 99, 99, 1000010, 1001000, 0, 70, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2189, '2189', 1, 348, 28140, 0, 2003, 1500, 1000, 13, 89, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 110, 3, 5000, 0, 2, 0, 400, 9, 21, 9, 21, 21, 9, 9, 1002020, 1001020, 0, 60, 0, 0, 100, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2224, '2224', 1, 201, 40000, 0, 1203, 900, 0, 30, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 97, 3, 5000, 0, 1, 0, 500, 8, 19, 8, 19, 19, 8, 19, 1002010, 1002030, 0, 0, 0, 0, 10000, 55, 21, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2225, '2225', 1, 201, 40000, 0, 1326, 992, 900, 13, 86, 0, 0, 0, 0, 1, 10, 1000, 1000, 500, 98, 3, 5000, 0, 1, 0, 300, 8, 19, 8, 19, 19, 8, 8, 1002020, 1001020, 0, 60, 0, 0, 10000, 0, 21, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2226, '2226', 1, 401, 40000, 0, 1504, 1125, 800, 13, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 100, 3, 5000, 0, 1, 0, 400, 8, 19, 8, 19, 19, 8, 8, 1002020, 1001020, 0, 60, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2231, '2231', 1, 517, 35535, 0, 1974, 1365, 0, 19, 86, 0, 0, 0, 0, 1, 18, 0, 1000, 500, 113, 3, 5000, 0, 2, 0, 100, 9, 22, 9, 22, 22, 9, 9, 1002020, 1001020, 0, 0, 0, 0, 8000, 57, 4, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2232, '2232', 1, 317, 65535, 0, 2350, 1625, 1200, 19, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 115, 3, 5000, 0, 2, 0, 400, 9, 22, 9, 22, 22, 9, 9, 1002020, 1001020, 0, 60, 0, 0, 500, 0, 4, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (2410, 'SerpentEnvoy', 1, 155, 65535, 0, 3000, 3000, 1000, 100, 104, 0, 0, 0, 0, 8, 18, 0, 1500, 1250, 123, 3, 5000, 0, 1, 0, 200, 8, 15, 8, 15, 22, 8, 0, 1002050, 1001040, 1002, 300, 100, 0, 10000, 60, 0, 0, 100, 0);
+INSERT INTO `cq_monstertype` VALUES (2411, 'IcySerpent', 1, 255, 65535, 0, 3000, 3000, 1000, 100, 104, 0, 0, 0, 0, 2, 18, 0, 1500, 1250, 122, 3, 5000, 0, 1, 0, 200, 8, 15, 8, 15, 22, 8, 0, 1002050, 1001040, 0, 300, 100, 0, 10000, 60, 0, 0, 100, 0);
+INSERT INTO `cq_monstertype` VALUES (2412, 'SerpentLord', 1, 155, 65535, 0, 3000, 3000, 1000, 100, 104, 0, 0, 0, 0, 8, 18, 0, 1500, 1250, 123, 3, 5000, 0, 1, 0, 200, 8, 15, 8, 15, 22, 8, 0, 1002050, 1001040, 1002, 300, 100, 0, 10000, 60, 0, 0, 100, 0);
+INSERT INTO `cq_monstertype` VALUES (2413, 'SerpentKing', 1, 255, 65535, 0, 3000, 3000, 1000, 100, 104, 0, 0, 0, 0, 2, 18, 0, 1500, 1250, 122, 3, 5000, 0, 1, 0, 200, 8, 15, 8, 15, 22, 8, 0, 1002050, 1001040, 0, 300, 100, 0, 10000, 60, 0, 0, 100, 0);
+INSERT INTO `cq_monstertype` VALUES (2414, 'FrostSerpent', 1, 155, 65535, 0, 3000, 3000, 1000, 100, 104, 0, 0, 0, 0, 2, 18, 0, 1500, 1250, 123, 3, 5000, 0, 1, 0, 200, 8, 15, 8, 15, 22, 8, 0, 1002050, 1001040, 0, 300, 100, 0, 10000, 60, 0, 0, 100, 0);
+INSERT INTO `cq_monstertype` VALUES (2415, 'IcyBladeEnvoy', 1, 329, 65535, 0, 3000, 3000, 1000, 100, 104, 0, 0, 0, 0, 8, 18, 0, 1500, 1250, 128, 3, 5000, 0, 1, 0, 200, 8, 15, 8, 15, 22, 8, 0, 1002050, 1001040, 1002, 300, 100, 0, 10000, 61, 0, 0, 100, 0);
+INSERT INTO `cq_monstertype` VALUES (2416, 'IcyBladeDevil', 1, 329, 65535, 0, 3000, 3000, 1000, 100, 104, 0, 0, 0, 0, 2, 18, 0, 1500, 1250, 127, 3, 5000, 0, 1, 0, 200, 8, 15, 8, 15, 22, 8, 0, 1002050, 1001040, 0, 300, 100, 0, 10000, 61, 0, 0, 100, 0);
+INSERT INTO `cq_monstertype` VALUES (2417, 'BladeDevilLord', 1, 129, 65535, 0, 3000, 3000, 1000, 100, 104, 0, 0, 0, 0, 8, 18, 0, 1500, 1250, 128, 3, 5000, 0, 1, 0, 200, 8, 15, 8, 15, 22, 8, 0, 1002050, 1001040, 1002, 300, 100, 0, 10000, 61, 0, 0, 100, 0);
+INSERT INTO `cq_monstertype` VALUES (2418, 'BladeDevilKing', 1, 329, 65535, 0, 3000, 3000, 1000, 100, 104, 0, 0, 0, 0, 2, 18, 0, 1500, 1250, 127, 3, 5000, 0, 1, 0, 200, 8, 15, 8, 15, 22, 8, 0, 1002050, 1001040, 0, 300, 100, 0, 10000, 61, 0, 0, 100, 0);
+INSERT INTO `cq_monstertype` VALUES (2419, 'FrostBladeDevil', 1, 129, 65535, 0, 3000, 3000, 1000, 100, 104, 0, 0, 0, 0, 2, 18, 0, 1500, 1250, 128, 3, 5000, 0, 1, 0, 200, 8, 15, 8, 15, 22, 8, 0, 1002050, 1001040, 0, 300, 100, 0, 10000, 61, 0, 0, 100, 0);
+INSERT INTO `cq_monstertype` VALUES (2460, 'DarkLady', 1, 228, 65535, 0, 3000, 3000, 1000, 100, 104, 0, 0, 0, 0, 8, 18, 0, 1500, 1250, 128, 3, 5000, 0, 1, 3500100, 200, 8, 15, 8, 15, 22, 8, 0, 1002050, 1001040, 1002, 300, 100, 0, 10000, 0, 0, 0, 100, 0);
+INSERT INTO `cq_monstertype` VALUES (2461, 'DarkElf', 1, 328, 65535, 0, 3000, 3000, 1000, 100, 104, 0, 0, 0, 0, 2, 18, 0, 1500, 1250, 127, 3, 5000, 0, 1, 3500100, 200, 8, 15, 8, 15, 22, 8, 0, 1002050, 1001040, 0, 300, 100, 0, 10000, 0, 0, 0, 100, 0);
+INSERT INTO `cq_monstertype` VALUES (2465, 'NightmareLady', 1, 228, 65535, 0, 3000, 3000, 1000, 100, 104, 0, 0, 0, 0, 8, 18, 0, 1500, 1250, 128, 3, 5000, 0, 1, 3500100, 200, 8, 15, 8, 15, 22, 8, 0, 1002050, 1001040, 1002, 300, 100, 0, 10000, 0, 0, 0, 100, 0);
+INSERT INTO `cq_monstertype` VALUES (2466, 'GrottoLady', 1, 328, 65535, 0, 3000, 3000, 1000, 100, 104, 0, 0, 0, 0, 2, 18, 0, 1500, 1250, 127, 3, 5000, 0, 1, 3500100, 200, 8, 15, 8, 15, 22, 8, 0, 1002050, 1001040, 0, 300, 100, 0, 10000, 0, 0, 0, 100, 0);
+INSERT INTO `cq_monstertype` VALUES (2473, 'SnakeChief', 1, 362, 65535, 0, 3000, 3000, 1000, 100, 104, 0, 0, 0, 0, 8, 18, 0, 1500, 1250, 128, 3, 5000, 0, 1, 0, 200, 8, 15, 8, 15, 22, 8, 0, 1002050, 1001040, 1002, 300, 100, 0, 10000, 0, 0, 0, 100, 0);
+INSERT INTO `cq_monstertype` VALUES (2474, 'SnakeHubbub', 1, 262, 65535, 0, 3000, 3000, 1000, 100, 104, 0, 0, 0, 0, 2, 18, 0, 1500, 1250, 127, 3, 5000, 0, 1, 0, 200, 8, 15, 8, 15, 22, 8, 0, 1002050, 1001040, 0, 300, 100, 0, 10000, 0, 0, 0, 100, 0);
+INSERT INTO `cq_monstertype` VALUES (2478, 'HeadlessGeneral', 1, 151, 65535, 0, 3000, 3000, 1000, 100, 104, 0, 0, 0, 0, 8, 18, 0, 1500, 1250, 128, 3, 5000, 0, 1, 0, 200, 8, 15, 8, 15, 22, 8, 0, 1002050, 1001040, 1002, 300, 100, 0, 10000, 0, 0, 0, 100, 0);
+INSERT INTO `cq_monstertype` VALUES (2479, 'HeadlessSoldier', 1, 151, 65535, 0, 3000, 3000, 1000, 100, 104, 0, 0, 0, 0, 2, 18, 0, 1500, 1250, 127, 3, 5000, 0, 1, 0, 200, 8, 15, 8, 15, 22, 8, 0, 1002050, 1001040, 0, 300, 100, 0, 10000, 0, 0, 0, 100, 0);
+INSERT INTO `cq_monstertype` VALUES (3000, 'OddMonster', 1, 105, 18205, 0, 2466, 2166, 712, 58, 100, 0, 0, 0, 0, 1, 18, 0, 2000, 500, 118, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3001, 'NorthMonster', 1, 105, 14335, 0, 2070, 1770, 597, 47, 100, 0, 0, 0, 0, 1, 18, 0, 2000, 500, 108, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3002, 'SouthMonster', 1, 105, 9937, 0, 1745, 1445, 452, 41, 99, 0, 0, 0, 0, 1, 18, 0, 2000, 500, 98, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3003, 'WestMonster', 1, 105, 6813, 0, 1037, 737, 341, 34, 94, 0, 0, 0, 0, 2, 15, 0, 2000, 250, 88, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002010, 1001040, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3004, 'EastMonster', 1, 105, 4545, 0, 704, 404, 253, 28, 93, 0, 0, 0, 0, 2, 15, 0, 2000, 250, 78, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002010, 1001040, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3005, 'FuryGhost', 1, 200, 4545, 0, 754, 354, 253, 28, 93, 0, 0, 0, 0, 2, 15, 0, 2000, 250, 78, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002010, 1001040, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3006, 'CrazyGhost', 1, 200, 6813, 0, 1087, 687, 341, 34, 94, 0, 0, 0, 0, 2, 15, 0, 2000, 250, 88, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002010, 1001040, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3007, 'RoaringGhost', 1, 200, 9937, 0, 1795, 1395, 452, 41, 99, 0, 0, 0, 0, 1, 18, 0, 2000, 500, 98, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3008, 'ScaryGhost', 1, 200, 14335, 0, 2120, 1720, 597, 47, 100, 0, 0, 0, 0, 1, 18, 0, 2000, 500, 108, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3009, 'BloodGhost', 1, 200, 18205, 0, 2516, 2116, 712, 58, 100, 0, 0, 0, 0, 1, 18, 0, 2000, 500, 118, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3010, 'IronBird', 1, 205, 4545, 0, 804, 304, 253, 28, 93, 0, 0, 0, 0, 2, 15, 0, 2000, 250, 78, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002010, 1001040, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3011, 'CopperBird', 1, 205, 6813, 0, 1137, 637, 341, 34, 94, 0, 0, 0, 0, 2, 15, 0, 2000, 250, 88, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002010, 1001040, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3012, 'SilverBird', 1, 205, 9937, 0, 1845, 1345, 452, 41, 99, 0, 0, 0, 0, 1, 18, 0, 2000, 500, 98, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3013, 'GoldenBird', 1, 205, 14335, 0, 2170, 1670, 597, 47, 100, 0, 0, 0, 0, 1, 18, 0, 2000, 500, 108, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3014, 'FastBird', 1, 205, 18205, 0, 2566, 2066, 712, 58, 100, 0, 0, 0, 0, 1, 18, 0, 2000, 500, 118, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3015, 'BrutalBandit', 1, 201, 4545, 0, 854, 254, 253, 28, 93, 0, 0, 0, 0, 2, 15, 0, 2000, 250, 78, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002010, 1001040, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3016, 'WildBandit', 1, 201, 6813, 0, 1187, 587, 341, 34, 94, 0, 0, 0, 0, 2, 15, 0, 2000, 250, 88, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002010, 1001040, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3017, 'CruelBandit', 1, 201, 9937, 0, 1895, 1295, 452, 41, 99, 0, 0, 0, 0, 1, 18, 0, 2000, 500, 98, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3018, 'SingleEye', 1, 201, 14335, 0, 2220, 1620, 597, 47, 100, 0, 0, 0, 0, 1, 18, 0, 2000, 500, 108, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3019, 'TyrantBandit', 1, 201, 18205, 0, 2616, 2016, 712, 58, 100, 0, 0, 0, 0, 1, 18, 0, 2000, 500, 118, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3020, 'AberrantEvil', 1, 197, 18205, 0, 3093, 1275, 712, 58, 100, 0, 0, 0, 0, 1, 18, 0, 2000, 500, 118, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3021, 'CecropsBoss', 1, 204, 14335, 0, 2651, 1082, 597, 47, 100, 0, 0, 0, 0, 1, 18, 0, 2000, 500, 108, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3022, 'Minotaur', 1, 117, 9937, 0, 2243, 907, 451, 42, 99, 0, 0, 0, 0, 1, 18, 0, 2000, 500, 98, 3, 5000, 0, 2, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3023, 'Jumpy', 1, 200, 6813, 0, 1324, 449, 341, 34, 94, 0, 0, 0, 0, 2, 15, 0, 2000, 250, 88, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002010, 1001040, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3024, 'EvilMonkey', 1, 156, 4545, 0, 869, 254, 302, 28, 93, 0, 0, 0, 0, 2, 15, 0, 2000, 250, 78, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002010, 1001040, 0, 30, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3025, 'Pan', 1, 201, 1000, 0, 8000, 8000, 0, 70, 100, 0, 0, 0, 0, 5, 10, 0, 2000, 500, 1, 67, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002020, 1001020, 0, 50, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3026, 'EvilHawk', 1, 205, 1000, 0, 8000, 8000, 30000, 6, 65, 0, 0, 0, 0, 10, 10, 0, 8000, 500, 1, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002020, 1001020, 3000, 0, 100, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3027, 'GlumMonster', 1, 105, 1000, 0, 3000, 3000, 400, 90, 100, 0, 0, 0, 0, 5, 10, 0, 1000, 500, 1, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002020, 1001020, 0, 50, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3028, 'ShakeMonster', 1, 105, 81, 0, 16, 15, 200, 0, 37, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 7, 3, 5000, 0, 0, 0, 500, 99, 0, 99, 0, 0, 99, 1, 1000000, 1001000, 0, 10, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3029, 'IronEagle', 1, 205, 1000, 0, 8000, 8000, 30000, 6, 65, 0, 0, 0, 0, 10, 10, 0, 8000, 500, 1, 67, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002020, 1001020, 3000, 0, 40, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3031, '3031', 1, 211, 817, 0, 89, 81, 0, 6, 75, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 32, 3, 5000, 0, 1, 0, 500, 3, 5, 2, 5, 5, 99, 7, 1000010, 1001010, 0, 0, 0, 0, 1000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3032, 'PoisonousRat', 1, 202, 999, 0, 114, 103, 0, 6, 78, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 37, 3, 5000, 0, 1, 0, 500, 3, 6, 3, 6, 6, 99, 7, 1000010, 1001010, 0, 0, 0, 0, 10000, 8, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3033, 'StoneBandit', 1, 105, 8459, 0, 550, 500, 500, 8, 86, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 77, 3, 5000, 0, 2, 0, 500, 7, 15, 6, 15, 15, 5, 15, 1000030, 1001030, 0, 40, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3035, 'Cuckoo', 1, 900, 5000, 0, 380, 330, 0, 25, 83, 0, 0, 0, 0, 1, 10, 0, 1000, 500, 70, 35, 5000, 0, 2, 0, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 150, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3039, 'SugarplumFairy', 1, 130, 799, 0, 60, 53, 0, 6, 50, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 20, 3, 5000, 0, 2, 0, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3050, 'HeresySnakeman', 1, 404, 4771, 0, 350, 315, 0, 3, 83, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 62, 3, 5000, 0, 1, 0, 500, 6, 12, 6, 12, 12, 3, 13, 1000030, 1001030, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3066, 'IceGhoul', 1, 0, 65535, 0, 3000, 3000, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 10000, 0, 0, 0, 0, 0);
+INSERT INTO `cq_monstertype` VALUES (3067, 'StoneGhoul', 1, 0, 65535, 0, 3000, 3000, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 10000, 0, 0, 0, 0, 0);
+INSERT INTO `cq_monstertype` VALUES (3068, 'PointGhoul', 1, 0, 65535, 0, 3000, 3000, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 10000, 0, 0, 0, 0, 0);
+INSERT INTO `cq_monstertype` VALUES (3069, 'RayGhoul', 1, 0, 65535, 0, 3000, 3000, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 10000, 0, 0, 0, 0, 0);
+INSERT INTO `cq_monstertype` VALUES (3070, 'GreyGhoul', 1, 0, 65535, 0, 3000, 3000, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 10000, 0, 0, 0, 0, 0);
+INSERT INTO `cq_monstertype` VALUES (3071, 'BloodGhoul', 1, 0, 65535, 0, 3000, 3000, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 10000, 0, 0, 0, 0, 0);
+INSERT INTO `cq_monstertype` VALUES (3072, 'BloomGhoul', 1, 0, 65535, 0, 3000, 3000, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 10000, 0, 0, 0, 0, 0);
+INSERT INTO `cq_monstertype` VALUES (3073, 'IceMinion', 1, 0, 65535, 0, 3000, 3000, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 10000, 0, 0, 0, 0, 0);
+INSERT INTO `cq_monstertype` VALUES (3074, 'StoneMinion', 1, 0, 65535, 0, 3000, 3000, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 10000, 0, 0, 0, 0, 0);
+INSERT INTO `cq_monstertype` VALUES (3075, 'PointMinion', 1, 0, 65535, 0, 3000, 3000, 1000, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 10000, 0, 0, 0, 0, 0);
+INSERT INTO `cq_monstertype` VALUES (3076, 'RayMinion', 1, 0, 65535, 0, 3000, 3000, 1000, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 10000, 0, 0, 0, 0, 0);
+INSERT INTO `cq_monstertype` VALUES (3077, 'GreyMinion', 1, 0, 65535, 0, 3000, 3000, 1000, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 10000, 0, 0, 0, 0, 0);
+INSERT INTO `cq_monstertype` VALUES (3078, 'BloodMinion', 1, 0, 65535, 0, 3000, 3000, 1000, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 10000, 0, 0, 0, 0, 0);
+INSERT INTO `cq_monstertype` VALUES (3079, 'BloomMinion', 1, 0, 65535, 0, 3000, 3000, 1000, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 10000, 0, 0, 0, 0, 0);
+INSERT INTO `cq_monstertype` VALUES (3100, 'FireSnakeSpirit', 1, 403, 500, 0, 8000, 8000, 20000, 69, 100, 0, 0, 0, 0, 5, 5, 0, 1000, 250, 1, 67, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002010, 1001040, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3101, 'ToughSnake', 1, 403, 500, 0, 1237, 1237, 0, 65, 75, 0, 0, 0, 0, 5, 10, 0, 2000, 500, 1, 3, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002010, 1001040, 3000, 99, 50, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3102, 'SnakeKing', 1, 404, 65535, 0, 8000, 8000, 65000, 70, 100, 0, 0, 0, 0, 20, 20, 0, 60000, 500, 120, 3, 5000, 0, 3, 10000000, 100, 99, 99, 99, 99, 99, 99, 99, 1002020, 1001020, 3000, 90, 100, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3103, 'WaterSnake', 1, 203, 47853, 0, 1704, 1390, 1000, 70, 70, 0, 0, 0, 0, 15, 15, 0, 2000, 250, 80, 67, 5000, 0, 1, 0, 100, 99, 99, 99, 99, 99, 99, 99, 1002020, 1001020, 0, 99, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3120, 'GuildBeast', 1, 953, 60000000, 0, 35000, 30000, 15000, 80, 107, 0, 0, 0, 0, 10, 10, 0, 3000, 500, 135, 1, 5000, 0, 3, 3560900, 250, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 99, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3130, 'Ganoderma', 1, 133, 20000000, 0, 30000, 27500, 15000, 50, 107, 0, 0, 0, 0, 2, 15, 0, 1000, 500, 135, 3, 150000, 0, 1, 8500040, 500, 0, 0, 0, 0, 0, 0, 0, 1002050, 1001040, 1001, 100, 100, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3131, 'GanodermaL70', 1, 133, 20000000, 0, 20000, 15000, 15000, 50, 30, 0, 0, 0, 0, 2, 15, 0, 1000, 500, 72, 3, 150000, 0, 1, 8500040, 500, 0, 0, 0, 0, 0, 0, 0, 1002050, 1001040, 1001, 100, 100, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3132, 'GanodermaL74', 1, 133, 20000000, 0, 20000, 15000, 15000, 50, 30, 0, 0, 0, 0, 9, 15, 0, 1000, 500, 72, 3, 150000, 0, 1, 8500040, 500, 0, 0, 0, 0, 0, 0, 0, 1002050, 1001040, 1001, 100, 100, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3133, 'GanodermaL76', 1, 133, 20000000, 0, 20000, 15000, 15000, 50, 92, 0, 0, 0, 0, 2, 15, 0, 1000, 500, 72, 3, 150000, 0, 1, 8500040, 500, 0, 0, 0, 0, 0, 0, 0, 1002050, 1001040, 1001, 100, 100, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3134, 'Titan', 1, 153, 20000000, 0, 30000, 27500, 15000, 50, 107, 0, 0, 0, 0, 2, 15, 0, 1000, 500, 135, 3, 150000, 0, 2, 8500030, 500, 0, 0, 0, 0, 0, 0, 0, 1002050, 1001040, 1001, 100, 100, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3135, 'TitanL75', 1, 153, 20000000, 0, 20000, 15000, 15000, 50, 30, 0, 0, 0, 0, 2, 15, 0, 1000, 500, 77, 3, 150000, 0, 1, 8500030, 500, 0, 0, 0, 0, 0, 0, 0, 1002050, 1001040, 1001, 100, 100, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3136, 'TitanL79', 1, 153, 20000000, 0, 20000, 15000, 15000, 50, 30, 0, 0, 0, 0, 9, 15, 0, 1000, 500, 77, 3, 150000, 0, 1, 8500030, 500, 0, 0, 0, 0, 0, 0, 0, 1002050, 1001040, 1001, 100, 100, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3137, 'TitanL81', 1, 153, 20000000, 0, 20000, 15000, 15000, 50, 92, 0, 0, 0, 0, 2, 15, 0, 1000, 500, 77, 3, 150000, 0, 1, 8500030, 500, 0, 0, 0, 0, 0, 0, 0, 1002050, 1001040, 1001, 100, 100, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3138, '3138', 1, 141, 65535, 0, 5000, 5000, 9000, 80, 100, 0, 0, 0, 0, 10, 10, 0, 3000, 3000, 130, 65, 5000, 0, 6, 0, 3000, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 99, 0, 0, 3000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3141, 'Slinger', 1, 145, 30110, 0, 1353, 1234, 100, 30, 86, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 105, 3, 5000, 0, 2, 0, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3142, 'GoldGhost', 1, 308, 56180, 0, 1750, 1450, 120, 30, 85, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 108, 3, 5000, 0, 1, 0, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3143, 'Gibbon', 1, 127, 65535, 0, 2350, 2250, 3500, 50, 84, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 110, 3, 5000, 0, 1, 0, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 99, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3144, 'Bladeling', 1, 240, 33140, 0, 1702, 1300, 100, 35, 87, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 110, 3, 5000, 0, 1, 0, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 5, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3145, 'AgileRat', 1, 442, 58110, 0, 1800, 1800, 545, 100, 45, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 112, 3, 5000, 0, 1, 0, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1000, 98, 70, 0, 10000, 0, 5, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3146, 'NagaLord', 1, 162, 65535, 0, 2550, 2450, 3600, 52, 86, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 115, 3, 5000, 0, 1, 0, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 99, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3147, 'BlueBird', 1, 332, 38050, 0, 1980, 1400, 100, 47, 87, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 115, 3, 5000, 0, 0, 0, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 5, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3148, 'FiendBat', 1, 606, 60460, 0, 2328, 1600, 4000, 130, 40, 0, 0, 0, 0, 2, 18, 0, 1000, 500, 117, 3, 5000, 0, 3, 0, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1001, 50, 50, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3149, 'Talon', 1, 225, 65535, 0, 2650, 2550, 3700, 82, 86, 0, 0, 0, 0, 1, 18, 0, 1000, 1000, 120, 3, 5000, 0, 1, 0, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 99, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3155, 'Minotaur', 1, 117, 60460, 0, 2328, 1600, 100, 46, 83, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 110, 3, 5000, 0, 2, 0, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (3156, 'Howler', 1, 130, 65535, 0, 2550, 2500, 3800, 84, 79, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 125, 3, 5000, 0, 1, 0, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 99, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3160, 'SpiritDevil', 1, 217, 25000, 0, 1500, 2500, 0, 25, 83, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 72, 3, 5000, 710193, 2, 0, 500, 6, 14, 6, 14, 14, 4, 15, 1000030, 1001030, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3161, 'SpiritSnake', 1, 213, 25000, 0, 1500, 2500, 0, 25, 83, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 72, 3, 5000, 710193, 2, 0, 500, 6, 14, 6, 14, 14, 4, 15, 1000030, 1001030, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3162, 'SpiritBird', 1, 645, 25000, 0, 1500, 2500, 0, 3, 83, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 73, 3, 5000, 710193, 2, 0, 100, 6, 14, 6, 14, 14, 4, 6, 1002010, 1001020, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3163, 'SpiritEvil', 1, 705, 25000, 0, 1500, 2500, 0, 3, 83, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 73, 3, 5000, 710193, 2, 0, 100, 6, 14, 6, 14, 14, 4, 6, 1002010, 1001020, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3164, 'SpiritLord', 1, 277, 25000, 0, 1500, 2500, 0, 25, 86, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 77, 3, 5000, 710193, 2, 0, 500, 7, 15, 6, 15, 15, 5, 15, 1000030, 1001030, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3165, 'WaterLord', 1, 273, 8459, 0, 589, 532, 0, 25, 86, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 77, 3, 5000, 710193, 2, 0, 500, 7, 15, 6, 15, 15, 5, 15, 1000030, 1001030, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3166, 'GoldenBird', 1, 845, 16918, 0, 619, 559, 0, 8, 86, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 78, 3, 5000, 710193, 2, 0, 100, 7, 15, 6, 15, 15, 5, 7, 1002010, 1001020, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3167, 'BullShit', 1, 273, 16918, 0, 619, 559, 0, 8, 86, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 78, 3, 5000, 710193, 2, 0, 100, 7, 15, 6, 15, 15, 5, 7, 1002010, 1001020, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3168, 'Fiend', 1, 443, 11673, 0, 691, 624, 0, 28, 87, 0, 0, 0, 0, 1, 12, 0, 1000, 500, 82, 3, 5000, 710193, 1, 0, 500, 7, 16, 7, 16, 16, 6, 17, 1002000, 1001040, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3169, 'FiendLord', 1, 200, 11673, 0, 691, 624, 0, 28, 87, 0, 0, 0, 0, 1, 12, 0, 1000, 500, 82, 3, 5000, 710193, 1, 0, 500, 7, 16, 7, 16, 16, 6, 17, 1002000, 1001040, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3170, 'Rtisha', 1, 803, 23346, 0, 726, 656, 0, 7, 87, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 83, 3, 5000, 710193, 1, 0, 100, 7, 16, 7, 16, 16, 6, 7, 1002020, 1001020, 0, 0, 100, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3171, '3171', 1, 802, 23346, 0, 726, 656, 0, 7, 87, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 83, 3, 5000, 0, 1, 0, 100, 7, 16, 7, 16, 16, 6, 7, 1002020, 1001020, 0, 0, 100, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3172, '3172', 1, 240, 13422, 0, 810, 731, 0, 28, 85, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 87, 3, 5000, 0, 1, 0, 500, 8, 17, 7, 17, 17, 7, 17, 1002000, 1001040, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3173, '3173', 1, 243, 13422, 0, 810, 731, 0, 28, 85, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 87, 3, 5000, 0, 1, 0, 500, 8, 17, 7, 17, 17, 7, 17, 1002000, 1001040, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3174, '3174', 1, 400, 26844, 0, 845, 768, 0, 11, 91, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 88, 3, 5000, 0, 1, 0, 100, 8, 17, 7, 17, 17, 7, 8, 1002020, 1001020, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3175, '3175', 1, 442, 26844, 0, 845, 768, 0, 11, 91, 0, 0, 0, 0, 2, 15, 0, 1000, 250, 88, 3, 5000, 0, 1, 0, 100, 8, 17, 7, 17, 17, 7, 8, 1002020, 1001020, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3176, '3176', 1, 303, 20697, 0, 1203, 900, 0, 30, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 92, 3, 5000, 0, 1, 0, 500, 8, 19, 8, 19, 19, 8, 19, 1002010, 1002030, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3177, '3177', 1, 397, 20697, 0, 1203, 900, 0, 30, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 92, 3, 5000, 0, 1, 0, 500, 8, 19, 8, 19, 19, 8, 19, 1002010, 1002030, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3178, '3178', 1, 597, 40000, 0, 1326, 992, 900, 13, 86, 0, 0, 0, 0, 1, 10, 1000, 1000, 500, 93, 3, 5000, 0, 1, 0, 300, 8, 19, 8, 19, 19, 8, 8, 1002020, 1001020, 0, 60, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3179, '3179', 1, 801, 40000, 0, 1326, 992, 900, 13, 86, 0, 0, 0, 0, 1, 10, 1000, 1000, 500, 93, 3, 5000, 0, 1, 0, 300, 8, 19, 8, 19, 19, 8, 8, 1002020, 1001020, 0, 60, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3180, '3180', 1, 503, 24472, 0, 1253, 1134, 0, 30, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 97, 3, 5000, 0, 1, 0, 500, 8, 20, 9, 20, 20, 8, 21, 1002010, 1002030, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3181, '3181', 1, 797, 24472, 0, 1253, 1134, 0, 30, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 97, 3, 5000, 0, 1, 0, 500, 8, 20, 9, 20, 20, 8, 21, 1002010, 1002030, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3182, '3182', 1, 703, 48944, 0, 1316, 1191, 0, 13, 86, 0, 0, 0, 0, 2, 18, 0, 1000, 500, 98, 3, 5000, 0, 3, 0, 100, 8, 20, 9, 20, 20, 8, 9, 1002020, 1001020, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3183, '3183', 1, 241, 48944, 0, 1316, 1191, 0, 13, 86, 0, 0, 0, 0, 2, 18, 0, 1000, 500, 98, 3, 5000, 0, 3, 0, 100, 8, 20, 9, 20, 20, 8, 9, 1002020, 1001020, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3184, '3184', 1, 204, 24472, 0, 1253, 1134, 0, 30, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 102, 3, 5000, 0, 1, 0, 500, 8, 20, 9, 20, 20, 8, 21, 1002010, 1002030, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3185, '3185', 1, 188, 24472, 0, 1253, 1134, 0, 30, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 102, 3, 5000, 0, 1, 0, 500, 8, 20, 9, 20, 20, 8, 21, 1002010, 1002030, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3186, '3186', 1, 267, 48944, 0, 1316, 1191, 0, 13, 86, 0, 0, 0, 0, 2, 18, 0, 1000, 500, 103, 3, 5000, 0, 3, 0, 100, 8, 20, 9, 20, 20, 8, 9, 1002020, 1001020, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3187, '3187', 1, 804, 48944, 0, 1316, 1191, 0, 13, 86, 0, 0, 0, 0, 2, 18, 0, 1000, 500, 103, 3, 5000, 0, 3, 0, 100, 8, 20, 9, 20, 20, 8, 9, 1002020, 1001020, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3188, '3188', 1, 244, 28140, 0, 1602, 1200, 0, 30, 85, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 107, 3, 5000, 0, 1, 0, 500, 9, 21, 9, 21, 21, 9, 21, 1002010, 1002030, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3189, '3189', 1, 548, 28140, 0, 1602, 1200, 0, 30, 85, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 107, 3, 5000, 0, 1, 0, 500, 9, 21, 9, 21, 21, 9, 21, 1002010, 1002030, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3190, '3190', 1, 748, 50000, 0, 1766, 1323, 900, 13, 89, 0, 0, 0, 0, 1, 10, 1500, 1000, 500, 108, 3, 5000, 0, 1, 0, 300, 9, 21, 9, 21, 21, 9, 9, 1002020, 1001020, 0, 60, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3191, 'BadAss', 1, 548, 50000, 0, 1766, 1323, 900, 13, 89, 0, 0, 0, 0, 1, 10, 1500, 1000, 500, 240, 3, 5000, 0, 1, 0, 300, 9, 21, 9, 21, 21, 9, 9, 1002020, 1001020, 0, 60, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (3192, 'Justus', 1, 517, 35050, 0, 1880, 1300, 0, 33, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 240, 3, 5000, 0, 2, 0, 500, 9, 22, 9, 22, 22, 9, 23, 1002020, 1002040, 0, 0, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (3193, 'Pluto', 1, 331, 35050, 0, 1880, 1300, 0, 33, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 240, 3, 5000, 0, 2, 0, 500, 9, 22, 9, 22, 22, 9, 23, 1002020, 1002040, 0, 0, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (3194, 'Blood', 1, 731, 55000, 0, 1850, 1386, 1000, 13, 89, 0, 0, 0, 0, 1, 20, 50000, 1000, 500, 240, 3, 5000, 0, 2, 0, 100, 9, 21, 9, 21, 21, 9, 9, 1002020, 1001020, 0, 70, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (3195, 'EvilL240', 1, 133, 55000, 0, 1850, 1386, 1000, 13, 89, 0, 0, 0, 0, 1, 20, 50000, 1000, 500, 240, 3, 5000, 0, 2, 0, 100, 9, 21, 9, 21, 21, 9, 9, 1002020, 1001020, 0, 70, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (3196, 'BullL240', 1, 117, 60460, 0, 2228, 1500, 0, 33, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 240, 3, 5000, 0, 1, 0, 500, 9, 21, 9, 21, 21, 9, 23, 1002020, 1002040, 0, 0, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (3197, 'DevilL255', 1, 531, 60460, 0, 2228, 1500, 0, 33, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 255, 3, 5000, 0, 1, 0, 500, 9, 21, 9, 21, 21, 9, 23, 1002020, 1002040, 0, 0, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (3198, 'RatL230', 1, 209, 65535, 0, 2339, 1575, 0, 19, 86, 0, 0, 0, 0, 1, 18, 0, 1000, 500, 230, 3, 5000, 0, 1, 0, 100, 9, 21, 9, 21, 21, 9, 9, 1002020, 1001020, 0, 0, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (3199, 'ShitL245', 1, 717, 65535, 0, 2339, 1575, 0, 19, 86, 0, 0, 0, 0, 1, 18, 0, 1000, 500, 245, 3, 5000, 0, 1, 0, 100, 9, 21, 9, 21, 21, 9, 9, 1002020, 1001020, 0, 0, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (3320, 'KungFuBunny', 1, 222, 3000, 0, 182, 122, 1300, 100, 35, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 55, 35, 5000, 0, 1, 0, 200, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 94, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3321, 'Piglet', 1, 223, 65535, 0, 10, 1, 60000, 100, 35, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 130, 35, 5000, 0, 1, 0, 200, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 94, 0, 0, 1, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3322, '3322', 1, 224, 3000, 0, 182, 122, 1300, 100, 35, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 55, 35, 5000, 0, 1, 0, 200, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 94, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3323, '3323', 0, 645, 35000, 0, 576, 576, 1605, 100, 65, 0, 0, 0, 0, 4, 4, 0, 1000, 50, 110, 39, 5000, 0, 1, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 1001, 0, 100, 1, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3324, '3324', 0, 845, 60000, 0, 746, 746, 1780, 100, 75, 0, 0, 0, 0, 4, 4, 0, 1000, 50, 120, 39, 5000, 0, 1, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 1002, 0, 100, 1, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3526, 'FireBat', 1, 548, 50000, 0, 860, 840, 1968, 65, 100, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 85, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 92, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3550, 'LifeApe', 1, 156, 60000, 0, 780, 760, 1200, 65, 100, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 77, 3, 5000, 0, 1, 0, 1000, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 99, 0, 0, 1000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3551, 'StrengthApe', 1, 156, 35000, 0, 780, 760, 2000, 65, 100, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 77, 3, 5000, 0, 1, 0, 1000, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 99, 0, 0, 1000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3552, 'DexterityApe', 1, 156, 40000, 0, 780, 760, 1940, 65, 33, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 77, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 99, 0, 0, 1000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3553, 'ManaApe', 1, 156, 40000, 0, 780, 760, 1940, 65, 100, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 77, 3, 5000, 0, 1, 0, 1000, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 80, 0, 0, 1000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3560, 'StoneMonster', 1, 306, 500, 0, 20, 19, 12, 0, 37, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 10, 3, 5000, 0, 0, 0, 500, 99, 0, 99, 0, 0, 99, 99, 1000010, 1001000, 0, 70, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3561, 'Turkey', 1, 304, 3500, 0, 20, 19, 12, 0, 37, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 10, 3, 5000, 0, 2, 0, 500, 99, 0, 99, 0, 0, 99, 99, 1000010, 1001000, 0, 70, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3562, '800poundTurkey', 1, 304, 20000, 0, 500, 498, 800, 0, 37, 0, 0, 0, 0, 1, 10, 0, 2000, 1000, 10, 3, 5000, 0, 5, 0, 500, 99, 0, 99, 0, 0, 99, 99, 1000010, 1001000, 0, 200, 0, 0, 2000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3563, 'FireSnake', 1, 307, 500, 0, 20, 19, 12, 0, 37, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 10, 3, 5000, 0, 0, 0, 500, 99, 0, 99, 0, 0, 99, 99, 1000010, 1001000, 0, 70, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3564, 'SandMonster', 1, 309, 500, 0, 20, 19, 12, 0, 37, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 10, 3, 5000, 0, 0, 0, 500, 99, 0, 99, 0, 0, 99, 99, 1000010, 1001000, 0, 70, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3579, 'FishB', 1, 311, 500, 0, 20, 19, 12, 0, 37, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 10, 3, 5000, 0, 0, 0, 500, 99, 0, 99, 0, 0, 99, 99, 1000010, 1001000, 0, 70, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3580, 'MysticLady', 1, 310, 500, 0, 20, 19, 12, 0, 37, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 10, 3, 5000, 0, 0, 0, 500, 99, 0, 99, 0, 0, 99, 99, 1000010, 1001000, 0, 70, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3582, 'BlueCock', 1, 313, 500, 0, 20, 19, 12, 0, 37, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 10, 3, 5000, 0, 0, 0, 500, 99, 0, 99, 0, 0, 99, 99, 1000010, 1001000, 0, 70, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3583, 'MagentaCock', 1, 314, 500, 0, 20, 19, 12, 0, 37, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 10, 3, 5000, 0, 0, 0, 500, 99, 0, 99, 0, 0, 99, 99, 1000010, 1001000, 0, 70, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3584, 'Siren', 1, 310, 500, 0, 20, 19, 12, 0, 37, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 10, 3, 5000, 0, 0, 0, 500, 99, 0, 99, 0, 0, 99, 99, 1000010, 1001000, 0, 70, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3585, 'BrownCock', 1, 312, 500, 0, 20, 19, 12, 0, 37, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 10, 3, 5000, 0, 0, 0, 500, 99, 0, 99, 0, 0, 99, 99, 1000010, 1001000, 0, 70, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3586, 'FishA', 1, 311, 500, 0, 20, 19, 12, 0, 37, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 10, 3, 5000, 0, 0, 0, 500, 99, 0, 99, 0, 0, 99, 99, 1000010, 1001000, 0, 70, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3600, 'ValeDemon', 1, 127, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 1, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035500, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3601, 'MudDemon', 1, 227, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 1, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035520, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3602, 'AbyssDemon', 1, 327, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 3, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035540, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1002, 0, 50, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3603, 'DemonLord', 1, 127, 50000, 0, 2328, 1600, 100, 46, 90, 0, 0, 0, 0, 3, 20, 0, 1000, 500, 120, 3, 5000, 0, 2, 5035560, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1002, 70, 50, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3604, 'SingingSerpent', 1, 155, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 1, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035500, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3605, 'RoaringSerpent', 1, 355, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 1, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035520, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3606, 'CryingSerpent', 1, 255, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 3, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035540, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1002, 0, 50, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3607, 'SerpentSpirit', 1, 355, 50000, 0, 2328, 1600, 100, 46, 90, 0, 0, 0, 0, 3, 20, 0, 1000, 500, 120, 3, 5000, 0, 2, 5035560, 500, 0, 0, 0, 0, 0, 0, 0, 0, 1002, 1002, 50, 100, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3608, 'BlueFiend', 1, 326, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 1, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035500, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3609, 'RedFiend', 1, 426, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 1, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035520, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3610, 'WhiteFiend', 1, 226, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 3, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035540, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5040, 0, 50, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3611, 'FiendLord', 1, 126, 50000, 0, 2328, 1600, 100, 46, 90, 0, 0, 0, 0, 3, 20, 0, 1000, 500, 120, 3, 5000, 0, 2, 5035560, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1002, 70, 50, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3612, 'WindApe', 1, 325, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 1, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035500, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3613, 'RainApe', 1, 425, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 1, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035520, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3614, 'LightningApe', 1, 225, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 3, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035540, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1002, 0, 50, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3615, 'FuryApe', 1, 225, 50000, 0, 2328, 1600, 100, 46, 90, 0, 0, 0, 0, 3, 20, 0, 1000, 500, 120, 3, 5000, 0, 2, 5035560, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1002, 70, 50, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3616, 'WoodHades', 1, 160, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 1, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035500, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3617, 'WaterHades', 1, 260, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 3, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035520, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1250, 0, 50, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3618, 'EarthHades', 1, 360, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 1, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035540, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3619, 'HadesLord', 1, 260, 50000, 0, 2328, 1600, 100, 46, 90, 0, 0, 0, 0, 3, 20, 0, 1000, 500, 120, 3, 5000, 0, 2, 5035560, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1002, 70, 50, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3620, 'FuryBat', 1, 157, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 1, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035500, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3621, 'CruelBat', 1, 257, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 1, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035520, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3622, 'ViciousBat', 1, 357, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 3, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035540, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1002, 0, 50, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3623, 'DemonBat', 1, 357, 50000, 0, 2328, 1600, 100, 46, 90, 0, 0, 0, 0, 3, 20, 0, 1000, 500, 120, 3, 5000, 0, 2, 5035560, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1002, 70, 50, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3624, 'BoneSkeleton', 1, 163, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 1, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035500, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3625, 'LameSkeleton', 1, 363, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 3, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035520, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7109, 0, 50, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3626, 'CarrionSkeleton', 1, 263, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 1, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035540, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3627, 'FurySkeleton', 1, 463, 50000, 0, 2328, 1600, 100, 46, 90, 0, 0, 0, 0, 3, 20, 0, 1000, 500, 120, 3, 5000, 0, 2, 5035560, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1002, 70, 50, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3628, 'AngryBeast', 1, 154, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 1, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035500, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3629, 'SensitiveBeast', 1, 254, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 1, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035520, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3630, 'CrazyBeast', 1, 354, 50000, 0, 1728, 1400, 0, 46, 85, 0, 0, 0, 0, 3, 15, 3489, 1000, 500, 120, 3, 5000, 0, 2, 5035540, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7010, 0, 50, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3631, 'FearlessBeast', 1, 354, 50000, 0, 2328, 1600, 100, 46, 90, 0, 0, 0, 0, 3, 20, 0, 1000, 500, 120, 3, 5000, 0, 2, 5035560, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1002, 70, 50, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3632, 'HillSpirit', 1, 153, 50000, 0, 3394, 1066, 100, 46, 92, 0, 0, 0, 0, 3, 25, 0, 1000, 500, 120, 3, 5000, 0, 2, 5032040, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1000, 73, 10, 0, 100, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3633, 'SwiftDevil', 1, 133, 55000, 0, 4098, 1285, 120, 50, 93, 0, 0, 0, 0, 3, 27, 0, 1000, 500, 120, 3, 5000, 0, 2, 5032050, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1001, 73, 60, 0, 100, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3634, 'Banshee', 1, 153, 65535, 0, 30000, 40000, 7927, 66, 94, 0, 0, 0, 0, 3, 29, 0, 1000, 500, 210, 3, 5000, 0, 2, 5032060, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1001, 73, 70, 0, 100, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3635, 'CleansingDevil', 1, 168, 65535, 0, 5394, 3098, 200, 78, 100, 0, 0, 0, 0, 3, 30, 0, 1000, 500, 120, 3, 5000, 0, 2, 5032070, 500, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1002, 75, 80, 0, 100, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3636, 'Andrew', 1, 361, 65535, 0, 4694, 2066, 350, 80, 83, 0, 0, 0, 0, 1, 30, 0, 1000, 500, 120, 3, 5580, 0, 2, 5035100, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 75, 0, 0, 100, 0, 0, 0, 7000, 0);
+INSERT INTO `cq_monstertype` VALUES (3637, 'Peter', 1, 362, 65535, 0, 4694, 2066, 350, 80, 83, 0, 0, 0, 0, 1, 30, 0, 1000, 500, 120, 3, 5580, 0, 2, 5035130, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 75, 0, 0, 100, 0, 0, 0, 7000, 0);
+INSERT INTO `cq_monstertype` VALUES (3638, 'Philip', 1, 268, 65535, 0, 4694, 2066, 350, 80, 83, 0, 0, 0, 0, 1, 30, 0, 1000, 500, 120, 3, 5580, 0, 2, 5035160, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 75, 0, 0, 100, 0, 0, 0, 7000, 0);
+INSERT INTO `cq_monstertype` VALUES (3639, 'Timothy', 1, 151, 65535, 0, 4694, 2066, 350, 80, 83, 0, 0, 0, 0, 1, 30, 0, 1000, 500, 120, 3, 5580, 0, 2, 5035190, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 75, 0, 0, 100, 0, 0, 0, 7000, 0);
+INSERT INTO `cq_monstertype` VALUES (3640, 'Daphne', 1, 130, 65535, 0, 4694, 2066, 350, 80, 83, 0, 0, 0, 0, 1, 30, 0, 1000, 500, 120, 3, 5580, 0, 2, 5035220, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 75, 0, 0, 100, 0, 0, 0, 7000, 0);
+INSERT INTO `cq_monstertype` VALUES (3641, 'Victoria', 1, 328, 65535, 0, 4694, 2066, 350, 80, 83, 0, 0, 0, 0, 1, 30, 0, 1000, 500, 120, 3, 5580, 0, 2, 5035250, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 75, 0, 0, 100, 0, 0, 0, 7000, 0);
+INSERT INTO `cq_monstertype` VALUES (3642, 'Wayne', 1, 129, 65535, 0, 4694, 2066, 350, 80, 83, 0, 0, 0, 0, 1, 30, 0, 1000, 500, 120, 3, 5580, 0, 2, 5035280, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 75, 0, 0, 100, 0, 0, 0, 7000, 0);
+INSERT INTO `cq_monstertype` VALUES (3643, 'Theodore', 1, 164, 65535, 0, 4694, 2066, 350, 80, 83, 0, 0, 0, 0, 1, 30, 0, 1000, 500, 120, 3, 5580, 0, 2, 5035310, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 75, 0, 0, 100, 0, 0, 0, 7000, 0);
+INSERT INTO `cq_monstertype` VALUES (3644, 'Satan', 1, 166, 65535, 0, 6635, 5635, 1045, 95, 75, 0, 0, 0, 0, 3, 35, 0, 1000, 1000, 120, 3, 5580, 0, 2, 5032080, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1002, 70, 80, 0, 100, 0, 0, 0, 7000, 0);
+INSERT INTO `cq_monstertype` VALUES (3645, 'BeastSatan', 1, 200, 65535, 0, 6938, 5938, 2538, 95, 75, 0, 0, 0, 0, 3, 35, 0, 1000, 1000, 120, 3, 5000, 0, 2, 5032090, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1002, 70, 85, 0, 100, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3646, 'FurySatan', 1, 104, 65535, 0, 7473, 6473, 3450, 95, 75, 0, 0, 0, 0, 3, 35, 0, 1000, 1000, 120, 3, 5000, 0, 2, 5032100, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1002, 70, 90, 0, 100, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3706, 'GreenRooster', 1, 380, 10000, 0, 10, 9, 6, 0, 37, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 10, 3, 5000, 0, 2, 0, 500, 99, 0, 99, 0, 0, 99, 99, 1000010, 1001000, 0, 70, 0, 0, 3000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3707, 'BlueRooster', 1, 381, 10000, 0, 15, 14, 8, 0, 37, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 10, 3, 5000, 0, 2, 0, 500, 99, 0, 99, 0, 0, 99, 99, 1000010, 1001000, 0, 70, 0, 0, 3000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3708, 'MagentaRooster', 1, 382, 10000, 0, 20, 19, 10, 0, 37, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 10, 3, 5000, 0, 2, 0, 500, 99, 0, 99, 0, 0, 99, 99, 1000010, 1001000, 0, 70, 0, 0, 3000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (3709, '3709', 1, 383, 10000, 0, 25, 24, 12, 0, 37, 0, 0, 0, 0, 1, 8, 0, 1000, 1000, 10, 3, 5000, 0, 2, 0, 500, 99, 0, 99, 0, 0, 99, 99, 1000010, 1001000, 0, 70, 0, 0, 3000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (4020, '4020', 1, 240, 33, 0, 6, 5, 0, 0, 0, 0, 0, 0, 0, 1, 10, 0, 1000, 500, 1, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1000000, 1001000, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (4021, '4021', 1, 241, 25000, 0, 350, 300, 0, 0, 0, 0, 0, 0, 0, 2, 10, 0, 1000, 500, 10, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1000000, 1001000, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (4022, '4022', 1, 171, 25000, 0, 350, 300, 0, 0, 0, 0, 0, 0, 0, 2, 10, 0, 1000, 500, 10, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1000000, 1001000, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (4023, '4023', 1, 362, 25000, 0, 350, 300, 0, 0, 0, 0, 0, 0, 0, 2, 10, 0, 1000, 500, 10, 3, 5000, 0, 3, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1000000, 1001000, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (4024, '4024', 1, 197, 25000, 0, 350, 300, 0, 0, 0, 0, 0, 0, 0, 2, 10, 0, 1000, 500, 10, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1000000, 1001000, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (4025, '4025', 1, 245, 25000, 0, 350, 300, 0, 0, 0, 0, 0, 0, 0, 2, 10, 0, 1000, 500, 10, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1000000, 1001000, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (4026, '4026', 1, 353, 25000, 0, 350, 300, 0, 0, 0, 0, 0, 0, 0, 2, 10, 0, 1000, 500, 10, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1000000, 1001000, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (4027, '4027', 1, 327, 25000, 0, 350, 300, 0, 0, 0, 0, 0, 0, 0, 2, 10, 0, 1000, 500, 10, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1000000, 1001000, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (4028, '4028', 1, 308, 50000, 0, 350, 300, 0, 0, 0, 0, 0, 0, 0, 2, 10, 0, 1000, 500, 70, 3, 5000, 0, 3, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1000000, 1001000, 0, 0, 0, 0, 5000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (4030, '4030', 1, 208, 65535, 0, 3950, 2850, 7927, 50, 90, 0, 0, 0, 0, 3, 25, 0, 1000, 500, 126, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 90, 0, 0, 500, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (4031, '4031', 1, 212, 50000, 0, 2328, 1600, 100, 46, 90, 0, 0, 0, 0, 3, 20, 0, 1000, 500, 120, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 1002, 70, 50, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (4032, 'ElfKing1', 1, 247, 65535, 0, 3950, 2850, 7927, 50, 90, 0, 0, 0, 0, 3, 25, 0, 1000, 500, 126, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 90, 0, 0, 500, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (4033, 'BloodyBat1', 1, 248, 65535, 0, 3950, 2850, 7927, 50, 90, 0, 0, 0, 0, 3, 25, 0, 1000, 500, 126, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 90, 0, 0, 500, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (4034, 'HillMonsterKin', 1, 249, 65535, 0, 3950, 2850, 7927, 50, 90, 0, 0, 0, 0, 3, 25, 0, 1000, 500, 126, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 90, 0, 0, 500, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (4035, 'BirdKing1', 1, 250, 65535, 0, 3950, 2850, 7927, 50, 90, 0, 0, 0, 0, 3, 25, 0, 1000, 500, 126, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 90, 0, 0, 500, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (4036, 'WingedSnakeKin', 1, 258, 65535, 0, 3950, 2850, 7927, 50, 90, 0, 0, 0, 0, 3, 25, 0, 1000, 500, 126, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 90, 0, 0, 500, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (4050, '4050', 1, 305, 1000, 0, 250, 150, 200, 0, 37, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 75, 3, 5000, 0, 0, 0, 500, 99, 0, 99, 0, 0, 99, 1, 1000000, 1001000, 0, 10, 0, 0, 0, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (4051, '4051', 1, 145, 1000, 0, 200, 100, 200, 0, 37, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 70, 3, 5000, 0, 0, 0, 500, 99, 0, 99, 0, 0, 99, 1, 1000000, 1001000, 0, 10, 0, 0, 0, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (4052, '4052', 1, 705, 2000, 0, 400, 300, 200, 0, 37, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 80, 3, 5000, 0, 0, 0, 500, 99, 0, 99, 0, 0, 99, 1, 1000000, 1001000, 0, 10, 0, 0, 0, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (4058, 'Piglet', 1, 215, 50000, 0, 65000, 65000, 200000, 46, 90, 0, 0, 0, 0, 3, 20, 0, 1000, 500, 120, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 1002, 70, 50, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (4060, 'PinkPiglet', 1, 215, 50000, 0, 2328, 1600, 100, 46, 90, 0, 0, 0, 0, 3, 20, 0, 1000, 500, 120, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 1002, 70, 50, 0, 10000, 0, 0, 0, 0, 0);
+INSERT INTO `cq_monstertype` VALUES (4151, 'LavaBeast', 1, 251, 15000000, 0, 30000, 28000, 5000, 100, 104, 0, 0, 0, 0, 1, 20, 0, 1000, 1000, 135, 3, 0, 0, 1, 3500000, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10000, 2000, 100, 0, 10000, 0, 0, 0, 100, 0);
+INSERT INTO `cq_monstertype` VALUES (4152, 'TeratoDragon', 1, 950, 50000000, 0, 35000, 32500, 5000, 100, 104, 0, 0, 0, 0, 1, 20, 0, 1000, 1000, 138, 3, 0, 0, 1, 3550900, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7012, 2000, 100, 0, 10000, 0, 0, 0, 100, 0);
+INSERT INTO `cq_monstertype` VALUES (4170, 'SwordMaster', 1, 953, 15000000, 0, 15000, 15000, 5000, 100, 104, 0, 0, 0, 0, 1, 20, 0, 1000, 1000, 133, 3, 0, 0, 1, 0, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2000, 100, 0, 10000, 0, 0, 0, 100, 0);
+INSERT INTO `cq_monstertype` VALUES (4171, 'SnowBanshee', 1, 951, 60000000, 0, 40000, 35000, 5000, 100, 104, 0, 0, 0, 0, 1, 20, 0, 1000, 1000, 138, 3, 0, 0, 1, 3530900, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30010, 2000, 100, 0, 10000, 0, 0, 0, 100, 0);
+INSERT INTO `cq_monstertype` VALUES (4172, 'ThrillingSpook', 1, 952, 30000000, 0, 20000, 20000, 5000, 100, 104, 0, 0, 0, 0, 1, 20, 0, 1000, 1000, 135, 3, 0, 0, 1, 0, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2000, 100, 0, 10000, 0, 0, 0, 100, 0);
+INSERT INTO `cq_monstertype` VALUES (5045, 'UndeadSoldier', 1, 263, 3451, 0, 2114, 1903, 4311, 50, 90, 0, 0, 0, 0, 1, 20, 0, 2000, 500, 120, 3, 5000, 0, 1, 8003600, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1002040, 0, 0, 0, 0, 6000, 0, 0, 0, 7000, 0);
+INSERT INTO `cq_monstertype` VALUES (5046, 'Phantom', 1, 363, 3451, 0, 2114, 1903, 4311, 50, 90, 0, 0, 0, 0, 1, 20, 0, 2000, 500, 120, 3, 5000, 0, 1, 8003600, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1002040, 0, 0, 0, 0, 6000, 0, 0, 0, 7000, 0);
+INSERT INTO `cq_monstertype` VALUES (5049, 'UndeadSpearman', 1, 165, 5176, 0, 2114, 1903, 5174, 50, 90, 0, 0, 0, 0, 3, 25, 0, 1200, 500, 121, 3, 5000, 0, 1, 8003610, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1002040, 0, 0, 0, 0, 7500, 0, 0, 0, 7000, 0);
+INSERT INTO `cq_monstertype` VALUES (5050, 'Revenant', 1, 265, 5136, 0, 2115, 1903, 5175, 50, 90, 0, 0, 0, 0, 3, 25, 0, 1200, 500, 121, 3, 5000, 0, 1, 8003610, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1002040, 0, 0, 0, 0, 7500, 0, 0, 0, 7000, 0);
+INSERT INTO `cq_monstertype` VALUES (5051, 'Eidolon', 1, 266, 4108, 0, 2643, 2379, 4743, 50, 90, 0, 0, 0, 0, 6, 25, 0, 1200, 500, 123, 3, 5000, 0, 2, 8003620, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1002040, 0, 35, 0, 0, 5000, 0, 0, 0, 7000, 0);
+INSERT INTO `cq_monstertype` VALUES (5053, 'Temptress', 1, 230, 6794, 0, 2317, 2085, 4314, 50, 90, 0, 0, 0, 0, 1, 25, 0, 600, 500, 122, 3, 5000, 0, 1, 5020990, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1002040, 0, 0, 0, 0, 6000, 0, 0, 0, 7000, 0);
+INSERT INTO `cq_monstertype` VALUES (5054, 'Centicore', 1, 179, 6794, 0, 2317, 2085, 4314, 50, 90, 0, 0, 0, 0, 1, 25, 0, 500, 500, 122, 3, 5000, 0, 2, 5020895, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1002040, 0, 0, 0, 0, 6000, 0, 0, 0, 7000, 0);
+INSERT INTO `cq_monstertype` VALUES (5055, 'Wraith', 1, 327, 3934, 0, 569, 569, 1724, 50, 60, 0, 0, 0, 0, 5, 25, 0, 2500, 500, 122, 3, 5000, 0, 1, 5020600, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1002040, 4075, 0, 50, 0, 8000, 0, 0, 0, 7000, 0);
+INSERT INTO `cq_monstertype` VALUES (5056, 'HellTroll', 1, 353, 20368, 0, 2316, 2085, 5175, 50, 90, 0, 0, 0, 0, 2, 25, 0, 1000, 500, 123, 3, 5000, 0, 2, 5020900, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1002040, 0, 0, 0, 0, 7500, 0, 0, 0, 7000, 0);
+INSERT INTO `cq_monstertype` VALUES (5057, 'Naga', 1, 262, 6794, 0, 2317, 2085, 4314, 50, 90, 0, 0, 0, 0, 3, 25, 0, 1000, 500, 122, 3, 5000, 0, 1, 5020905, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1002040, 0, 0, 0, 0, 6000, 0, 0, 0, 7000, 0);
+INSERT INTO `cq_monstertype` VALUES (5058, 'Syren', 1, 152, 20707, 0, 985, 985, 7473, 50, 80, 0, 0, 0, 0, 10, 25, 0, 2000, 500, 124, 3, 0, 0, 1, 5020700, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 4076, 80, 50, 0, 2000, 0, 0, 0, 7000, 0);
+INSERT INTO `cq_monstertype` VALUES (5059, 'UltimatePluto', 1, 168, 65535, 0, 3950, 2850, 7927, 50, 90, 0, 0, 0, 0, 3, 25, 0, 1000, 500, 126, 3, 0, 0, 2, 5020690, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 90, 0, 0, 500, 0, 0, 0, 7000, 0);
+INSERT INTO `cq_monstertype` VALUES (5060, 'Wraith', 1, 327, 3934, 0, 569, 569, 1724, 50, 60, 0, 0, 0, 0, 5, 25, 0, 2000, 500, 124, 3, 5000, 0, 1, 5020601, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1002040, 4075, 0, 50, 0, 8000, 0, 0, 0, 7000, 0);
+INSERT INTO `cq_monstertype` VALUES (6000, 'ToughHorn', 1, 200, 38500, 0, 1205, 900, 600, 10, 67, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 1, 3, 5000, 0, 1, 601100, 500, 99, 99, 99, 99, 99, 99, 99, 1002000, 1001020, 0, 25, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (6001, 'ToughHorn', 1, 200, 38500, 0, 1505, 1100, 750, 12, 67, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 1, 3, 5000, 0, 1, 601110, 500, 99, 99, 99, 99, 99, 99, 99, 1002010, 1001030, 0, 25, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (6002, 'ToughHorn', 1, 200, 38500, 0, 1205, 900, 600, 10, 67, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 1, 3, 5000, 0, 1, 601120, 500, 99, 99, 99, 99, 99, 99, 99, 1002010, 1001040, 0, 25, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (6003, 'ToughHorn', 1, 200, 38500, 0, 1205, 900, 600, 10, 67, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 1, 3, 5000, 0, 1, 601130, 500, 99, 99, 99, 99, 99, 99, 99, 1002020, 1001020, 0, 25, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (6004, 'ToughHorn', 1, 200, 38500, 0, 1205, 900, 600, 10, 67, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 1, 3, 5000, 0, 1, 601140, 500, 99, 99, 99, 99, 99, 99, 99, 1002010, 1001040, 0, 25, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (6005, 'ToughHorn', 1, 200, 38500, 0, 1205, 900, 600, 10, 67, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 1, 3, 5000, 0, 1, 601150, 500, 99, 99, 99, 99, 99, 99, 99, 1002000, 1001040, 0, 25, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (6006, 'ToughHorn', 1, 200, 38500, 0, 2505, 2000, 600, 15, 67, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 100, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002020, 1002030, 0, 15, 0, 0, 10000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (6010, 'LonelyTyrant', 1, 401, 2100, 0, 155, 125, 0, 6, 75, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 45, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1000020, 1001020, 0, 0, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (6011, 'Ghost', 1, 200, 20673, 0, 691, 624, 300, 7, 87, 0, 0, 0, 0, 1, 12, 0, 1000, 500, 82, 3, 5000, 0, 1, 0, 500, 7, 16, 7, 16, 16, 6, 17, 1002000, 1001040, 0, 15, 100, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (6015, 'MonkeyMonster', 64, 156, 10200, 0, 480, 430, 900, 15, 67, 0, 0, 0, 0, 6, 6, 0, 1000, 500, 60, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 5, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (6016, 'Cecrops', 64, 204, 10200, 0, 450, 400, 300, 15, 67, 0, 0, 0, 0, 1, 1, 0, 1000, 500, 60, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 90, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (6017, 'ApeMonster', 1, 103, 10200, 0, 450, 410, 500, 15, 67, 0, 0, 0, 0, 1, 3, 0, 1000, 500, 60, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 52, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (6018, 'Python', 1, 204, 30200, 0, 450, 410, 720, 15, 67, 0, 0, 0, 0, 1, 3, 0, 1000, 500, 70, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 81, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (7000, 'DevilGuard', 1, 405, 6590, 0, 4800, 5150, 0, 250, 70, 0, 0, 0, 0, 8, 8, 0, 4000, 500, 130, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 70, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (7001, 'WarriorDevil', 1, 205, 23588, 0, 650, 700, 700, 50, 70, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 70, 3, 5000, 0, 1, 511200, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 95, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (7002, 'TrojanDevil', 1, 205, 9436, 0, 396, 420, 700, 50, 70, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 70, 3, 5000, 0, 1, 511240, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 95, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (7003, 'ArcherDevil', 1, 205, 33964, 0, 470, 500, 65000, 50, 70, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 70, 3, 5000, 0, 1, 511360, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 95, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (7004, 'FireDevil', 1, 205, 38550, 0, 182, 182, 65000, 50, 95, 0, 0, 0, 0, 8, 8, 0, 1000, 500, 70, 3, 5000, 0, 1, 511280, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 1000, 60, 100, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (7005, 'WaterDevil', 1, 205, 38550, 0, 91, 91, 65000, 50, 95, 0, 0, 0, 0, 8, 8, 0, 1000, 500, 70, 3, 5000, 0, 1, 511320, 500, 99, 99, 99, 99, 99, 99, 99, 0, 0, 1000, 60, 100, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (7006, 'AncientDevil', 1, 279, 65535, 0, 5000, 5000, 60000, 80, 100, 0, 0, 0, 0, 10, 10, 0, 3000, 3000, 120, 0, 5000, 0, 6, 5000915, 3000, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 99, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8100, 'HumanMessenger', 1, 108, 1100, 0, 120, 120, 25, 100, 9, 0, 0, 0, 0, 9, 10, 0, 1300, 500, 22, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 3000, 52, 70, 0, 10000, 5, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8101, 'WingedSnakeMsgr', 1, 243, 1200, 0, 150, 150, 33, 100, 10, 0, 0, 0, 0, 9, 10, 0, 1300, 500, 27, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 3001, 62, 70, 0, 10000, 6, 9, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8102, 'BanditMessenger', 1, 241, 1600, 0, 200, 200, 37, 100, 12, 0, 0, 0, 0, 9, 10, 0, 1300, 500, 32, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 3002, 72, 70, 0, 10000, 7, 10, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8103, 'RatMessenger', 1, 242, 2000, 0, 260, 240, 85, 100, 13, 0, 0, 0, 0, 9, 10, 0, 1300, 500, 37, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 3003, 84, 70, 0, 10000, 8, 11, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8104, 'ElfMessenger', 1, 242, 3600, 0, 280, 280, 100, 100, 15, 0, 0, 0, 0, 9, 10, 0, 1300, 500, 42, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 3004, 86, 70, 0, 10000, 9, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8105, 'MonkeyMessenger', 1, 196, 4400, 0, 300, 300, 105, 100, 16, 0, 0, 0, 0, 9, 10, 0, 1300, 500, 47, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 3005, 87, 70, 0, 10000, 10, 12, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8106, 'GiantApeMsgr', 1, 196, 5300, 0, 330, 330, 140, 100, 18, 0, 0, 0, 0, 9, 10, 0, 1300, 500, 52, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 3006, 87, 70, 0, 10000, 11, 13, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8107, 'ThunderApeMsgr', 1, 103, 6300, 0, 380, 380, 270, 100, 19, 0, 0, 0, 0, 9, 10, 0, 1300, 500, 57, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 3007, 89, 70, 0, 10000, 12, 14, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8108, 'SnakemanMsgr', 1, 244, 9500, 0, 450, 450, 320, 100, 21, 0, 0, 0, 0, 9, 10, 0, 1300, 500, 62, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 3008, 91, 70, 0, 10000, 13, 16, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8109, 'SandMonsterMsgr', 1, 171, 11000, 0, 539, 539, 400, 100, 22, 0, 0, 0, 0, 9, 10, 0, 1300, 500, 67, 3, 5000, 0, 3, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 3009, 92, 70, 0, 10000, 14, 15, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8110, 'HillMonsterMsgr', 1, 145, 14000, 0, 590, 590, 405, 100, 24, 0, 0, 0, 0, 9, 10, 0, 1300, 500, 72, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 3010, 94, 70, 0, 10000, 15, 17, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8111, 'RockMonsterMsgr', 1, 145, 17000, 0, 680, 680, 410, 100, 25, 0, 0, 0, 0, 9, 10, 0, 1300, 500, 77, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 3011, 94, 70, 0, 10000, 16, 18, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8112, 'BladeGhostMsgr', 1, 240, 22000, 0, 760, 760, 415, 100, 27, 0, 0, 0, 0, 9, 10, 0, 1300, 500, 82, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 3012, 95, 70, 0, 10000, 17, 2, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8113, 'BirdmanMsgr', 1, 245, 26000, 0, 780, 780, 420, 100, 28, 0, 0, 0, 0, 9, 10, 0, 1300, 500, 87, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 3013, 96, 70, 0, 10000, 18, 19, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8114, 'HawkMessenger', 1, 245, 30000, 0, 890, 890, 425, 100, 30, 0, 0, 0, 0, 9, 10, 0, 1000, 500, 92, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 3014, 96, 70, 0, 10000, 19, 20, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8115, 'RobberMessenger', 1, 241, 40000, 0, 1050, 1050, 430, 100, 30, 0, 0, 0, 0, 9, 10, 0, 1300, 500, 97, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 3015, 97, 70, 0, 10000, 55, 21, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8116, 'BatMessenger', 1, 246, 45000, 0, 1200, 1200, 435, 100, 33, 0, 0, 0, 0, 9, 10, 0, 1300, 500, 102, 3, 5000, 0, 3, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 3016, 97, 70, 0, 10000, 20, 1, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8117, 'BloodyBatMsgr', 1, 188, 50000, 0, 1600, 1600, 440, 100, 33, 0, 0, 0, 0, 9, 10, 0, 1300, 500, 107, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 3017, 97, 70, 0, 10000, 56, 23, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8118, 'BullMessenger', 1, 117, 55000, 0, 1800, 1800, 445, 100, 35, 0, 0, 0, 0, 9, 10, 0, 1300, 500, 112, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 3018, 98, 70, 0, 10000, 57, 4, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8119, 'DevilMessenger', 1, 197, 60460, 0, 2150, 2150, 2000, 100, 37, 0, 0, 0, 0, 9, 10, 0, 1000, 500, 117, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 3019, 99, 70, 0, 10000, 58, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8200, 'HumanAide', 1, 108, 1100, 0, 150, 100, 86, 100, 9, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 22, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 0, 0, 0, 10000, 5, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8201, 'WingedSnakeAide', 1, 243, 1200, 0, 160, 150, 110, 100, 10, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 27, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 0, 0, 0, 10000, 6, 9, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8202, 'BanditAide', 1, 241, 1600, 0, 220, 190, 136, 100, 12, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 32, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 0, 0, 0, 10000, 7, 10, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8203, 'RatAide', 1, 242, 2000, 0, 250, 250, 175, 100, 13, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 37, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 0, 0, 0, 10000, 8, 11, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8204, 'ElfAide', 1, 242, 3600, 0, 280, 250, 205, 110, 15, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 42, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 0, 0, 0, 10000, 9, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8205, 'MonkeyAide', 1, 196, 4400, 0, 320, 280, 243, 110, 16, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 47, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 0, 0, 0, 10000, 10, 12, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8206, 'GiantApeAide', 1, 196, 5300, 0, 350, 310, 283, 110, 18, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 52, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 0, 0, 0, 10000, 11, 13, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8207, 'ThunderApeAide', 1, 103, 6300, 0, 400, 360, 378, 110, 19, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 57, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 0, 0, 0, 10000, 12, 14, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8208, 'SnakemanAide', 1, 244, 9500, 0, 470, 430, 434, 110, 21, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 62, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 0, 0, 0, 10000, 13, 16, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8209, 'SandMonsterAide', 1, 171, 11000, 0, 550, 520, 534, 130, 22, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 67, 3, 5000, 0, 3, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 0, 0, 0, 10000, 14, 15, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8210, 'HillMonsterAide', 1, 145, 14000, 0, 610, 570, 593, 130, 24, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 72, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 0, 0, 0, 10000, 15, 17, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8211, 'RockMonsterAide', 1, 145, 17000, 0, 700, 660, 686, 130, 25, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 77, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 0, 0, 0, 10000, 16, 18, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8212, 'BladeGhostAide', 1, 240, 22000, 0, 780, 740, 769, 130, 27, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 82, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 0, 0, 0, 10000, 17, 2, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8213, 'BirdmanAide', 1, 245, 26000, 0, 800, 770, 934, 130, 28, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 87, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 0, 0, 0, 10000, 18, 19, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8214, 'HawkAide', 1, 245, 30000, 0, 910, 870, 1059, 130, 30, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 92, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 0, 0, 0, 10000, 19, 20, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8215, 'RobberAide', 1, 241, 40000, 0, 1100, 1020, 1252, 130, 30, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 97, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 0, 0, 0, 10000, 55, 21, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8216, 'BatAide', 1, 246, 45000, 0, 1250, 1150, 1375, 35, 33, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 102, 3, 5000, 0, 3, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 0, 0, 0, 10000, 20, 1, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8217, 'BloodyBatAide', 1, 188, 50000, 0, 1650, 1550, 1630, 130, 33, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 107, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 0, 0, 0, 10000, 56, 23, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8218, 'BullAide', 1, 117, 55000, 0, 1900, 1700, 1979, 130, 35, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 112, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 0, 0, 0, 10000, 57, 4, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8219, 'DevilAide', 1, 197, 60460, 0, 2250, 2050, 4000, 130, 37, 0, 0, 0, 0, 1, 9, 0, 700, 500, 117, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 50, 0, 0, 10000, 58, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8300, 'GhostKing', 1, 108, 30000, 0, 160, 150, 540, 12, 18, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 22, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 96, 0, 0, 10000, 5, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8301, 'WingedSnakeKing', 1, 443, 40000, 0, 200, 180, 600, 15, 19, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 27, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 96, 0, 0, 10000, 6, 9, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8302, '8302', 1, 241, 45000, 0, 240, 200, 640, 15, 21, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 32, 3, 5000, 0, 3, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 95, 0, 0, 10000, 7, 10, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8303, 'RatKing', 1, 442, 45000, 0, 300, 270, 800, 20, 22, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 37, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 95, 0, 0, 10000, 8, 11, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8304, 'ElfBoss', 1, 442, 45000, 0, 330, 300, 815, 20, 24, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 42, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 94, 0, 0, 10000, 9, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8305, 'MonkeyKing', 1, 196, 45000, 0, 370, 350, 860, 25, 25, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 47, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 95, 0, 0, 10000, 10, 12, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8306, 'GiantApeKing', 1, 196, 45000, 0, 420, 400, 1050, 25, 27, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 52, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 94, 0, 0, 10000, 11, 13, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8307, 'ThunderApeKing', 1, 103, 45000, 0, 480, 460, 1140, 30, 28, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 57, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 94, 0, 0, 10000, 12, 14, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8308, 'SnakemanKing', 1, 244, 46000, 0, 550, 530, 1205, 30, 30, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 62, 3, 5000, 0, 3, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 95, 0, 0, 10000, 13, 16, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8309, 'SandMonsterKing', 1, 171, 47000, 0, 630, 610, 1668, 35, 30, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 67, 3, 5000, 0, 5, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 93, 0, 0, 10000, 14, 15, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8310, 'HillMonsterKing', 1, 145, 47000, 0, 690, 670, 1700, 35, 33, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 72, 3, 5000, 0, 3, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 93, 0, 0, 10000, 15, 17, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8311, 'RockMonsterKing', 1, 145, 48000, 0, 780, 760, 1940, 40, 33, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 77, 3, 5000, 0, 3, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 93, 0, 0, 10000, 16, 18, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8312, 'BladeGhostKing', 1, 240, 50000, 0, 860, 840, 1968, 40, 35, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 82, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 92, 0, 0, 10000, 17, 2, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8313, 'BirdmanKing', 1, 245, 60460, 0, 880, 880, 1770, 50, 37, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 87, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 90, 0, 0, 10000, 18, 19, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8314, 'HawkBoss', 1, 245, 65535, 0, 990, 990, 1730, 50, 37, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 92, 3, 5000, 0, 2, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 91, 0, 0, 10000, 19, 20, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8315, 'RobberKing', 1, 241, 65535, 0, 1150, 1150, 1850, 53, 39, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 97, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 91, 0, 0, 10000, 55, 21, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8316, 'BatKing', 1, 246, 65535, 0, 1350, 1350, 30000, 55, 41, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 102, 3, 5000, 0, 3, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 91, 0, 0, 10000, 20, 1, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8317, 'BloodyWing', 1, 188, 65535, 0, 1750, 1750, 30000, 63, 43, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 107, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 92, 0, 0, 10000, 56, 23, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8318, 'BullKing', 1, 117, 65535, 0, 2000, 2000, 30000, 70, 45, 0, 0, 0, 0, 1, 9, 0, 1000, 500, 112, 3, 5000, 0, 3, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 92, 0, 0, 10000, 57, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8319, 'EvilLord', 1, 197, 65535, 0, 2400, 2250, 40000, 70, 47, 0, 0, 0, 0, 1, 9, 0, 600, 500, 117, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1002050, 1001040, 0, 92, 0, 0, 10000, 58, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8415, 'MeteorDove', 1, 304, 12500, 0, 5000, 5000, 65535, 10, 75, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 32, 3, 5000, 0, 1, 301015, 500, 99, 99, 99, 99, 99, 99, 99, 1000010, 1001010, 1000, 50, 100, 0, 1, 0, 0, 255, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8416, 'MeteorDove', 1, 304, 15000, 0, 89, 81, 0, 10, 75, 0, 0, 0, 0, 1, 8, 0, 1000, 500, 32, 3, 5000, 0, 1, 0, 500, 99, 99, 99, 99, 99, 99, 99, 1000010, 1001010, 1000, 20, 100, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8417, 'EvilGhost', 1, 274, 48944, 0, 500, 500, 1000, 13, 86, 0, 0, 0, 0, 2, 18, 0, 1000, 500, 103, 3, 5000, 0, 1, 401300, 100, 4, 9, 4, 9, 10, 1, 5, 1002020, 1001020, 1000, 20, 50, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8418, 'NightDevil', 1, 277, 60460, 0, 2000, 2000, 3000, 19, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 120, 3, 5000, 0, 1, 401300, 400, 4, 9, 4, 9, 10, 1, 5, 1002020, 1001020, 1000, 20, 50, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8419, 'WaterDevil', 1, 273, 30000, 0, 700, 700, 1200, 19, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 120, 3, 5000, 0, 1, 401300, 400, 99, 99, 99, 99, 99, 99, 99, 1002020, 1001020, 1000, 20, 100, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8420, 'WaterDevil', 1, 273, 30000, 0, 4000, 3000, 0, 19, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 120, 3, 5000, 0, 1, 301110, 400, 99, 99, 99, 99, 99, 99, 99, 1002020, 1001020, 0, 0, 0, 0, 1000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8421, 'WaterDevil', 1, 273, 30000, 0, 60000, 60000, 1200, 19, 86, 0, 0, 0, 0, 10, 15, 0, 1000, 1000, 120, 3, 5000, 0, 1, 401300, 400, 9, 21, 9, 21, 21, 9, 9, 1002020, 1001020, 1000, 60, 100, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8422, 'WaterDevil', 1, 273, 30000, 0, 5785, 4875, 1200, 19, 86, 0, 0, 0, 0, 5, 15, 0, 2000, 1000, 120, 3, 5000, 0, 1, 401300, 400, 99, 99, 99, 99, 99, 99, 99, 1002020, 1001020, 0, 60, 0, 0, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (8500, 'WaterLord', 1, 273, 60000, 0, 1400, 1400, 2400, 19, 86, 0, 0, 0, 0, 1, 10, 0, 1000, 1000, 120, 3, 5000, 0, 1, 530140, 400, 99, 99, 99, 99, 99, 99, 99, 1002020, 1001020, 1000, 40, 100, 0, 100, 0, 0, 255, 10000, 2000);
+INSERT INTO `cq_monstertype` VALUES (9000, 'IronGuard', 0, 920, 10000, 0, 148, 148, 405, 100, 45, 0, 0, 0, 0, 4, 4, 0, 1000, 50, 70, 39, 5000, 0, 1, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 1000, 0, 100, 1, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9001, 'CopperGuard', 0, 920, 20000, 0, 269, 269, 707, 100, 55, 0, 0, 0, 0, 4, 4, 0, 1000, 50, 90, 39, 5000, 0, 1, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 1001, 0, 100, 1, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9002, 'SilverGuard', 0, 920, 35000, 0, 476, 476, 1505, 100, 65, 0, 0, 0, 0, 4, 4, 0, 1000, 50, 110, 39, 5000, 0, 1, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 1001, 0, 100, 1, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9003, 'GoldGuard', 0, 920, 60000, 0, 646, 646, 1680, 100, 75, 0, 0, 0, 0, 4, 4, 0, 1000, 50, 120, 39, 5000, 0, 1, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 1002, 0, 100, 1, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9005, 'GhostBat', 0, 148, 3000, 0, 28, 28, 50, 100, 0, 0, 0, 0, 0, 5, 15, 0, 2000, 50, 15, 39, 5000, 0, 1, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 4030, 50, 0, 2, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9006, 'FastBat', 0, 148, 6000, 0, 66, 66, 200, 100, 0, 0, 0, 0, 0, 5, 15, 0, 2000, 50, 40, 39, 5000, 0, 1, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 4030, 60, 0, 2, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9007, 'SwiftBat', 0, 148, 15000, 0, 195, 195, 800, 100, 0, 0, 0, 0, 0, 5, 15, 0, 2000, 50, 70, 39, 5000, 0, 1, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 4030, 70, 0, 2, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9008, 'MagicBat', 0, 148, 30000, 0, 448, 448, 1500, 100, 0, 0, 0, 0, 0, 5, 15, 0, 2000, 50, 100, 39, 5000, 0, 1, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 4030, 70, 0, 2, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9010, 'GhostBatBoss', 0, 548, 10000, 0, 28, 28, 50, 100, 0, 0, 0, 0, 0, 5, 15, 0, 2000, 50, 15, 39, 5000, 0, 1, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 4030, 50, 0, 2, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9011, 'FastBatBoss', 0, 548, 20000, 0, 66, 66, 200, 100, 0, 0, 0, 0, 0, 5, 15, 0, 2000, 50, 40, 39, 5000, 0, 1, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 4030, 60, 0, 2, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9012, 'SwiftBatBoss', 0, 548, 35000, 0, 195, 195, 800, 100, 0, 0, 0, 0, 0, 5, 15, 0, 2000, 50, 70, 39, 5000, 0, 1, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 4030, 70, 0, 2, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9013, 'MagicBatBoss', 0, 548, 60000, 0, 448, 448, 1500, 100, 0, 0, 0, 0, 0, 5, 15, 0, 2000, 50, 100, 39, 5000, 0, 1, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 4030, 70, 0, 2, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9015, 'EvilBatA', 0, 206, 3000, 0, 14, 14, 50, 100, 30, 0, 0, 0, 0, 1, 15, 0, 2000, 50, 15, 39, 5000, 0, 3, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 4040, 0, 0, 1, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9016, 'EvilBatB', 0, 206, 6000, 0, 50, 30, 200, 100, 40, 0, 0, 0, 0, 1, 15, 0, 2000, 50, 40, 39, 5000, 0, 3, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 4040, 0, 0, 1, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9017, 'EvilBatC', 0, 206, 15000, 0, 90, 50, 800, 100, 50, 0, 0, 0, 0, 1, 15, 0, 2000, 50, 70, 39, 5000, 0, 3, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 4040, 0, 0, 1, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9018, 'EvilBatD', 0, 206, 30000, 0, 130, 70, 1500, 100, 60, 0, 0, 0, 0, 1, 15, 0, 2000, 50, 100, 39, 5000, 0, 3, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 4040, 0, 0, 1, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9020, 'FireRatA', 0, 209, 3000, 0, 16, 16, 50, 100, 50, 0, 0, 0, 0, 8, 15, 0, 700, 50, 15, 39, 5000, 0, 1, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 1150, 0, 100, 1, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9021, 'FireRatB', 0, 209, 6000, 0, 60, 60, 300, 100, 60, 0, 0, 0, 0, 8, 15, 0, 700, 50, 40, 39, 5000, 0, 1, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 1150, 0, 100, 1, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9022, 'FireRatC', 0, 209, 15000, 0, 130, 130, 1000, 100, 70, 0, 0, 0, 0, 8, 15, 0, 700, 50, 70, 39, 5000, 0, 1, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 1150, 0, 100, 1, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9023, 'FireRatD', 0, 209, 30000, 0, 400, 400, 2000, 100, 80, 0, 0, 0, 0, 8, 15, 0, 700, 50, 100, 39, 5000, 0, 1, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 1150, 0, 100, 1, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9025, 'SkeletonA', 0, 211, 10000, 0, 14, 14, 50, 100, 50, 0, 0, 0, 0, 3, 15, 0, 1500, 50, 15, 39, 5000, 0, 2, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 0, 100, 1, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9026, 'SkeletonB', 0, 211, 20000, 0, 50, 30, 300, 100, 60, 0, 0, 0, 0, 3, 15, 0, 1500, 50, 40, 39, 5000, 0, 2, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 0, 100, 1, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9027, 'SkeletonC', 0, 211, 35000, 0, 90, 50, 1500, 100, 70, 0, 0, 0, 0, 3, 15, 0, 1500, 50, 70, 39, 5000, 0, 2, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 0, 100, 1, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9028, 'SkeletonD', 0, 211, 60000, 0, 130, 70, 2000, 100, 80, 0, 0, 0, 0, 3, 15, 0, 1500, 50, 100, 39, 5000, 0, 2, 0, 50, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 0, 100, 1, 10000, 0, 0, 0, 10000, 0);
+INSERT INTO `cq_monstertype` VALUES (9030, 'Andrew', 1, 361, 65535, 0, 40000, 50000, 30000, 100, 80, 0, 0, 0, 0, 1, 30, 0, 1000, 500, 120, 3, 5000, 0, 2, 0, 1000, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 7000, 100, 0, 1000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (9031, 'Satan', 1, 166, 65535, 0, 40000, 50000, 30000, 100, 80, 0, 0, 0, 0, 1, 30, 0, 1000, 500, 120, 3, 5000, 0, 2, 0, 1000, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 5500, 100, 0, 1000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (9032, 'Timothy', 1, 151, 65535, 0, 40000, 50000, 30000, 100, 90, 0, 0, 0, 0, 1, 30, 0, 1000, 500, 120, 3, 5000, 0, 2, 0, 1000, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 9000, 100, 0, 1000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (9033, 'Daphne', 1, 130, 65535, 0, 40000, 50000, 30000, 100, 90, 0, 0, 0, 0, 1, 30, 0, 1000, 500, 120, 3, 5000, 0, 2, 0, 1000, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 6000, 100, 0, 1000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (9034, 'Victoria', 1, 328, 65535, 0, 40000, 50000, 30000, 100, 90, 0, 0, 0, 0, 1, 30, 0, 1000, 500, 120, 3, 5000, 0, 2, 0, 1000, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 6000, 100, 0, 1000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (9035, 'Wayne', 1, 129, 65535, 0, 40000, 50000, 30000, 100, 80, 0, 0, 0, 0, 1, 30, 0, 1000, 500, 120, 3, 5000, 0, 2, 0, 1000, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 6000, 100, 0, 1000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (9036, 'Peter', 1, 362, 65535, 0, 40000, 50000, 30000, 100, 80, 0, 0, 0, 0, 1, 30, 0, 1000, 500, 120, 3, 5000, 0, 2, 0, 1000, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 6500, 100, 0, 1000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (9037, 'Philip', 1, 268, 65535, 0, 40000, 50000, 30000, 100, 80, 0, 0, 0, 0, 1, 30, 0, 1000, 500, 120, 3, 5000, 0, 2, 0, 1000, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 8000, 100, 0, 1000, 0, 0, 0, 32767, 0);
+INSERT INTO `cq_monstertype` VALUES (9038, 'Theodore', 1, 164, 65535, 0, 40000, 50000, 30000, 100, 90, 0, 0, 0, 0, 1, 30, 0, 1000, 500, 120, 3, 5000, 0, 2, 0, 1000, 99, 99, 99, 99, 99, 99, 99, 0, 0, 0, 6800, 100, 0, 1000, 0, 0, 0, 32767, 0);
+
+-- Records of `cq_generator` (1377 rows)
+INSERT INTO `cq_generator` VALUES (1, 1002, 416, 460, 130, 30, 30, 1, 30, 1, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2, 1002, 428, 459, 100, 30, 30, 1, 30, 1, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3, 1002, 552, 489, 255, 100, 50, 1, 50, 2, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4, 1002, 418, 682, 200, 100, 300, 1, 300, 3, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (5, 1002, 242, 558, 140, 90, 200, 1, 200, 4, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6, 1002, 98, 325, 90, 175, 250, 1, 250, 5, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (7, 1011, 317, 77, 150, 50, 10, 1, 25, 6, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8, 1011, 328, 227, 200, 300, 15, 1, 25, 7, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9, 1011, 107, 325, 180, 100, 15, 1, 25, 7, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (10, 1011, 538, 272, 110, 250, 15, 1, 25, 8, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (11, 1011, 532, 768, 100, 60, 13, 1, 4, 9, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (12, 1011, 673, 638, 100, 70, 15, 1, 4, 9, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (13, 1020, 608, 556, 171, 144, 15, 1, 25, 10, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (14, 1020, 412, 230, 198, 211, 15, 1, 25, 11, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (15, 1020, 200, 177, 150, 169, 15, 1, 25, 12, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (16, 1020, 232, 460, 224, 142, 15, 1, 25, 13, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (18, 1000, 776, 561, 110, 110, 15, 1, 20, 15, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (19, 1000, 504, 333, 170, 140, 15, 1, 20, 15, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (20, 1000, 250, 134, 145, 280, 15, 1, 25, 16, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (21, 1000, 122, 269, 108, 150, 15, 1, 25, 17, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (22, 1015, 642, 662, 120, 120, 100, 1, 50, 18, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (23, 1015, 704, 647, 100, 120, 100, 1, 75, 18, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (24, 1015, 456, 681, 90, 100, 50, 1, 7, 19, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (25, 1015, 263, 103, 96, 42, 50, 1, 3, 19, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (26, 1001, 309, 597, 44, 51, 11, 1, 5, 20, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (27, 1001, 257, 549, 40, 63, 11, 1, 5, 20, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (28, 1001, 207, 518, 40, 30, 11, 1, 5, 20, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (29, 1001, 317, 514, 25, 26, 11, 1, 5, 20, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (30, 1001, 241, 473, 62, 55, 11, 1, 5, 20, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (31, 1001, 362, 605, 36, 30, 11, 1, 5, 20, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (32, 1015, 362, 469, 192, 117, 15, 1, 25, 55, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (33, 1015, 335, 329, 96, 70, 15, 1, 25, 55, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (34, 1001, 388, 371, 40, 24, 11, 1, 5, 56, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (35, 1001, 220, 347, 38, 24, 11, 1, 5, 56, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (36, 1001, 347, 378, 30, 26, 11, 1, 5, 56, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (37, 1001, 253, 304, 70, 53, 11, 1, 5, 56, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (38, 1001, 329, 343, 26, 25, 11, 1, 5, 56, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (39, 1001, 320, 425, 90, 64, 11, 1, 5, 56, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (40, 1001, 162, 319, 65, 60, 11, 1, 5, 57, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (41, 1001, 52, 323, 35, 25, 11, 1, 5, 57, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (42, 1001, 85, 279, 70, 40, 11, 1, 5, 57, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (43, 1001, 101, 353, 40, 63, 11, 1, 5, 57, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (44, 1001, 153, 401, 90, 63, 11, 1, 5, 57, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (45, 1001, 232, 175, 37, 24, 11, 1, 5, 58, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (46, 1001, 333, 253, 90, 63, 11, 1, 5, 58, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (47, 1001, 342, 171, 46, 60, 11, 1, 5, 58, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (48, 1001, 265, 131, 67, 41, 11, 1, 5, 58, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (49, 1001, 276, 196, 45, 72, 11, 1, 5, 58, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (55, 1002, 98, 325, 90, 175, 39, 1, 10, 64, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (56, 1011, 317, 77, 150, 50, 39, 1, 5, 65, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (58, 1011, 107, 286, 180, 100, 39, 1, 10, 66, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (59, 1011, 538, 272, 110, 250, 39, 1, 17, 67, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (60, 1011, 532, 768, 100, 60, 33, 1, 4, 68, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (61, 1011, 673, 638, 100, 70, 39, 1, 4, 68, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (62, 1020, 608, 556, 171, 144, 39, 1, 15, 69, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (63, 1020, 412, 230, 198, 211, 39, 1, 25, 70, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (64, 1020, 200, 177, 150, 169, 39, 1, 15, 71, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (65, 1020, 232, 460, 224, 142, 39, 1, 19, 72, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (66, 1000, 565, 556, 180, 210, 39, 1, 15, 73, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (67, 1000, 776, 561, 110, 110, 39, 1, 7, 74, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (68, 1000, 504, 333, 170, 140, 39, 1, 15, 74, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (69, 1000, 250, 134, 145, 280, 39, 1, 25, 75, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (70, 1000, 122, 269, 108, 150, 39, 1, 10, 76, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (71, 1015, 812, 548, 44, 174, 39, 1, 5, 77, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (72, 1015, 662, 665, 138, 79, 39, 1, 7, 77, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (73, 1015, 451, 676, 93, 117, 18, 1, 7, 78, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (74, 1015, 263, 103, 96, 42, 18, 1, 3, 78, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (75, 1001, 309, 597, 44, 51, 39, 1, 3, 80, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (76, 1001, 257, 549, 40, 63, 39, 1, 3, 80, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (77, 1001, 207, 518, 40, 30, 39, 1, 2, 80, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (78, 1001, 317, 514, 25, 26, 39, 1, 1, 80, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (79, 1001, 241, 473, 62, 55, 39, 1, 3, 80, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (80, 1001, 362, 605, 36, 30, 39, 1, 2, 80, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (81, 1015, 362, 469, 192, 117, 39, 1, 13, 79, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (82, 1015, 335, 329, 96, 70, 39, 1, 4, 79, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (83, 1001, 388, 371, 40, 24, 39, 1, 2, 81, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (84, 1001, 220, 347, 38, 24, 39, 1, 2, 81, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (85, 1001, 347, 378, 30, 26, 39, 1, 2, 81, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (86, 1001, 253, 304, 70, 53, 39, 1, 5, 81, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (87, 1001, 329, 343, 26, 25, 39, 1, 1, 81, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (88, 1001, 320, 425, 90, 64, 39, 1, 6, 81, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (89, 1001, 162, 319, 65, 60, 39, 1, 5, 82, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (90, 1001, 52, 323, 35, 25, 39, 1, 2, 82, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (91, 1001, 85, 279, 70, 40, 39, 1, 5, 82, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (92, 1001, 101, 353, 40, 63, 39, 1, 4, 82, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (93, 1001, 153, 401, 90, 63, 39, 1, 6, 82, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (94, 1001, 342, 171, 46, 60, 39, 1, 4, 83, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (95, 1001, 265, 131, 67, 41, 39, 1, 4, 83, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (96, 1001, 276, 196, 45, 72, 39, 1, 5, 83, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (97, 1001, 232, 175, 37, 24, 39, 1, 2, 83, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (98, 1001, 333, 253, 90, 63, 39, 1, 6, 83, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (99, 1000, 501, 647, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (100, 1000, 492, 626, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (101, 1007, 16, 27, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (102, 1008, 17, 21, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (103, 1009, 17, 21, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (105, 1002, 413, 386, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (107, 1011, 197, 230, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (108, 1011, 235, 246, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (109, 1000, 476, 642, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (110, 1002, 412, 371, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (111, 1015, 761, 544, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (112, 1015, 756, 566, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (113, 1015, 716, 542, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (114, 1015, 713, 543, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (115, 1020, 570, 542, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (116, 1020, 548, 548, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (117, 1002, 413, 353, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (118, 1011, 190, 261, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (119, 1015, 715, 573, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (120, 1020, 561, 561, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (121, 1002, 463, 332, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (125, 1002, 388, 444, 100, 30, 1, 3600, 1, 21, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (126, 1002, 552, 474, 255, 100, 1, 3600, 1, 22, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (127, 1002, 418, 682, 200, 100, 1, 3600, 1, 23, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (128, 1002, 242, 558, 140, 90, 1, 3600, 1, 24, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (129, 1002, 98, 325, 90, 175, 1, 3600, 1, 25, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (130, 1000, 250, 134, 145, 280, 1, 3600, 1, 32, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (131, 1000, 122, 269, 108, 150, 1, 3600, 1, 33, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (132, 1000, 320, 425, 90, 64, 1, 3600, 1, 35, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (133, 1000, 432, 392, 45, 72, 1, 3600, 1, 37, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (134, 1015, 501, 277, 90, 65, 1, 3600, 1, 38, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (135, 1015, 433, 155, 70, 54, 1, 3600, 1, 39, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (136, 1015, 153, 401, 90, 63, 1, 3600, 1, 40, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (137, 1021, 26, 30, 30, 30, 18, 1, 2, 51, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (139, 1015, 114, 312, 95, 45, 18, 1, 3, 84, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (140, 1015, 293, 559, 56, 37, 18, 1, 2, 84, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (141, 1001, 264, 368, 45, 72, 11, 1, 5, 86, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (142, 1001, 421, 327, 68, 41, 11, 1, 5, 86, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (143, 1001, 433, 155, 70, 54, 11, 1, 5, 86, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (144, 1001, 510, 196, 45, 56, 11, 1, 5, 86, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (145, 1001, 489, 449, 90, 60, 11, 1, 5, 86, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (146, 1001, 498, 367, 46, 60, 11, 1, 5, 88, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (147, 1001, 501, 277, 90, 65, 11, 1, 5, 88, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (148, 1001, 432, 392, 45, 72, 11, 1, 5, 88, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (149, 1001, 400, 199, 37, 24, 11, 1, 5, 88, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (150, 1001, 444, 220, 55, 72, 11, 1, 5, 88, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (151, 1015, 114, 312, 95, 45, 33, 1, 3, 85, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (152, 1015, 293, 559, 56, 37, 23, 1, 2, 85, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (153, 1001, 264, 368, 45, 72, 33, 1, 5, 87, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (154, 1001, 421, 327, 68, 41, 33, 1, 3, 87, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (155, 1001, 433, 155, 70, 54, 33, 1, 5, 87, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (156, 1001, 510, 196, 45, 56, 33, 1, 3, 87, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (157, 1001, 489, 449, 90, 60, 43, 1, 6, 87, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (158, 1001, 498, 367, 46, 60, 33, 1, 3, 89, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (159, 1001, 501, 277, 90, 65, 43, 1, 6, 89, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (160, 1001, 432, 392, 45, 72, 33, 1, 4, 89, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (161, 1001, 400, 199, 37, 24, 18, 1, 2, 89, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (162, 1001, 444, 220, 55, 72, 33, 1, 5, 89, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (163, 1002, 960, 552, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (164, 1002, 61, 468, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (165, 1002, 551, 959, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (166, 1002, 53, 396, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (167, 1000, 973, 664, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (168, 1000, 81, 316, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (169, 1011, 9, 374, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (170, 1020, 376, 14, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (171, 1000, 81, 325, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (172, 1002, 962, 562, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (173, 1002, 61, 460, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (174, 1002, 55, 396, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (175, 1000, 975, 673, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (176, 1011, 10, 383, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (177, 1020, 381, 10, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (178, 1002, 560, 962, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (179, 1002, 225, 192, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (180, 1002, 230, 197, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (181, 1015, 1010, 706, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (182, 1015, 1013, 704, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (185, 1002, 516, 311, 266, 249, 1, 3600, 1, 21, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (186, 1002, 552, 474, 255, 100, 1, 3600, 1, 22, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (187, 1002, 418, 682, 200, 100, 1, 3600, 1, 23, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (188, 1002, 242, 558, 140, 90, 1, 3600, 1, 24, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (189, 1002, 98, 325, 90, 175, 1, 3600, 1, 25, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (190, 1011, 317, 77, 150, 50, 1, 3600, 1, 26, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (191, 1011, 328, 227, 200, 300, 1, 3600, 1, 27, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (192, 1011, 538, 272, 110, 250, 1, 3600, 1, 28, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (193, 1011, 673, 638, 100, 70, 1, 3600, 1, 29, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (194, 1020, 608, 556, 171, 144, 1, 3600, 1, 30, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (195, 1020, 412, 230, 198, 211, 1, 3600, 1, 31, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (196, 1020, 200, 177, 150, 169, 1, 3600, 1, 32, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (197, 1020, 232, 460, 224, 142, 1, 3600, 1, 33, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (198, 1000, 565, 556, 180, 210, 1, 3600, 1, 34, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (199, 1000, 504, 333, 170, 140, 1, 3600, 1, 35, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (200, 1000, 250, 134, 145, 280, 1, 3600, 1, 36, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (201, 1000, 122, 269, 108, 150, 1, 3600, 1, 37, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (202, 1015, 662, 665, 138, 79, 1, 3600, 1, 38, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (203, 1015, 451, 676, 93, 117, 1, 3600, 1, 39, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (204, 1015, 298, 454, 15, 15, 1, 3600, 1, 40, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (205, 1015, 362, 469, 192, 117, 203, 3600, 1, 90, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (206, 1001, 320, 425, 90, 64, 103, 3600, 1, 91, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (207, 1001, 153, 401, 90, 63, 103, 3600, 1, 92, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (208, 1001, 333, 253, 90, 63, 103, 3600, 1, 93, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (210, 1015, 821, 550, 30, 50, 100, 1, 50, 18, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (238, 1001, 311, 645, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (240, 1025, 55, 57, 113, 61, 18, 60, 1, 106, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (241, 1025, 55, 118, 113, 51, 18, 60, 1, 106, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (242, 1025, 23, 75, 40, 22, 18, 60, 1, 106, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (243, 1026, 39, 35, 53, 40, 18, 60, 1, 107, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (244, 1026, 107, 98, 90, 46, 18, 60, 1, 107, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (245, 1026, 107, 144, 90, 51, 18, 60, 1, 107, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (246, 1027, 52, 34, 92, 74, 18, 60, 1, 108, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (247, 1027, 143, 114, 47, 77, 18, 60, 1, 108, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (248, 1028, 22, 67, 72, 32, 18, 60, 1, 105, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (249, 1028, 66, 29, 94, 125, 18, 60, 1, 105, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (250, 1028, 114, 166, 1, 1, 1, 5, 1, 105, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (300, 1002, 509, 352, 1, 1, 1, 5, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (301, 1002, 434, 395, 1, 1, 1, 5, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (302, 1002, 444, 395, 1, 1, 1, 5, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (303, 1002, 455, 383, 1, 1, 1, 5, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (304, 1002, 455, 373, 1, 1, 1, 5, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (305, 1001, 317, 643, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (321, 1011, 659, 772, 50, 50, 2, 1, 0, 3130, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (322, 1011, 662, 775, 50, 50, 2, 1, 0, 3131, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (323, 1011, 662, 777, 50, 50, 2, 1, 0, 3132, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (324, 1011, 665, 779, 50, 50, 2, 1, 0, 3133, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (325, 1020, 396, 588, 50, 50, 2, 1, 0, 3134, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (326, 1020, 398, 590, 50, 50, 2, 1, 0, 3135, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (327, 1020, 399, 593, 50, 50, 2, 1, 0, 3136, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (328, 1020, 401, 592, 50, 50, 2, 1, 0, 3137, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (342, 1002, 434, 443, 13, 20, 30, 1, 30, 1, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (343, 1002, 525, 300, 175, 140, 30, 1, 30, 1, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (344, 1002, 616, 545, 150, 100, 50, 1, 50, 2, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (345, 1002, 418, 682, 100, 100, 300, 1, 300, 3, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (346, 1002, 200, 540, 75, 60, 200, 1, 200, 4, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (347, 1002, 100, 310, 110, 90, 250, 1, 250, 5, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (348, 1002, 100, 310, 110, 90, 22, 1, 15, 64, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (701, 1011, 328, 227, 200, 300, 10, 600, 5, 3031, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (702, 1011, 532, 768, 100, 60, 23, 600, 5, 3032, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (900, 1011, 328, 227, 200, 300, 28, 600, 5, 3031, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (901, 1011, 532, 768, 100, 60, 23, 600, 5, 3032, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (902, 1000, 250, 134, 145, 280, 23, 600, 5, 3033, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (910, 1020, 232, 460, 224, 142, 23, 600, 5, 3050, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (920, 1063, 416, 367, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (921, 1063, 402, 364, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (922, 1063, 376, 375, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (923, 1063, 362, 372, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (924, 1063, 336, 383, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (925, 1063, 326, 374, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (926, 1063, 326, 344, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (927, 1063, 326, 331, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (928, 1063, 334, 304, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (929, 1063, 333, 291, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (930, 1063, 342, 264, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (931, 1063, 334, 256, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (932, 1063, 304, 255, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (933, 1063, 290, 252, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (934, 1063, 264, 263, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (935, 1063, 250, 260, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (936, 1063, 224, 271, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (937, 1063, 214, 262, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (938, 1063, 214, 232, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (939, 1063, 213, 219, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (940, 1063, 222, 192, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (941, 1063, 222, 179, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (942, 1063, 230, 152, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (943, 1063, 222, 144, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (944, 1063, 192, 143, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (945, 1063, 178, 140, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (946, 1063, 152, 151, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (947, 1063, 138, 149, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (948, 1063, 112, 159, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (949, 1063, 102, 150, 0, 0, 2, 5, 1, 3100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (953, 1063, 405, 361, 4, 4, 2, 8, 2, 3101, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (954, 1063, 365, 369, 4, 4, 2, 8, 2, 3101, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (955, 1063, 325, 377, 4, 4, 2, 8, 2, 3101, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (956, 1063, 321, 333, 4, 4, 2, 8, 2, 3101, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (957, 1063, 329, 293, 4, 4, 2, 8, 2, 3101, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (958, 1063, 337, 253, 4, 4, 2, 8, 2, 3101, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (959, 1063, 293, 249, 4, 4, 2, 8, 2, 3101, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (960, 1063, 253, 257, 4, 4, 2, 8, 2, 3101, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (961, 1063, 213, 265, 4, 4, 2, 8, 2, 3101, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (962, 1063, 210, 221, 4, 4, 2, 8, 2, 3101, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (963, 1063, 218, 182, 4, 4, 2, 8, 2, 3101, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (964, 1063, 226, 142, 4, 4, 2, 8, 2, 3101, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (965, 1063, 181, 137, 4, 4, 2, 8, 2, 3101, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (966, 1063, 142, 146, 4, 4, 2, 8, 2, 3101, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (967, 1063, 102, 154, 4, 4, 2, 8, 2, 3101, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1000, 1063, 84, 64, 0, 0, 2, 1800, 1, 3102, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1001, 1063, 68, 65, 0, 0, 2, 180, 1, 3103, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1004, 1063, 77, 75, 0, 0, 2, 180, 1, 3103, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1005, 1063, 84, 81, 0, 0, 2, 180, 1, 3103, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1007, 1063, 101, 81, 0, 0, 2, 180, 1, 3103, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1012, 1063, 88, 48, 0, 0, 2, 180, 1, 3103, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1013, 1063, 92, 55, 0, 0, 2, 180, 1, 3103, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1015, 1063, 104, 64, 0, 0, 2, 180, 1, 3103, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1017, 1063, 68, 48, 0, 0, 2, 180, 1, 3103, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1031, 1002, 436, 436, 1, 1, 1, 3, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1032, 1002, 446, 436, 1, 1, 1, 3, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1080, 1212, 517, 732, 60, 60, 2, 900, 2, 8500, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1337, 1353, 32, 259, 15, 10, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1338, 1353, 56, 287, 15, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1339, 1353, 81, 272, 21, 18, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1340, 1353, 100, 253, 23, 18, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1341, 1353, 120, 236, 17, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1342, 1353, 148, 203, 16, 14, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1343, 1353, 134, 168, 21, 18, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1344, 1353, 146, 146, 14, 14, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1346, 1353, 208, 150, 19, 20, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1347, 1353, 228, 131, 20, 13, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1348, 1353, 192, 154, 30, 30, 30, 43200, 1, 3149, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1349, 1353, 327, 158, 14, 12, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1350, 1353, 350, 192, 18, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1351, 1353, 379, 172, 18, 16, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1352, 1353, 391, 159, 28, 22, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1353, 1353, 423, 191, 28, 23, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1354, 1353, 435, 243, 22, 20, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1355, 1353, 418, 253, 22, 20, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1356, 1353, 395, 277, 22, 19, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1357, 1353, 373, 302, 27, 25, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1358, 1353, 370, 369, 19, 14, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1359, 1353, 408, 395, 20, 19, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1360, 1353, 339, 332, 18, 16, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1361, 1353, 318, 357, 19, 20, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1362, 1353, 327, 412, 9, 21, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1363, 1353, 309, 426, 10, 18, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1364, 1353, 257, 495, 21, 20, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1365, 1353, 280, 516, 21, 21, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1366, 1353, 306, 506, 21, 21, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1367, 1353, 328, 478, 25, 20, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1368, 1353, 346, 457, 22, 18, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1369, 1353, 376, 412, 21, 14, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1370, 1353, 434, 375, 21, 20, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1371, 1353, 451, 353, 20, 12, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1372, 1353, 477, 449, 18, 13, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1373, 1353, 483, 493, 18, 18, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1374, 1353, 501, 541, 30, 30, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1375, 1353, 553, 621, 34, 34, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1376, 1353, 537, 641, 34, 34, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1377, 1353, 564, 663, 18, 18, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1378, 1353, 609, 709, 20, 20, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1379, 1353, 629, 682, 20, 18, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1380, 1353, 647, 665, 20, 18, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1381, 1353, 665, 656, 20, 29, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1382, 1353, 688, 611, 16, 30, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1383, 1353, 670, 587, 22, 22, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1384, 1353, 629, 616, 15, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1385, 1353, 629, 554, 23, 22, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1386, 1353, 653, 535, 26, 27, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1387, 1353, 667, 521, 25, 26, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1388, 1353, 691, 497, 33, 27, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1389, 1353, 714, 476, 25, 27, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1390, 1353, 658, 428, 34, 27, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1391, 1353, 642, 444, 34, 34, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1392, 1353, 600, 442, 34, 26, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1394, 1353, 579, 468, 26, 20, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1395, 1353, 596, 530, 25, 18, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1396, 1353, 481, 693, 26, 20, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1397, 1353, 495, 674, 21, 21, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1398, 1353, 585, 731, 22, 22, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1399, 1353, 545, 700, 18, 25, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1400, 1353, 575, 594, 18, 30, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1401, 1353, 596, 578, 18, 22, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1402, 1353, 575, 557, 16, 23, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1403, 1353, 464, 578, 20, 20, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1404, 1353, 445, 598, 23, 23, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1405, 1353, 426, 623, 27, 27, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1406, 1353, 424, 506, 15, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1407, 1353, 296, 442, 21, 18, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1408, 1353, 249, 420, 22, 27, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1410, 1353, 298, 375, 19, 17, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1411, 1353, 451, 429, 30, 10, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1412, 1353, 486, 397, 19, 10, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1413, 1353, 519, 350, 22, 27, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1414, 1353, 548, 323, 20, 27, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1415, 1353, 595, 360, 21, 21, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1416, 1353, 627, 392, 18, 25, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1417, 1353, 574, 393, 21, 21, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1418, 1353, 595, 407, 21, 21, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1419, 1353, 610, 433, 15, 16, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1420, 1353, 541, 496, 27, 25, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1421, 1353, 521, 528, 18, 26, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1422, 1353, 483, 637, 18, 12, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1423, 1353, 345, 261, 27, 20, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1426, 1353, 151, 276, 18, 18, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1427, 1353, 186, 365, 26, 20, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1429, 1353, 229, 448, 17, 25, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1437, 1354, 16, 280, 45, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1438, 1354, 36, 275, 12, 25, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1439, 1354, 40, 256, 25, 30, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1440, 1354, 57, 236, 30, 30, 9, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1441, 1354, 85, 250, 18, 18, 9, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1442, 1354, 98, 201, 24, 25, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1443, 1354, 133, 210, 25, 30, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1444, 1354, 156, 238, 30, 30, 9, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1445, 1354, 131, 257, 18, 18, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1446, 1354, 97, 371, 40, 30, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1447, 1354, 139, 316, 30, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1448, 1354, 161, 301, 20, 20, 9, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1449, 1354, 191, 327, 25, 10, 9, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1450, 1354, 173, 344, 15, 18, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1451, 1354, 153, 367, 30, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1452, 1354, 182, 397, 30, 30, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1453, 1354, 188, 333, 30, 30, 30, 43200, 1, 3156, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1454, 1354, 162, 420, 30, 18, 9, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1455, 1354, 183, 457, 20, 30, 9, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1456, 1354, 210, 437, 30, 20, 9, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1457, 1354, 229, 419, 25, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1458, 1354, 259, 455, 25, 16, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1459, 1354, 236, 474, 30, 16, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1460, 1354, 220, 492, 30, 16, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1461, 1354, 254, 521, 30, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1462, 1354, 289, 563, 20, 10, 9, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1463, 1354, 297, 535, 10, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1464, 1354, 295, 480, 30, 25, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1465, 1354, 327, 513, 35, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1466, 1354, 345, 494, 20, 13, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1467, 1354, 378, 459, 22, 30, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1468, 1354, 410, 428, 25, 14, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1469, 1354, 384, 390, 15, 25, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1470, 1354, 353, 355, 30, 16, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1471, 1354, 337, 375, 25, 14, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1472, 1354, 314, 396, 25, 16, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1473, 1354, 292, 419, 30, 17, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1474, 1354, 373, 436, 17, 30, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1475, 1354, 184, 206, 30, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1476, 1354, 201, 197, 20, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1477, 1354, 227, 226, 20, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1478, 1354, 210, 245, 30, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1479, 1354, 190, 262, 25, 25, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1480, 1354, 204, 290, 25, 11, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1481, 1354, 225, 296, 25, 11, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1482, 1354, 271, 319, 20, 8, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1483, 1354, 298, 348, 25, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1484, 1354, 294, 225, 25, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1485, 1354, 312, 208, 20, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1486, 1354, 334, 184, 25, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1488, 1354, 383, 200, 20, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1489, 1354, 366, 215, 25, 16, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1490, 1354, 349, 234, 25, 14, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1491, 1354, 318, 265, 25, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1492, 1354, 295, 295, 20, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1493, 1354, 322, 324, 25, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1494, 1354, 339, 307, 25, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1495, 1354, 357, 286, 25, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1496, 1354, 468, 379, 25, 17, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1497, 1354, 492, 405, 20, 16, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1498, 1354, 542, 359, 25, 17, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1499, 1354, 566, 336, 20, 16, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1508, 1354, 266, 380, 25, 19, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1509, 1354, 442, 393, 20, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1510, 1354, 224, 358, 20, 16, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1511, 1354, 414, 360, 25, 17, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1512, 1354, 508, 455, 15, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1513, 1354, 555, 411, 20, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1514, 1354, 541, 423, 18, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1515, 1354, 380, 539, 12, 18, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1516, 1354, 541, 550, 18, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1517, 1354, 570, 445, 25, 25, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1518, 1354, 602, 466, 25, 18, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1519, 1354, 634, 493, 25, 36, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1520, 1354, 653, 514, 20, 36, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1521, 1354, 496, 535, 25, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1522, 1354, 515, 515, 18, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1523, 1354, 471, 486, 18, 25, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1524, 1354, 680, 425, 10, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1525, 1354, 662, 400, 25, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1526, 1354, 372, 406, 25, 24, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1527, 1354, 495, 479, 12, 7, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1528, 1354, 565, 526, 20, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1529, 1354, 274, 246, 25, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1530, 1354, 518, 255, 15, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1531, 1354, 433, 343, 20, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1532, 1354, 522, 379, 12, 18, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1533, 1354, 490, 350, 20, 18, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1534, 1354, 508, 334, 20, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1535, 1354, 321, 449, 20, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1536, 1354, 456, 592, 20, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1537, 1354, 558, 648, 25, 25, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1538, 1354, 573, 592, 15, 25, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1539, 1354, 451, 467, 20, 9, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1540, 1354, 540, 477, 25, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1541, 1354, 581, 628, 25, 25, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1542, 1354, 669, 555, 25, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1543, 1354, 737, 551, 30, 18, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1544, 1354, 693, 598, 25, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1545, 1354, 803, 628, 25, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1546, 1354, 687, 659, 30, 25, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1547, 1354, 670, 681, 20, 14, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1548, 1354, 589, 763, 25, 19, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1549, 1354, 669, 629, 25, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1550, 1354, 622, 535, 30, 18, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1551, 1354, 762, 671, 25, 18, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1552, 1354, 651, 572, 25, 18, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1553, 1354, 861, 712, 20, 25, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1554, 1354, 618, 794, 30, 25, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1556, 1354, 607, 551, 25, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1557, 1354, 608, 680, 20, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1558, 1354, 826, 605, 25, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1559, 1354, 847, 586, 20, 13, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1560, 1354, 658, 841, 25, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1561, 1354, 728, 704, 25, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1562, 1354, 608, 742, 25, 14, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1563, 1354, 469, 674, 25, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1564, 1354, 356, 563, 25, 13, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1565, 1354, 720, 491, 25, 18, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1566, 1354, 923, 649, 20, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1600, 1000, 702, 774, 30, 30, 30, 600, 1, 3526, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1601, 1000, 563, 733, 30, 30, 30, 600, 1, 3526, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (1602, 1000, 652, 606, 30, 30, 30, 600, 1, 3526, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2000, 1360, 10, 187, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2001, 1360, 10, 193, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2059, 1364, 658, 416, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2060, 1364, 658, 423, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2300, 1300, 309, 597, 44, 51, 15, 1, 3, 200, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2301, 1300, 257, 549, 40, 63, 15, 1, 3, 200, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2302, 1300, 207, 518, 40, 30, 15, 1, 2, 200, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2303, 1300, 317, 514, 25, 26, 15, 1, 1, 200, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2304, 1300, 241, 473, 62, 55, 15, 1, 3, 200, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2305, 1300, 362, 605, 36, 30, 15, 1, 2, 200, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2306, 1300, 388, 371, 40, 24, 15, 1, 2, 200, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2307, 1300, 220, 347, 38, 24, 15, 1, 2, 200, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2308, 1300, 347, 378, 30, 26, 15, 1, 2, 200, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2309, 1300, 253, 304, 70, 53, 15, 1, 5, 200, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2310, 1300, 329, 343, 26, 25, 15, 1, 1, 200, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2311, 1300, 320, 425, 90, 64, 15, 1, 6, 200, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2312, 1300, 162, 319, 65, 60, 15, 1, 5, 200, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2313, 1300, 52, 323, 35, 25, 15, 1, 2, 200, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2314, 1300, 85, 279, 70, 40, 15, 1, 5, 200, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2315, 1300, 101, 353, 40, 63, 15, 1, 4, 200, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2316, 1300, 153, 401, 90, 63, 15, 1, 6, 200, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2317, 1300, 232, 175, 37, 24, 15, 1, 2, 200, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2318, 1300, 333, 253, 90, 63, 15, 1, 6, 200, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2319, 1300, 342, 171, 46, 60, 15, 1, 4, 200, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2320, 1300, 265, 131, 67, 41, 15, 1, 4, 200, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2321, 1300, 276, 196, 45, 72, 15, 1, 5, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2322, 1300, 309, 597, 44, 51, 39, 1, 3, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2323, 1300, 257, 549, 40, 63, 39, 1, 3, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2324, 1300, 207, 518, 40, 30, 39, 1, 2, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2325, 1300, 317, 514, 25, 26, 39, 1, 1, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2326, 1300, 241, 473, 62, 55, 39, 1, 3, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2327, 1300, 362, 605, 36, 30, 39, 1, 2, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2328, 1300, 388, 371, 40, 24, 39, 1, 2, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2329, 1300, 220, 347, 38, 24, 39, 1, 2, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2330, 1300, 347, 378, 30, 26, 39, 1, 2, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2331, 1300, 253, 304, 70, 53, 39, 1, 5, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2332, 1300, 329, 343, 26, 25, 39, 1, 1, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2333, 1300, 320, 425, 90, 64, 39, 1, 6, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2334, 1300, 162, 319, 65, 60, 39, 1, 5, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2335, 1300, 52, 323, 35, 25, 39, 1, 2, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2336, 1300, 85, 279, 70, 40, 39, 1, 5, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2337, 1300, 101, 353, 40, 63, 39, 1, 4, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2338, 1300, 153, 401, 90, 63, 39, 1, 6, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2339, 1300, 342, 171, 46, 60, 39, 1, 4, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2340, 1300, 265, 131, 67, 41, 39, 1, 4, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2341, 1300, 276, 196, 45, 72, 39, 1, 5, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2342, 1300, 232, 175, 37, 24, 39, 1, 2, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2343, 1300, 333, 253, 90, 63, 39, 1, 6, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2344, 1300, 264, 368, 45, 72, 18, 1, 5, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2345, 1300, 421, 327, 68, 41, 18, 1, 3, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2346, 1300, 433, 155, 70, 54, 18, 1, 5, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2347, 1300, 510, 196, 45, 56, 18, 1, 3, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2348, 1300, 489, 449, 90, 60, 18, 1, 6, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2349, 1300, 498, 367, 46, 60, 18, 1, 3, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2350, 1300, 501, 277, 90, 65, 18, 1, 6, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2351, 1300, 432, 392, 45, 72, 18, 1, 4, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2352, 1300, 400, 199, 37, 24, 18, 1, 2, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2353, 1300, 444, 220, 55, 72, 18, 1, 5, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2354, 1300, 264, 368, 45, 72, 33, 1, 5, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2355, 1300, 421, 327, 68, 41, 33, 1, 3, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2356, 1300, 433, 155, 70, 54, 33, 1, 5, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2357, 1300, 510, 196, 45, 56, 33, 1, 3, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2358, 1300, 489, 449, 90, 60, 43, 1, 6, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2359, 1300, 498, 367, 46, 60, 33, 1, 3, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2360, 1300, 501, 277, 90, 65, 43, 1, 6, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2361, 1300, 432, 392, 45, 72, 33, 1, 4, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2362, 1300, 400, 199, 37, 24, 18, 1, 2, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (2363, 1300, 444, 220, 55, 72, 33, 1, 5, 201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3145, 1354, 205, 393, 15, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3146, 1354, 696, 813, 25, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3147, 1354, 505, 285, 25, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3148, 1354, 462, 328, 25, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3149, 1354, 536, 383, 25, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3150, 1354, 694, 851, 25, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3151, 1354, 506, 648, 25, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3152, 1354, 897, 623, 18, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3153, 1354, 862, 634, 20, 25, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3154, 1354, 862, 583, 12, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3155, 1354, 825, 622, 12, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3156, 1354, 790, 654, 20, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3157, 1354, 752, 694, 20, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3158, 1354, 720, 725, 20, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3159, 1354, 703, 748, 20, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3160, 1354, 714, 756, 12, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3161, 1354, 733, 775, 12, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3162, 1354, 785, 661, 20, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3163, 1354, 861, 586, 12, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3164, 1354, 867, 637, 20, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3165, 1354, 14, 288, 20, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3166, 1354, 89, 224, 12, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3167, 1354, 122, 287, 22, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3168, 1354, 115, 307, 10, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3169, 1354, 143, 328, 12, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3170, 1354, 110, 396, 25, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3171, 1354, 127, 377, 25, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3172, 1354, 147, 250, 12, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3173, 1354, 180, 220, 12, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3174, 1354, 157, 177, 25, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3175, 1354, 138, 396, 25, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3176, 1354, 175, 390, 12, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3177, 1354, 178, 414, 12, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3178, 1354, 160, 438, 12, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3179, 1354, 182, 253, 12, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3180, 1354, 181, 280, 12, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3181, 1354, 222, 309, 20, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3182, 1354, 262, 312, 12, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3183, 1354, 258, 342, 20, 18, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3184, 1354, 243, 386, 12, 18, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3185, 1354, 262, 400, 18, 18, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3186, 1354, 294, 369, 25, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3187, 1354, 322, 343, 12, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3188, 1354, 343, 368, 10, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3189, 1354, 314, 281, 20, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3190, 1354, 296, 301, 12, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3191, 1354, 267, 267, 20, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3192, 1354, 319, 342, 20, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3193, 1354, 291, 370, 12, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3194, 1354, 261, 398, 20, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3195, 1354, 253, 342, 25, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3196, 1354, 259, 333, 12, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3197, 1354, 258, 307, 6, 6, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3198, 1354, 343, 292, 18, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3199, 1354, 220, 311, 18, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3200, 1353, 103, 185, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3201, 1353, 86, 201, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3202, 1353, 72, 223, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3203, 1353, 56, 236, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3204, 1353, 135, 303, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3205, 1353, 121, 317, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3206, 1353, 104, 335, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3207, 1353, 121, 361, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3208, 1353, 137, 347, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3209, 1353, 155, 331, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3210, 1353, 169, 313, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3211, 1353, 183, 303, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3212, 1353, 190, 291, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3213, 1353, 200, 281, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3214, 1353, 222, 262, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3215, 1353, 240, 243, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3216, 1353, 250, 232, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3217, 1353, 265, 219, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3218, 1353, 285, 200, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3219, 1353, 203, 231, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3220, 1353, 220, 213, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3221, 1353, 236, 198, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3222, 1353, 252, 181, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3223, 1353, 269, 149, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3224, 1353, 160, 160, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3225, 1353, 166, 119, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3226, 1353, 187, 105, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3227, 1353, 195, 97, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3228, 1353, 208, 81, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3229, 1353, 225, 64, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3230, 1353, 238, 48, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3231, 1353, 262, 34, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3232, 1353, 280, 38, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3233, 1353, 300, 59, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3234, 1353, 283, 82, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3235, 1353, 270, 100, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3236, 1353, 273, 117, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3237, 1353, 292, 139, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3238, 1353, 313, 124, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3239, 1353, 321, 110, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3240, 1353, 336, 100, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3241, 1353, 356, 113, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3242, 1353, 341, 136, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3243, 1353, 109, 179, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3244, 1353, 87, 200, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3245, 1353, 65, 226, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3246, 1353, 46, 242, 24, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3247, 1353, 139, 296, 13, 12, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3248, 1353, 124, 310, 13, 12, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3249, 1353, 98, 336, 13, 12, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3250, 1353, 125, 356, 13, 12, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3251, 1353, 142, 341, 13, 12, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3252, 1353, 154, 329, 13, 12, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3253, 1353, 179, 305, 13, 12, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3254, 1353, 190, 293, 13, 12, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3255, 1353, 205, 275, 13, 12, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3256, 1353, 214, 253, 13, 12, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3257, 1353, 245, 239, 13, 12, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3258, 1353, 265, 216, 13, 12, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3259, 1353, 411, 463, 17, 16, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3260, 1353, 453, 476, 13, 12, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3261, 1353, 560, 372, 21, 15, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3262, 1353, 425, 461, 15, 12, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3263, 1353, 403, 450, 13, 16, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3264, 1353, 382, 442, 13, 21, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3265, 1353, 361, 397, 14, 12, 8, 10, 3, 3147, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3300, 1353, 384, 232, 14, 14, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3301, 1353, 407, 210, 14, 14, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3302, 1353, 459, 221, 14, 14, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3304, 1353, 259, 355, 14, 14, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3305, 1353, 228, 327, 14, 14, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3306, 1353, 242, 308, 14, 14, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3307, 1353, 256, 292, 14, 14, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3308, 1353, 272, 287, 14, 14, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3309, 1353, 297, 313, 14, 14, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3310, 1353, 285, 329, 14, 14, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3311, 1353, 274, 343, 14, 14, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3312, 1353, 259, 394, 14, 14, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3313, 1353, 223, 324, 14, 14, 8, 10, 3, 3148, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3410, 1354, 182, 280, 12, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3411, 1354, 198, 293, 12, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3412, 1354, 180, 252, 10, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3413, 1354, 160, 253, 12, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3414, 1354, 132, 201, 12, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3415, 1354, 103, 196, 20, 15, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3416, 1354, 80, 222, 12, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3417, 1354, 66, 264, 12, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3418, 1354, 51, 282, 12, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3419, 1354, 23, 298, 20, 24, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3420, 1354, 181, 280, 12, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3421, 1354, 237, 164, 25, 25, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3422, 1354, 209, 133, 25, 25, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3423, 1354, 178, 156, 25, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3424, 1354, 149, 190, 25, 12, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3425, 1354, 168, 206, 12, 30, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3426, 1354, 111, 296, 25, 16, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3427, 1354, 111, 358, 30, 16, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3428, 1354, 85, 324, 30, 25, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3429, 1354, 67, 340, 30, 36, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3430, 1354, 115, 353, 30, 36, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3431, 1354, 102, 368, 30, 36, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3432, 1354, 203, 388, 24, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3433, 1354, 204, 458, 30, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3434, 1354, 172, 362, 25, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3435, 1354, 191, 340, 25, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3436, 1354, 158, 310, 20, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3437, 1354, 110, 294, 40, 24, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3438, 1354, 125, 287, 30, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3439, 1354, 157, 233, 30, 30, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3440, 1354, 87, 210, 30, 20, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3441, 1354, 59, 242, 30, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3442, 1354, 27, 273, 30, 10, 10, 10, 3, 3155, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3580, 1770, 18, 18, 40, 200, 40, 0, 10, 2133, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3581, 1771, 18, 18, 40, 200, 40, 0, 10, 2134, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3582, 1772, 18, 18, 40, 200, 40, 0, 10, 2135, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3583, 1773, 18, 18, 40, 200, 40, 0, 10, 2136, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3584, 1774, 18, 18, 40, 200, 40, 0, 10, 2137, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3585, 1775, 18, 18, 40, 200, 40, 0, 10, 2138, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3586, 1777, 18, 18, 40, 200, 40, 0, 10, 2139, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3599, 1020, 713, 678, 171, 144, 18, 1, 5, 2143, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3610, 1020, 866, 552, 100, 100, 15, 10, 15, 2143, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3628, 1000, 166, 226, 50, 50, 12, 60, 10, 2179, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3632, 1015, 561, 797, 1, 1, 1, 600, 1, 2157, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3638, 1000, 171, 231, 50, 50, 12, 60, 10, 2179, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3639, 1000, 161, 222, 50, 50, 12, 60, 10, 2179, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3905, 1002, 373, 425, 70, 70, 30, 1, 30, 1, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3906, 1002, 504, 428, 40, 60, 30, 1, 30, 1, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3907, 1002, 513, 395, 90, 100, 30, 1, 30, 1, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3908, 1002, 530, 431, 30, 50, 30, 1, 30, 1, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (3910, 1015, 265, 95, 80, 80, 24, 8, 3, 2093, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4040, 1511, 63, 42, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4041, 1511, 61, 59, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4042, 1511, 42, 36, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4043, 1511, 36, 59, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4383, 1011, 789, 460, 10, 10, 1, 0, 0, 2169, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4384, 1015, 734, 774, 10, 10, 1, 0, 0, 2171, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4400, 1011, 40, 362, 15, 15, 12, 1, 6, 2140, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4401, 1011, 55, 328, 15, 15, 12, 1, 6, 2140, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4402, 1011, 26, 391, 15, 15, 12, 1, 6, 2140, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4403, 1011, 32, 370, 15, 15, 12, 1, 6, 2140, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4408, 1001, 728, 676, 1, 1, 1, 60, 1, 2189, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4422, 4021, 89, 168, 400, 170, 15, 1, 80, 5046, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4424, 4021, 89, 168, 400, 170, 17, 1, 60, 5050, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4425, 4021, 89, 168, 400, 170, 40, 1, 15, 5051, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4426, 4021, 174, 338, 220, 85, 15, 1, 40, 5045, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4428, 4021, 174, 338, 220, 85, 17, 1, 30, 5049, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4429, 4021, 271, 423, 60, 90, 15, 1, 20, 5045, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4431, 4021, 271, 423, 60, 90, 17, 1, 15, 5049, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4432, 4021, 257, 74, 10, 120, 8, 1, 10, 5045, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4433, 4021, 257, 74, 10, 120, 8, 1, 10, 5046, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4436, 4021, 257, 74, 10, 120, 10, 3, 10, 5049, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4437, 4021, 257, 74, 10, 120, 10, 3, 10, 5050, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4438, 4021, 257, 74, 10, 120, 25, 15, 1, 5051, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4439, 4022, 55, 155, 300, 110, 16, 1, 40, 5057, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4440, 4022, 55, 155, 300, 110, 22, 1, 40, 5054, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4441, 4022, 55, 155, 300, 110, 17, 3, 30, 5053, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4442, 4022, 55, 155, 300, 110, 22, 10, 40, 5056, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4443, 4022, 160, 75, 100, 245, 16, 1, 40, 5057, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4444, 4022, 160, 75, 100, 245, 22, 1, 30, 5054, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4446, 4022, 160, 75, 100, 245, 22, 10, 40, 5056, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4447, 4023, 254, 574, 10, 10, 5, 9, 1, 5055, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4448, 4023, 348, 474, 10, 10, 5, 9, 1, 5055, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4449, 4023, 500, 380, 10, 10, 5, 9, 1, 5055, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4450, 4023, 493, 210, 10, 10, 5, 9, 1, 5055, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4451, 4023, 326, 111, 10, 10, 5, 9, 1, 5055, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4452, 4023, 223, 210, 10, 10, 5, 9, 1, 5055, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4453, 4023, 119, 314, 10, 10, 5, 9, 1, 5055, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4454, 4023, 155, 460, 10, 10, 5, 9, 1, 5055, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4455, 4023, 252, 406, 10, 10, 5, 9, 1, 5055, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4456, 4023, 267, 279, 10, 10, 5, 9, 1, 5055, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4457, 4023, 348, 271, 10, 10, 5, 9, 1, 5055, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4458, 4023, 407, 362, 10, 10, 5, 9, 1, 5055, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4459, 4024, 254, 574, 10, 10, 5, 9, 1, 5060, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4460, 4024, 348, 474, 10, 10, 5, 9, 1, 5060, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4461, 4024, 500, 380, 10, 10, 5, 9, 1, 5060, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4462, 4024, 493, 210, 10, 10, 5, 9, 1, 5060, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4463, 4024, 326, 111, 10, 10, 5, 9, 1, 5060, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4464, 4024, 223, 210, 10, 10, 5, 9, 1, 5060, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4465, 4024, 119, 314, 10, 10, 5, 9, 1, 5060, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4466, 4024, 155, 460, 10, 10, 5, 9, 1, 5060, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4467, 4024, 252, 406, 10, 10, 5, 9, 1, 5060, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4468, 4024, 267, 279, 10, 10, 5, 9, 1, 5060, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4469, 4024, 348, 271, 10, 10, 5, 9, 1, 5060, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4470, 4024, 407, 362, 10, 10, 5, 9, 1, 5060, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4471, 4025, 128, 122, 40, 40, 80, 60, 0, 5058, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4500, 1015, 493, 473, 40, 40, 10, 0, 0, 2224, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4501, 1015, 302, 558, 35, 35, 10, 0, 0, 2225, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4502, 1015, 405, 426, 50, 50, 18, 15, 2, 2226, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4506, 1001, 89, 280, 20, 20, 10, 1, 3, 2231, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4507, 1001, 97, 343, 20, 20, 10, 1, 3, 2231, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4508, 1001, 184, 384, 20, 20, 10, 1, 3, 2231, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4509, 1001, 186, 359, 1, 1, 1, 10, 1, 2232, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4600, 1700, 69, 505, 50, 20, 10, 60, 5, 3600, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4601, 1700, 69, 535, 50, 20, 10, 60, 5, 3600, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4602, 1700, 69, 565, 50, 20, 10, 60, 5, 3600, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4603, 1700, 120, 615, 50, 20, 10, 60, 5, 3600, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4604, 1700, 127, 542, 20, 50, 10, 60, 5, 3600, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4605, 1700, 120, 550, 7, 70, 7, 90, 3, 3601, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4606, 1700, 150, 550, 7, 70, 7, 90, 3, 3601, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4607, 1700, 90, 505, 50, 5, 5, 300, 2, 3602, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4608, 1700, 120, 595, 0, 0, 1, 900, 1, 3603, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4609, 1700, 300, 667, 20, 50, 10, 60, 5, 3604, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4610, 1700, 300, 607, 20, 50, 10, 60, 5, 3604, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4611, 1700, 300, 547, 20, 50, 10, 60, 5, 3604, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4612, 1700, 210, 560, 20, 50, 10, 60, 5, 3604, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4613, 1700, 210, 610, 20, 50, 10, 60, 5, 3604, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4614, 1700, 272, 547, 7, 70, 7, 90, 3, 3605, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4615, 1700, 272, 630, 7, 70, 7, 90, 3, 3605, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4616, 1700, 260, 610, 5, 50, 5, 300, 2, 3606, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4617, 1700, 270, 635, 0, 0, 1, 900, 1, 3607, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4618, 1700, 440, 690, 20, 50, 10, 60, 5, 3608, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4619, 1700, 480, 690, 20, 50, 10, 60, 5, 3608, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4620, 1700, 445, 633, 50, 20, 10, 60, 5, 3608, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4621, 1700, 445, 578, 50, 20, 10, 60, 5, 3608, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4622, 1700, 435, 516, 50, 20, 10, 60, 5, 3608, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4623, 1700, 435, 556, 70, 7, 7, 90, 3, 3609, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4624, 1700, 435, 668, 70, 7, 7, 90, 3, 3609, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4625, 1700, 445, 613, 50, 5, 5, 300, 2, 3610, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4626, 1700, 465, 596, 0, 0, 1, 900, 1, 3611, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4627, 1700, 612, 955, 50, 20, 10, 60, 5, 3612, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4628, 1700, 612, 984, 50, 20, 10, 60, 5, 3612, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4629, 1700, 614, 1061, 50, 20, 10, 60, 5, 3612, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4630, 1700, 615, 1087, 50, 20, 10, 60, 5, 3612, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4631, 1700, 688, 950, 20, 50, 10, 60, 5, 3612, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4632, 1700, 689, 1008, 7, 70, 7, 90, 3, 3613, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4633, 1700, 721, 1012, 7, 70, 7, 90, 3, 3613, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4634, 1700, 746, 1028, 50, 5, 5, 300, 2, 3614, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4635, 1700, 749, 1039, 0, 0, 1, 900, 1, 3615, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4636, 1700, 955, 612, 50, 20, 10, 60, 5, 3616, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4637, 1700, 955, 641, 50, 20, 10, 60, 5, 3616, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4638, 1700, 954, 710, 50, 20, 10, 60, 5, 3616, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4639, 1700, 954, 734, 50, 20, 10, 60, 5, 3616, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4640, 1700, 1010, 612, 20, 50, 10, 60, 5, 3616, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4641, 1700, 1010, 670, 7, 70, 7, 90, 3, 3617, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4642, 1700, 1049, 643, 7, 70, 7, 90, 3, 3617, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4643, 1700, 1064, 699, 50, 5, 5, 300, 2, 3618, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4644, 1700, 1071, 709, 0, 0, 1, 900, 1, 3619, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4645, 1700, 663, 467, 50, 20, 10, 60, 5, 3620, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4646, 1700, 663, 507, 50, 20, 10, 60, 5, 3620, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4647, 1700, 606, 462, 20, 50, 10, 60, 5, 3620, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4648, 1700, 551, 472, 20, 50, 10, 60, 5, 3620, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4649, 1700, 489, 462, 20, 50, 10, 60, 5, 3620, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4650, 1700, 529, 462, 7, 70, 7, 90, 3, 3621, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4651, 1700, 641, 462, 7, 70, 7, 90, 3, 3621, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4652, 1700, 586, 472, 5, 50, 5, 300, 2, 3622, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4653, 1700, 569, 492, 0, 0, 1, 900, 1, 3623, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4654, 1700, 640, 327, 50, 20, 10, 60, 5, 3624, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4655, 1700, 580, 327, 50, 20, 10, 60, 5, 3624, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4656, 1700, 520, 327, 50, 20, 10, 60, 5, 3624, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4657, 1700, 533, 237, 50, 20, 10, 60, 5, 3624, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4658, 1700, 583, 237, 50, 20, 10, 60, 5, 3624, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4659, 1700, 520, 299, 70, 7, 7, 90, 3, 3625, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4660, 1700, 603, 299, 70, 7, 7, 90, 3, 3625, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4661, 1700, 583, 287, 50, 5, 5, 300, 2, 3626, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4662, 1700, 608, 297, 0, 0, 1, 900, 1, 3627, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4663, 1700, 493, 96, 20, 50, 10, 60, 5, 3628, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4664, 1700, 500, 96, 20, 50, 10, 60, 5, 3628, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4665, 1700, 530, 96, 20, 50, 10, 60, 5, 3628, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4666, 1700, 583, 147, 20, 50, 10, 60, 5, 3628, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4667, 1700, 515, 154, 50, 20, 10, 60, 5, 3628, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4668, 1700, 523, 147, 70, 7, 7, 90, 3, 3629, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4669, 1700, 523, 177, 70, 7, 7, 90, 3, 3629, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4670, 1700, 498, 117, 5, 50, 5, 300, 2, 3630, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4671, 1700, 568, 147, 0, 0, 1, 900, 1, 3631, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4672, 1700, 866, 916, 30, 30, 10, 90, 3, 3601, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4673, 1700, 914, 874, 30, 30, 10, 90, 3, 3605, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4674, 1700, 383, 843, 50, 50, 10, 90, 3, 3609, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4675, 1700, 465, 902, 50, 50, 10, 90, 3, 3613, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4676, 1700, 835, 416, 50, 50, 10, 90, 3, 3617, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4677, 1700, 899, 469, 50, 50, 10, 90, 3, 3621, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4678, 1700, 633, 707, 70, 70, 10, 90, 3, 3625, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4679, 1700, 713, 645, 70, 70, 10, 90, 3, 3625, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4680, 1700, 723, 751, 40, 40, 10, 90, 3, 3629, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4681, 1700, 369, 246, 30, 30, 10, 90, 3, 3617, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4682, 1700, 407, 286, 30, 30, 10, 90, 3, 3621, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4683, 1700, 233, 384, 30, 30, 10, 90, 3, 3625, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4684, 1700, 272, 419, 30, 30, 10, 90, 3, 3629, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4685, 1700, 303, 356, 30, 30, 10, 90, 3, 3613, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (4686, 1700, 336, 321, 30, 30, 10, 90, 3, 3609, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (5600, 1700, 447, 875, 30, 30, 30, 300, 0, 3632, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (5601, 1700, 886, 443, 30, 30, 30, 300, 0, 3633, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (5602, 1700, 925, 934, 30, 30, 30, 300, 0, 3634, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (5603, 1700, 717, 738, 30, 30, 30, 300, 0, 3635, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (5604, 1700, 337, 341, 30, 30, 30, 300, 0, 3644, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (5605, 1700, 337, 341, 30, 30, 30, 300, 0, 3645, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (5606, 1700, 337, 341, 30, 30, 30, 300, 0, 3646, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6000, 1043, 22, 56, 81, 44, 18, 8, 6, 6000, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6001, 1043, 50, 16, 27, 34, 13, 10, 6, 6000, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6002, 1043, 106, 57, 36, 37, 18, 10, 6, 6000, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6003, 1043, 106, 100, 20, 63, 18, 10, 6, 6000, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6004, 1043, 129, 104, 57, 90, 18, 8, 6, 6000, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6005, 1043, 61, 104, 39, 33, 18, 10, 6, 6000, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6006, 1044, 22, 56, 81, 44, 18, 8, 6, 6001, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6007, 1044, 50, 16, 27, 34, 13, 10, 6, 6001, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6008, 1044, 106, 57, 36, 37, 18, 10, 6, 6001, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6009, 1044, 106, 100, 20, 63, 18, 10, 6, 6001, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6010, 1044, 129, 104, 57, 90, 18, 8, 6, 6001, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6011, 1044, 61, 104, 39, 33, 18, 10, 6, 6001, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6012, 1045, 22, 56, 81, 44, 18, 8, 6, 6002, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6013, 1045, 50, 16, 27, 34, 13, 10, 6, 6002, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6014, 1045, 106, 57, 36, 37, 18, 10, 6, 6002, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6015, 1045, 106, 100, 20, 63, 18, 10, 6, 6002, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6016, 1045, 129, 104, 57, 90, 18, 8, 6, 6002, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6017, 1045, 61, 104, 39, 33, 18, 10, 6, 6002, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6018, 1046, 22, 56, 81, 44, 18, 8, 6, 6003, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6019, 1046, 50, 16, 27, 34, 13, 10, 6, 6003, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6020, 1046, 106, 57, 36, 37, 18, 10, 6, 6003, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6021, 1046, 106, 100, 20, 63, 18, 10, 6, 6003, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6022, 1046, 129, 104, 57, 90, 18, 8, 6, 6003, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6023, 1046, 61, 104, 39, 33, 18, 10, 6, 6003, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6024, 1047, 22, 56, 81, 44, 18, 8, 6, 6004, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6025, 1047, 50, 16, 27, 34, 13, 10, 6, 6004, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6026, 1047, 106, 57, 36, 37, 18, 10, 6, 6004, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6027, 1047, 106, 100, 20, 63, 18, 10, 6, 6004, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6028, 1047, 129, 104, 57, 90, 18, 8, 6, 6004, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6029, 1047, 61, 104, 39, 33, 18, 10, 6, 6004, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6030, 1048, 22, 56, 81, 44, 18, 8, 6, 6005, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6031, 1048, 50, 16, 27, 34, 13, 10, 6, 6005, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6032, 1048, 106, 57, 36, 37, 18, 10, 6, 6005, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6033, 1048, 106, 100, 20, 63, 18, 10, 6, 6005, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6034, 1048, 129, 104, 57, 90, 18, 8, 6, 6005, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6035, 1048, 61, 104, 39, 33, 18, 10, 6, 6005, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6036, 1049, 22, 56, 81, 44, 18, 8, 6, 6006, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6037, 1049, 50, 16, 27, 34, 13, 10, 6, 6006, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6038, 1049, 106, 57, 36, 37, 18, 10, 6, 6006, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6039, 1049, 106, 100, 20, 63, 18, 10, 6, 6006, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6040, 1049, 129, 104, 57, 90, 18, 8, 6, 6006, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6041, 1049, 61, 104, 39, 33, 18, 10, 6, 6006, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6042, 1002, 425, 353, 1, 1, 1, 5, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6043, 1002, 418, 353, 1, 1, 1, 5, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6044, 1011, 241, 248, 1, 1, 1, 5, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6050, 1011, 353, 717, 50, 50, 53, 1200, 1, 6010, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (6051, 1000, 122, 269, 108, 150, 153, 1800, 1, 6011, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (7000, 1052, 212, 206, 10, 10, 5, 300, 4, 7000, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (7001, 1052, 166, 287, 1, 1, 5, 1, 1, 7001, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (7002, 1052, 80, 167, 1, 1, 5, 1, 1, 7002, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (7003, 1052, 315, 300, 1, 1, 5, 1, 1, 7003, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (7004, 1052, 168, 81, 1, 1, 5, 1, 1, 7004, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (7005, 1052, 288, 166, 1, 1, 5, 1, 1, 7005, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8001, 1002, 98, 325, 90, 175, 53, 300, 1, 8100, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8002, 1011, 317, 77, 150, 50, 53, 300, 1, 8101, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8003, 1011, 328, 227, 200, 300, 53, 300, 1, 8102, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8004, 1011, 538, 272, 110, 250, 53, 300, 1, 8103, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8005, 1011, 532, 768, 100, 60, 53, 300, 1, 8104, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8006, 1020, 608, 556, 171, 144, 53, 300, 1, 8105, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8007, 1020, 412, 230, 198, 211, 53, 300, 1, 8106, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8008, 1020, 200, 177, 150, 169, 53, 300, 1, 8107, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8009, 1020, 232, 460, 224, 142, 53, 300, 1, 8108, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8010, 1000, 565, 556, 180, 210, 53, 300, 1, 8109, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8011, 1000, 504, 333, 170, 140, 53, 300, 1, 8110, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8012, 1000, 250, 134, 145, 280, 53, 300, 1, 8111, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8013, 1000, 122, 269, 108, 150, 53, 300, 1, 8112, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8014, 1015, 662, 665, 138, 79, 63, 300, 1, 8113, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8015, 1015, 456, 681, 90, 100, 63, 300, 1, 8114, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8016, 1001, 241, 473, 62, 55, 48, 300, 1, 8116, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8017, 1015, 362, 469, 192, 117, 63, 300, 1, 8115, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8018, 1001, 388, 371, 40, 24, 53, 300, 1, 8117, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8019, 1001, 162, 319, 65, 60, 53, 300, 1, 8118, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8020, 1001, 333, 253, 90, 63, 53, 300, 1, 8119, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8021, 1002, 98, 325, 90, 175, 53, 300, 1, 8200, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8022, 1011, 317, 77, 150, 50, 53, 300, 1, 8201, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8023, 1011, 328, 227, 200, 300, 53, 300, 1, 8202, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8024, 1011, 538, 272, 110, 250, 53, 300, 1, 8203, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8025, 1011, 532, 768, 100, 60, 53, 300, 1, 8204, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8026, 1020, 608, 556, 171, 144, 53, 300, 1, 8205, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8027, 1020, 412, 230, 198, 211, 53, 300, 1, 8206, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8028, 1020, 200, 177, 150, 169, 53, 300, 1, 8207, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8029, 1020, 232, 460, 224, 142, 53, 300, 1, 8208, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8030, 1000, 565, 556, 180, 210, 53, 300, 1, 8209, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8031, 1000, 504, 333, 170, 140, 53, 300, 1, 8210, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8032, 1000, 250, 134, 145, 280, 53, 300, 1, 8211, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8033, 1000, 122, 269, 108, 150, 53, 300, 1, 8212, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8034, 1015, 662, 665, 138, 79, 63, 300, 1, 8213, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8035, 1015, 456, 681, 90, 100, 63, 300, 1, 8214, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8036, 1001, 241, 473, 62, 55, 53, 300, 1, 8216, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8037, 1015, 362, 469, 192, 117, 63, 300, 1, 8215, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8038, 1001, 388, 371, 40, 24, 53, 300, 1, 8217, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8039, 1001, 162, 319, 65, 60, 53, 300, 1, 8218, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8040, 1001, 333, 253, 90, 63, 53, 300, 1, 8219, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8041, 1002, 98, 325, 90, 175, 68, 300, 1, 8300, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8042, 1011, 317, 77, 150, 50, 68, 300, 1, 8301, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8043, 1011, 328, 227, 200, 300, 68, 300, 1, 8302, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8044, 1011, 538, 272, 110, 250, 68, 300, 1, 8303, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8045, 1011, 532, 768, 100, 60, 68, 300, 1, 8304, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8046, 1020, 608, 556, 171, 144, 68, 300, 1, 8305, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8047, 1020, 412, 230, 198, 211, 68, 300, 1, 8306, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8048, 1020, 200, 177, 150, 169, 68, 300, 1, 8307, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8049, 1020, 232, 460, 224, 142, 68, 300, 1, 8308, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8050, 1000, 565, 556, 180, 210, 68, 300, 1, 8309, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8051, 1000, 504, 333, 170, 140, 68, 300, 1, 8310, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8052, 1000, 250, 134, 145, 280, 68, 300, 1, 8311, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8053, 1000, 122, 269, 108, 150, 68, 300, 1, 8312, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8054, 1015, 662, 665, 138, 79, 73, 300, 1, 8313, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8055, 1015, 456, 681, 90, 100, 73, 300, 1, 8314, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8056, 1001, 241, 473, 62, 55, 58, 300, 1, 8316, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8057, 1015, 362, 469, 192, 117, 73, 300, 1, 8315, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8058, 1001, 388, 371, 40, 24, 68, 300, 1, 8317, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8059, 1001, 162, 319, 65, 60, 68, 300, 1, 8318, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8060, 1001, 333, 253, 90, 63, 68, 300, 1, 8319, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8400, 1215, 49, 373, 70, 60, 26, 3, 5, 1400, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8401, 1215, 123, 355, 70, 60, 26, 3, 5, 1400, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8402, 1215, 122, 420, 70, 60, 26, 3, 5, 1400, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8403, 1215, 232, 353, 70, 60, 26, 3, 5, 1400, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8404, 1215, 283, 310, 70, 60, 26, 3, 5, 1400, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8405, 1215, 267, 199, 70, 60, 26, 3, 5, 1400, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8406, 1215, 341, 221, 70, 60, 26, 3, 5, 1400, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8407, 1215, 353, 216, 70, 60, 26, 3, 5, 1400, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8408, 1215, 384, 137, 70, 60, 26, 3, 5, 1400, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8409, 1215, 415, 157, 70, 60, 26, 3, 5, 1400, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8410, 1215, 314, 514, 90, 60, 13, 3, 5, 1401, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8411, 1215, 310, 603, 90, 60, 13, 3, 5, 1401, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8412, 1215, 415, 551, 90, 60, 13, 3, 5, 1401, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8413, 1215, 457, 476, 90, 60, 13, 3, 5, 1401, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8414, 1215, 516, 452, 90, 60, 13, 3, 5, 1401, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8415, 1215, 605, 391, 90, 60, 13, 3, 5, 1401, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8416, 1215, 689, 367, 90, 60, 13, 3, 5, 1401, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8420, 1215, 502, 798, 70, 50, 26, 3, 5, 1402, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8421, 1215, 585, 783, 70, 50, 26, 3, 5, 1402, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8422, 1215, 608, 733, 70, 50, 26, 3, 5, 1402, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8423, 1215, 667, 686, 70, 50, 26, 3, 5, 1402, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8424, 1215, 686, 675, 70, 50, 26, 3, 5, 1402, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8425, 1215, 738, 635, 70, 50, 26, 3, 5, 1402, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8426, 1215, 771, 566, 70, 50, 26, 3, 5, 1402, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8430, 1207, 883, 1096, 70, 70, 38, 3, 5, 1403, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8431, 1207, 900, 1047, 70, 70, 38, 3, 5, 1403, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8432, 1207, 961, 992, 70, 70, 38, 3, 5, 1403, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8433, 1207, 1027, 967, 70, 70, 38, 3, 5, 1403, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8434, 1207, 1092, 919, 70, 70, 38, 3, 5, 1403, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8435, 1207, 1088, 1010, 70, 70, 38, 3, 5, 1403, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8440, 1207, 782, 803, 80, 60, 13, 3, 5, 1404, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8441, 1207, 617, 818, 80, 60, 13, 3, 5, 1404, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8442, 1207, 467, 716, 90, 70, 26, 3, 5, 1404, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8443, 1207, 420, 630, 90, 70, 26, 3, 5, 1404, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8444, 1207, 437, 535, 90, 70, 26, 3, 5, 1404, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8445, 1207, 545, 551, 90, 70, 26, 3, 5, 1404, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8446, 1207, 638, 582, 90, 70, 26, 3, 5, 1404, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8447, 1207, 752, 634, 90, 70, 26, 3, 5, 1404, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8448, 1207, 858, 710, 90, 70, 26, 3, 5, 1404, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8449, 1207, 588, 431, 90, 70, 26, 3, 5, 1404, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8450, 1207, 222, 149, 60, 60, 13, 3, 5, 1405, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8451, 1207, 184, 160, 60, 60, 13, 3, 5, 1405, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8452, 1207, 112, 182, 60, 60, 13, 3, 5, 1405, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8453, 1207, 58, 233, 60, 60, 13, 3, 5, 1405, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8454, 1207, 67, 295, 60, 60, 13, 3, 5, 1405, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8455, 1207, 201, 316, 60, 60, 13, 3, 5, 1405, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8456, 1207, 239, 259, 60, 60, 13, 3, 5, 1405, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8460, 1208, 59, 493, 60, 60, 26, 3, 5, 1406, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8461, 1208, 147, 459, 60, 60, 26, 3, 5, 1406, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8462, 1208, 242, 401, 60, 60, 26, 3, 5, 1406, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8463, 1208, 278, 310, 60, 60, 26, 3, 5, 1406, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8464, 1208, 306, 234, 70, 70, 26, 3, 5, 1406, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8465, 1208, 368, 149, 70, 70, 26, 3, 5, 1406, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8466, 1208, 494, 332, 70, 70, 26, 3, 5, 1406, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8467, 1208, 606, 457, 70, 70, 26, 3, 5, 1406, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8468, 1208, 636, 569, 70, 70, 26, 3, 5, 1406, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8469, 1208, 440, 642, 70, 70, 26, 3, 5, 1406, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8470, 1214, 633, 148, 60, 90, 13, 3, 5, 1407, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8471, 1214, 661, 250, 60, 90, 13, 3, 5, 1407, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8472, 1214, 757, 318, 60, 90, 13, 3, 5, 1407, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8473, 1214, 842, 399, 60, 90, 13, 3, 5, 1407, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8474, 1214, 880, 519, 60, 90, 13, 3, 5, 1407, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8475, 1214, 908, 588, 60, 90, 13, 3, 5, 1407, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8480, 1214, 897, 641, 70, 80, 13, 3, 5, 1408, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8481, 1214, 988, 667, 70, 80, 13, 3, 5, 1408, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8482, 1214, 1084, 658, 70, 80, 13, 3, 5, 1408, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8483, 1214, 1087, 768, 70, 80, 13, 3, 5, 1408, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8484, 1214, 957, 814, 70, 80, 13, 3, 5, 1408, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8485, 1214, 896, 886, 60, 80, 13, 3, 5, 1408, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8486, 1214, 842, 1020, 60, 80, 13, 3, 5, 1408, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8487, 1214, 889, 947, 60, 80, 13, 3, 5, 1408, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8488, 1214, 868, 1168, 60, 80, 13, 3, 5, 1408, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8489, 1214, 967, 1150, 60, 80, 13, 3, 5, 1408, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8490, 1214, 657, 1168, 80, 80, 13, 3, 5, 1409, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8491, 1214, 536, 1161, 80, 80, 13, 3, 5, 1409, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8492, 1214, 476, 1042, 80, 80, 13, 3, 5, 1409, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8493, 1214, 522, 1007, 80, 80, 13, 3, 5, 1409, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8494, 1214, 591, 994, 80, 80, 13, 3, 5, 1409, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8495, 1214, 570, 903, 80, 80, 13, 3, 5, 1409, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8496, 1214, 449, 866, 80, 80, 13, 3, 5, 1409, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8497, 1214, 365, 847, 80, 80, 13, 3, 5, 1409, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8498, 1214, 657, 1168, 80, 80, 13, 3, 5, 1409, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8499, 1214, 202, 773, 80, 80, 13, 3, 5, 1409, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8500, 1214, 380, 586, 80, 70, 13, 3, 5, 1410, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8501, 1214, 255, 544, 80, 70, 13, 3, 5, 1410, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8502, 1214, 135, 540, 80, 70, 13, 3, 5, 1410, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8503, 1214, 289, 487, 80, 70, 13, 3, 5, 1410, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8504, 1214, 353, 592, 80, 70, 13, 3, 5, 1410, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8505, 1214, 376, 525, 80, 70, 13, 3, 5, 1410, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8506, 1214, 513, 521, 80, 70, 13, 3, 5, 1410, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8507, 1214, 446, 363, 80, 70, 13, 3, 5, 1410, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8508, 1214, 364, 565, 80, 70, 13, 3, 5, 1410, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8509, 1214, 528, 351, 80, 70, 13, 3, 5, 1410, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8550, 1210, 212, 201, 380, 380, 1, 3600, 1, 8415, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8551, 1210, 466, 538, 150, 150, 1, 3600, 1, 8415, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8552, 1210, 599, 755, 150, 150, 1, 3600, 1, 8415, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8553, 1210, 446, 301, 150, 150, 1, 3600, 1, 8415, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8554, 1210, 375, 599, 120, 120, 13, 5, 1, 8416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8555, 1210, 509, 602, 120, 120, 13, 5, 1, 8416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8556, 1210, 649, 659, 120, 120, 13, 5, 1, 8416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8557, 1210, 713, 592, 120, 120, 13, 5, 1, 8416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8558, 1210, 543, 333, 200, 200, 13, 5, 1, 8416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8559, 1210, 212, 201, 380, 380, 13, 5, 3, 8416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8560, 1210, 482, 353, 120, 120, 13, 5, 1, 8416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8561, 1210, 543, 433, 120, 120, 13, 5, 1, 8416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8562, 1210, 667, 543, 120, 120, 1, 3600, 1, 8415, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8563, 1210, 779, 585, 120, 120, 13, 5, 1, 8416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8564, 1210, 706, 658, 120, 120, 13, 5, 1, 8416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8565, 1210, 557, 671, 120, 120, 1, 3600, 1, 8415, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8566, 1210, 623, 784, 120, 120, 13, 5, 1, 8416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8567, 1210, 774, 823, 120, 120, 1, 3600, 1, 8415, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8568, 1210, 427, 624, 120, 120, 13, 5, 1, 8416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8569, 1210, 247, 482, 120, 120, 13, 3, 1, 8416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8570, 1211, 749, 488, 100, 100, 26, 100, 10, 8417, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8571, 1211, 669, 533, 100, 100, 46, 100, 10, 8418, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8572, 1211, 611, 603, 100, 100, 26, 100, 10, 8417, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8573, 1211, 520, 680, 100, 100, 46, 100, 10, 8418, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8574, 1211, 481, 698, 100, 100, 26, 100, 10, 8417, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8575, 1211, 545, 592, 100, 100, 46, 100, 10, 8418, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8576, 1211, 654, 536, 100, 100, 26, 100, 10, 8417, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8577, 1211, 651, 598, 100, 100, 46, 100, 10, 8418, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8578, 1211, 509, 554, 100, 100, 26, 100, 10, 8417, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8580, 1211, 301, 386, 100, 100, 46, 100, 3, 8418, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8581, 1211, 256, 439, 100, 100, 26, 100, 3, 8417, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8582, 1211, 174, 450, 100, 100, 46, 100, 3, 8418, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8583, 1211, 230, 569, 100, 100, 26, 100, 3, 8417, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8584, 1211, 309, 634, 100, 100, 46, 100, 3, 8418, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8585, 1211, 415, 753, 100, 100, 26, 100, 3, 8417, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8586, 1211, 512, 753, 100, 100, 46, 100, 3, 8418, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8590, 1212, 915, 1207, 60, 60, 15, 100, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8591, 1212, 792, 1064, 60, 60, 15, 100, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8592, 1212, 835, 1164, 60, 60, 15, 100, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8593, 1212, 918, 947, 60, 60, 15, 100, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8594, 1212, 997, 980, 60, 60, 15, 100, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8595, 1212, 1101, 1148, 60, 60, 15, 200, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8596, 1212, 896, 773, 60, 60, 15, 100, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8597, 1212, 954, 717, 60, 60, 15, 100, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8598, 1212, 810, 583, 60, 60, 15, 100, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8599, 1212, 1155, 918, 60, 60, 15, 200, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8600, 1212, 590, 588, 40, 40, 15, 100, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8601, 1212, 619, 565, 40, 40, 15, 100, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8602, 1212, 658, 605, 40, 40, 15, 100, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8603, 1212, 760, 422, 40, 40, 15, 100, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8604, 1212, 725, 366, 40, 40, 15, 100, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8605, 1212, 642, 430, 60, 60, 15, 200, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8606, 1212, 268, 197, 60, 60, 15, 200, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8607, 1212, 239, 179, 100, 40, 13, 100, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8608, 1212, 291, 230, 60, 60, 15, 200, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8609, 1212, 412, 423, 40, 40, 13, 200, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8610, 1212, 184, 464, 50, 50, 15, 200, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8611, 1212, 260, 588, 50, 50, 15, 200, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8612, 1212, 306, 549, 30, 30, 15, 100, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8613, 1212, 145, 421, 30, 30, 15, 100, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8614, 1212, 210, 514, 30, 30, 15, 100, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8615, 1212, 490, 709, 50, 50, 15, 200, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8616, 1212, 516, 719, 30, 30, 15, 100, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8617, 1212, 603, 857, 50, 50, 15, 200, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8618, 1212, 644, 872, 30, 30, 15, 100, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8619, 1212, 654, 929, 30, 30, 15, 100, 5, 8419, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8620, 1212, 382, 94, 60, 60, 13, 100, 10, 8421, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8621, 1212, 392, 146, 60, 60, 13, 100, 10, 8421, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8622, 1212, 469, 174, 60, 60, 13, 100, 10, 8421, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8623, 1212, 494, 136, 60, 60, 13, 100, 10, 8421, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8624, 1212, 539, 211, 60, 60, 13, 100, 10, 8421, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8625, 1212, 499, 153, 60, 60, 13, 100, 10, 8421, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8626, 1212, 403, 60, 60, 60, 13, 100, 10, 8421, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8627, 1212, 379, 43, 60, 60, 13, 100, 10, 8421, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8628, 1212, 446, 123, 70, 70, 13, 200, 20, 8421, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8670, 1210, 713, 1037, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8671, 1210, 719, 1041, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8673, 1212, 300, 330, 350, 320, 350, 31600, 1, 8420, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8674, 1213, 463, 250, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8675, 1213, 455, 272, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8676, 1213, 429, 261, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (8677, 1213, 427, 279, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9000, 1002, 590, 500, 300, 300, 600, 1, 600, 2, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9001, 1002, 680, 434, 300, 300, 600, 1, 600, 2, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9002, 1002, 657, 600, 500, 500, 900, 1, 900, 2, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9003, 1015, 716, 691, 150, 150, 200, 1, 200, 18, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9004, 1015, 810, 690, 150, 150, 200, 1, 200, 18, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9300, 700, 38, 38, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9301, 700, 62, 39, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9302, 700, 62, 62, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9303, 700, 40, 63, 1, 1, 1, 10, 1, 900, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9315, 2055, 417, 457, 20, 20, 10, 0, 5, 2474, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9316, 2055, 417, 457, 20, 20, 2, 0, 1, 2473, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9317, 2055, 319, 487, 20, 20, 10, 0, 5, 2474, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9318, 2055, 319, 487, 20, 20, 2, 0, 1, 2473, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9319, 2055, 372, 620, 20, 20, 10, 0, 5, 2474, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9320, 2055, 372, 620, 20, 20, 2, 0, 1, 2473, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9321, 2055, 474, 601, 20, 20, 10, 0, 5, 2474, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9322, 2055, 474, 601, 20, 20, 2, 0, 1, 2473, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9323, 2055, 587, 369, 20, 20, 10, 0, 5, 2474, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9324, 2055, 587, 369, 20, 20, 2, 0, 1, 2473, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9325, 2055, 309, 347, 20, 20, 10, 0, 5, 2474, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9326, 2055, 309, 347, 20, 20, 2, 0, 1, 2473, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9327, 2055, 235, 405, 20, 20, 10, 0, 5, 2474, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9328, 2055, 235, 405, 20, 20, 2, 0, 1, 2473, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9329, 2055, 90, 262, 20, 20, 10, 0, 5, 2474, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9330, 2055, 90, 262, 20, 20, 2, 0, 1, 2473, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9331, 2055, 233, 123, 20, 20, 10, 0, 5, 2474, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9332, 2055, 233, 123, 20, 20, 2, 0, 1, 2473, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9333, 2055, 207, 307, 20, 20, 10, 0, 5, 2474, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9334, 2055, 207, 307, 20, 20, 2, 0, 1, 2473, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9335, 2055, 536, 438, 20, 20, 10, 0, 5, 2474, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9336, 2055, 536, 438, 20, 20, 2, 0, 1, 2473, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9337, 2055, 428, 386, 20, 20, 10, 0, 5, 2474, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9338, 2055, 428, 386, 20, 20, 2, 0, 1, 2473, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9339, 2055, 264, 231, 20, 20, 10, 0, 5, 2474, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9340, 2055, 264, 231, 20, 20, 2, 0, 1, 2473, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9341, 2055, 338, 175, 20, 20, 10, 0, 5, 2474, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9342, 2055, 338, 175, 20, 20, 2, 0, 1, 2473, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9343, 2055, 479, 308, 20, 20, 2, 0, 1, 2474, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9344, 2055, 479, 308, 20, 20, 10, 0, 5, 2473, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9345, 2055, 373, 277, 20, 20, 10, 0, 5, 2474, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9346, 2055, 373, 277, 20, 20, 2, 0, 1, 2473, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9347, 2055, 146, 192, 20, 20, 10, 0, 5, 2474, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9348, 2055, 149, 192, 20, 20, 2, 0, 1, 2473, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9349, 2055, 1, 1, 1, 1, 2, 0, 0, 4151, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9350, 1762, 66, 255, 100, 13, 15, 9, 10, 2411, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9351, 1762, 103, 259, 100, 60, 15, 9, 10, 2411, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9352, 1762, 157, 336, 20, 20, 7, 9, 7, 2411, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9353, 1762, 147, 379, 38, 38, 12, 9, 9, 2411, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9354, 1762, 272, 423, 30, 100, 24, 9, 9, 2411, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9355, 1762, 284, 507, 30, 30, 9, 9, 9, 2411, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9356, 1762, 358, 578, 34, 50, 23, 9, 9, 2411, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9357, 1762, 398, 555, 65, 80, 25, 9, 8, 2411, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9358, 1762, 460, 397, 20, 40, 8, 9, 4, 2411, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9359, 1762, 329, 350, 50, 50, 22, 9, 9, 2411, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9360, 1762, 348, 140, 68, 47, 28, 9, 12, 2411, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9361, 1762, 285, 50, 40, 47, 19, 9, 12, 2411, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9362, 1762, 297, 232, 30, 30, 18, 9, 12, 2411, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9363, 1762, 66, 255, 100, 13, 2, 9, 1, 2410, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9364, 1762, 103, 259, 100, 60, 2, 9, 1, 2410, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9365, 1762, 157, 336, 20, 20, 2, 9, 1, 2410, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9366, 1762, 147, 379, 38, 38, 2, 9, 1, 2410, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9367, 1762, 272, 423, 30, 100, 2, 9, 1, 2410, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9368, 1762, 284, 507, 30, 30, 2, 9, 1, 2410, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9369, 1762, 358, 578, 34, 50, 2, 9, 1, 2410, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9370, 1762, 398, 555, 65, 80, 2, 9, 1, 2410, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9371, 1762, 460, 397, 20, 40, 2, 9, 1, 2410, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9372, 1762, 329, 350, 50, 50, 2, 9, 1, 2410, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9373, 1762, 348, 140, 68, 47, 2, 9, 1, 2410, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9374, 1762, 285, 50, 40, 47, 2, 9, 1, 2410, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9375, 1762, 297, 232, 30, 30, 2, 9, 1, 2410, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9376, 1762, 297, 232, 30, 30, 1, 9, 1, 2412, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9377, 1762, 285, 50, 40, 47, 1, 9, 1, 2412, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9378, 1762, 348, 140, 68, 47, 1, 9, 1, 2412, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9379, 1762, 329, 350, 50, 50, 1, 9, 1, 2412, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9380, 1762, 460, 397, 20, 40, 1, 9, 1, 2412, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9381, 1762, 398, 555, 65, 80, 1, 9, 1, 2412, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9382, 1762, 358, 578, 34, 50, 1, 9, 1, 2412, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9383, 1762, 284, 507, 30, 30, 1, 9, 1, 2412, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9384, 1762, 272, 423, 30, 100, 1, 9, 1, 2412, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9385, 1762, 147, 379, 38, 38, 1, 9, 1, 2412, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9386, 1762, 157, 336, 20, 20, 1, 9, 1, 2412, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9387, 1762, 297, 232, 30, 30, 1, 9, 1, 2413, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9388, 1762, 285, 50, 40, 47, 1, 9, 1, 2413, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9389, 1762, 348, 140, 68, 47, 1, 9, 1, 2413, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9391, 1762, 460, 397, 20, 40, 1, 9, 1, 2413, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9392, 1762, 398, 555, 65, 80, 1, 9, 1, 2413, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9393, 1762, 358, 578, 34, 50, 1, 9, 1, 2413, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9394, 1762, 284, 507, 30, 30, 1, 9, 1, 2413, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9395, 1762, 272, 423, 30, 100, 1, 9, 1, 2413, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9396, 1762, 147, 379, 38, 38, 1, 9, 1, 2413, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9397, 1762, 157, 336, 20, 20, 1, 9, 1, 2413, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9398, 1927, 66, 255, 100, 13, 25, 9, 10, 2416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9399, 1927, 103, 259, 100, 60, 25, 9, 10, 2416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9400, 1927, 157, 336, 20, 20, 10, 9, 7, 2416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9401, 1927, 147, 379, 38, 38, 20, 9, 9, 2416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9402, 1927, 272, 423, 30, 100, 32, 9, 9, 2416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9403, 1927, 284, 507, 30, 30, 15, 9, 9, 2416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9404, 1927, 358, 578, 34, 50, 32, 9, 9, 2416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9405, 1927, 398, 555, 65, 80, 40, 9, 8, 2416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9406, 1927, 460, 397, 20, 40, 10, 9, 4, 2416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9408, 1927, 348, 140, 68, 47, 50, 9, 12, 2416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9409, 1927, 285, 50, 40, 47, 30, 9, 12, 2416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9410, 1927, 297, 232, 30, 30, 30, 9, 12, 2416, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9411, 1927, 66, 255, 100, 13, 25, 9, 3, 2415, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9412, 1927, 103, 259, 100, 60, 25, 9, 3, 2415, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9413, 1927, 157, 336, 20, 20, 2, 9, 1, 2415, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9414, 1927, 147, 379, 38, 38, 2, 9, 1, 2415, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9415, 1927, 272, 423, 30, 100, 2, 9, 1, 2415, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9416, 1927, 284, 507, 30, 30, 2, 9, 1, 2415, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9417, 1927, 358, 578, 34, 50, 2, 9, 1, 2415, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9418, 1927, 398, 555, 65, 80, 2, 9, 1, 2415, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9419, 1927, 460, 397, 20, 40, 2, 9, 3, 2415, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9421, 1927, 348, 140, 68, 47, 2, 9, 1, 2415, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9422, 1927, 285, 50, 40, 47, 2, 9, 1, 2415, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9423, 1927, 297, 232, 30, 30, 2, 9, 1, 2415, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9424, 1927, 157, 336, 20, 20, 1, 9, 1, 2417, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9425, 1927, 147, 379, 38, 38, 1, 9, 1, 2417, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9426, 1927, 272, 423, 30, 100, 1, 9, 1, 2417, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9427, 1927, 284, 507, 30, 30, 1, 9, 1, 2417, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9428, 1927, 358, 578, 34, 50, 1, 9, 1, 2417, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9429, 1927, 398, 555, 65, 80, 1, 9, 1, 2417, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9430, 1927, 460, 397, 20, 40, 1, 9, 1, 2417, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9432, 1927, 348, 140, 68, 47, 1, 9, 1, 2417, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9433, 1927, 285, 50, 40, 47, 1, 9, 1, 2417, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9434, 1927, 297, 232, 30, 30, 1, 9, 1, 2417, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9435, 1927, 157, 336, 20, 20, 1, 9, 1, 2418, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9436, 1927, 147, 379, 38, 38, 1, 9, 1, 2418, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9437, 1927, 272, 423, 30, 100, 1, 9, 1, 2418, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9438, 1927, 284, 507, 30, 30, 1, 1, 1, 2418, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9439, 1927, 358, 578, 34, 50, 1, 1, 1, 2418, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9440, 1927, 398, 555, 65, 80, 1, 1, 1, 2418, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9441, 1927, 460, 397, 20, 40, 1, 1, 1, 2418, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9443, 1927, 348, 140, 68, 47, 1, 1, 1, 2418, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9444, 1927, 285, 50, 40, 47, 1, 1, 1, 2418, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9445, 1927, 297, 232, 30, 30, 1, 1, 1, 2418, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9448, 1999, 392, 454, 47, 39, 12, 10, 5, 2461, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9449, 1999, 392, 454, 47, 39, 2, 10, 1, 2460, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9450, 1999, 361, 347, 36, 55, 12, 6, 4, 2461, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9451, 1999, 361, 347, 36, 55, 3, 6, 1, 2460, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9452, 1999, 437, 350, 12, 50, 35, 6, 12, 2461, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9453, 1999, 437, 350, 12, 50, 35, 6, 12, 2461, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9454, 1999, 447, 293, 12, 50, 35, 6, 12, 2461, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9455, 1999, 447, 293, 12, 50, 35, 6, 12, 2461, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9456, 1999, 352, 227, 40, 40, 20, 8, 12, 2461, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9457, 1999, 352, 227, 40, 40, 3, 8, 2, 2460, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9458, 1999, 261, 311, 40, 40, 20, 8, 12, 2461, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9459, 1999, 261, 311, 40, 40, 3, 8, 2, 2460, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9460, 1999, 349, 143, 40, 40, 3, 8, 2, 2460, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9461, 1999, 349, 143, 40, 40, 20, 8, 12, 2461, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9462, 1999, 276, 90, 40, 20, 12, 6, 5, 2461, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9463, 1999, 276, 90, 40, 20, 2, 6, 1, 2460, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9464, 1999, 230, 189, 20, 20, 12, 6, 5, 2461, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9465, 1999, 230, 189, 20, 20, 1, 6, 1, 2460, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9466, 1999, 278, 166, 20, 20, 8, 6, 5, 2461, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9467, 1999, 298, 262, 30, 30, 15, 6, 7, 2461, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9468, 1999, 157, 207, 35, 43, 28, 6, 7, 2461, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9469, 1999, 157, 207, 35, 43, 28, 9, 7, 2461, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9470, 1999, 157, 207, 35, 43, 4, 9, 2, 2460, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9471, 1999, 129, 282, 30, 30, 15, 8, 6, 2461, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9472, 1999, 191, 366, 30, 30, 15, 8, 6, 2461, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9473, 1999, 194, 298, 30, 30, 15, 8, 6, 2461, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9474, 1999, 39, 324, 30, 30, 27, 8, 9, 2461, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9475, 1999, 124, 442, 90, 56, 58, 8, 15, 2461, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9476, 1999, 246, 542, 45, 30, 58, 8, 15, 2461, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9477, 1999, 246, 542, 45, 30, 7, 8, 3, 2460, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9478, 1999, 523, 251, 80, 70, 58, 8, 15, 2461, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9479, 1999, 589, 407, 30, 30, 15, 8, 6, 2461, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9480, 1999, 589, 407, 30, 30, 4, 8, 2, 2460, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9482, 2054, 465, 424, 12, 30, 8, 6, 4, 2466, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9483, 2054, 465, 424, 12, 30, 2, 6, 1, 2465, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9484, 2054, 383, 407, 44, 60, 60, 5, 13, 2466, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9485, 2054, 383, 407, 44, 60, 5, 5, 3, 2465, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9486, 1013, 23, 38, 57, 56, 40, 10, 10, 500, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9487, 1013, 31, 22, 57, 56, 40, 10, 10, 500, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9488, 1075, 342, 21, 40, 300, 200, 3, 40, 120, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9489, 1075, 299, 65, 115, 300, 300, 3, 40, 120, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9490, 1075, 299, 65, 115, 300, 300, 3, 40, 120, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9491, 1075, 342, 21, 40, 300, 200, 3, 40, 120, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9492, 1013, 28, 25, 40, 50, 80, 5, 20, 500, 0, 0, 0, 0);
+INSERT INTO `cq_generator` VALUES (9493, 1013, 28, 25, 40, 50, 80, 5, 20, 500, 0, 0, 0, 0);
+
+-- Records of `cq_rebirth` (72 rows)
+INSERT INTO `cq_rebirth` VALUES (1611, 15, 11, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1612, 15, 21, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1613, 15, 41, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1614, 15, 51, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1616, 15, 132, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1617, 15, 142, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1618, 25, 11, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1619, 25, 21, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1620, 25, 41, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1621, 25, 51, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1623, 25, 132, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1624, 25, 142, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1625, 45, 11, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1626, 45, 21, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1627, 45, 41, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1628, 45, 51, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1630, 45, 132, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1631, 45, 142, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1632, 55, 11, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1633, 55, 21, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1634, 55, 41, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1635, 55, 51, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1637, 55, 132, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1638, 55, 142, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1646, 135, 11, 110, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1647, 135, 21, 110, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1648, 135, 41, 110, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1649, 135, 51, 110, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1651, 135, 132, 110, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1652, 135, 142, 110, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1653, 145, 11, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1654, 145, 21, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1655, 145, 41, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1656, 145, 51, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1658, 145, 132, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1659, 145, 142, 120, 15, 1);
+INSERT INTO `cq_rebirth` VALUES (1660, 15, 11, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1661, 15, 21, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1662, 15, 41, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1663, 15, 51, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1665, 15, 132, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1666, 15, 142, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1667, 25, 11, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1668, 25, 21, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1669, 25, 41, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1670, 25, 51, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1672, 25, 132, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1673, 25, 142, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1674, 45, 11, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1675, 45, 21, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1676, 45, 41, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1677, 45, 51, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1679, 45, 132, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1680, 45, 142, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1681, 55, 11, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1682, 55, 21, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1683, 55, 41, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1684, 55, 51, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1686, 55, 132, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1687, 55, 142, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1695, 135, 11, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1696, 135, 21, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1697, 135, 41, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1698, 135, 51, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1700, 135, 132, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1701, 135, 142, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1702, 145, 11, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1703, 145, 21, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1704, 145, 41, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1705, 145, 51, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1707, 145, 132, 120, 15, 2);
+INSERT INTO `cq_rebirth` VALUES (1708, 145, 142, 120, 15, 2);
+
+SET FOREIGN_KEY_CHECKS = 1;
+

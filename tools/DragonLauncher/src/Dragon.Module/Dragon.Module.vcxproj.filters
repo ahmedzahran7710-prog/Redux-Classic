@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="module\module_instance.h">
+      <Filter>Module</Filter>
+    </ClInclude>
+    <ClInclude Include="module\hook_adapter.h">
+      <Filter>Module</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Module">
+      <UniqueIdentifier>{bdf46582-ae80-44cf-8c7f-e85487d04daa}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="module\module_instance.cpp">
+      <Filter>Module</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
