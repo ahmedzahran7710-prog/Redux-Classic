@@ -1,5 +1,5 @@
 {
-  "ServerName": "Comet 5187",
+  "ServerName": "Mystic-Realms",
   "PatchManifestUrl": "http://127.0.0.1:8080/patches/patches.json",
   "EnableAutoPatch": false,
   "ClientDirectory": ".",
@@ -9,3 +9,4 @@
   "UseDirectConquerLoader": false,
   "ConquerLoaderExecutable": "ConquerLoader.exe"
 }
+

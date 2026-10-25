@@ -1,11 +1,13 @@
 namespace Comet.Game.Packets
 {
     using System;
+    using System.Drawing;
     using System.Threading.Tasks;
     using Comet.Game.States;
     using Comet.Game.World.Managers;
     using Comet.Game.World.Maps;
     using Comet.Network.Packets;
+    using Comet.Shared;
 
     /// <remarks>Packet Type 10010</remarks>
     /// <summary>
@@ -204,10 +206,39 @@ namespace Comet.Game.Packets
                     break;
                 }
 
-                case ActionType.LoginRelationships: // 76 (Phase 5 hook)
-                case ActionType.LoginGuild:         // 97 (Phase 5 hook)
-                case ActionType.LoginComplete:      // 132
+                case ActionType.LoginRelationships: // 76 - Load & send Friends and Enemies
+                {
+                    await user.Relationships.InitializeAsync();
+                    await user.Relationships.SendAllAsync();
+                    await user.SendAsync(this);
+                    break;
+                }
+
+                case ActionType.LoginComplete:      // 132 - Welcome player into Mystic-Realms!
+                {
+                    await user.SendAsync(this);
+                    await user.SendTalkAsync(GameBranding.WelcomeMessage, MsgTalk.TalkChannel.Talk, Color.Cyan);
+                    if (user.Level == 1 && user.Metempsychosis == 0)
+                        await user.SendTalkAsync(GameBranding.NewbornMessage, MsgTalk.TalkChannel.Talk, Color.Lime);
+                    break;
+                }
+
+                case ActionType.BoothSpawn:         // 111 - Open Player Market Carpet Booth
+                {
+                    await user.CreateBoothAsync();
+                    break;
+                }
+
+                case ActionType.BoothLeave:         // 114 - Close Player Market Carpet Booth
+                {
+                    await user.DestroyBoothAsync();
+                    break;
+                }
+
+                case ActionType.LoginGuild:         // 97 (Phase 6 Guilds hook)
                 case ActionType.QueryFriends:       // 240
+                case ActionType.FriendInfo:         // 148
+                case ActionType.EnemyInfo:          // 123
                 {
                     await user.SendAsync(this);
                     break;

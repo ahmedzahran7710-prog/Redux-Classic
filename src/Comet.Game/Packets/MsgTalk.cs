@@ -162,11 +162,36 @@ namespace Comet.Game.Packets
                 }
 
                 case TalkChannel.Team:
-                case TalkChannel.Guild:
-                case TalkChannel.Family:
+                {
+                    if (user.Team != null)
+                        await user.Team.BroadcastTeamPacketAsync(this, excludeId: user.Identity);
+                    break;
+                }
+
                 case TalkChannel.Friends:
                 {
-                    // Phase 5 social hooks; avoid error spam in Phase 1
+                    foreach (Character other in RoleManager.QueryUserSet())
+                    {
+                        if (other.Identity != user.Identity && user.Relationships.IsFriend(other.Identity))
+                            await other.SendAsync(this);
+                    }
+                    break;
+                }
+
+                case TalkChannel.Vendor:
+                {
+                    if (user.Booth != null)
+                    {
+                        user.Booth.HawkMessage = this.Words;
+                        await user.BroadcastRoomMsgAsync(this, includeSelf: true);
+                    }
+                    break;
+                }
+
+                case TalkChannel.Guild:
+                case TalkChannel.Family:
+                {
+                    // Phase 6 Guilds & Clans hooks
                     break;
                 }
             }

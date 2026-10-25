@@ -6,6 +6,7 @@ namespace Comet.Game.World.Managers
     using Comet.Game.Packets;
     using Comet.Game.States;
     using Comet.Game.World.Maps;
+    using Comet.Shared;
 
     /// <summary>
     /// Processes player utility commands (`/where`, `/online`, `/dc`) and full GM/PM
@@ -42,7 +43,7 @@ namespace Comet.Game.World.Managers
                 case "players":
                 {
                     await user.SendTalkAsync(
-                        $"Players currently online: {RoleManager.OnlinePlayers}",
+                        $"[{GameBranding.GameName}] Players currently online: {RoleManager.OnlinePlayers}",
                         MsgTalk.TalkChannel.Talk,
                         Color.Yellow);
                     return true;

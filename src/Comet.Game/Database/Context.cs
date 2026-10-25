@@ -31,6 +31,10 @@ namespace Comet.Game.Database
         public virtual DbSet<DbMagictype> Magictypes { get; set; }
         public virtual DbSet<DbMagic> Magics { get; set; }
         public virtual DbSet<DbWeaponSkill> WeaponSkills { get; set; }
+        public virtual DbSet<DbNpc> Npcs { get; set; }
+        public virtual DbSet<DbDynaNpc> DynaNpcs { get; set; }
+        public virtual DbSet<DbFriend> Friends { get; set; }
+        public virtual DbSet<DbEnemy> Enemies { get; set; }
 
         /// <summary>
         /// Configures the database to be used for this context. This method is called
@@ -69,6 +73,10 @@ namespace Comet.Game.Database
             builder.Entity<DbMagictype>(e => e.HasKey(x => x.Id));
             builder.Entity<DbMagic>(e => e.HasKey(x => x.Id));
             builder.Entity<DbWeaponSkill>(e => e.HasKey(x => x.Identity));
+            builder.Entity<DbNpc>(e => e.HasKey(x => x.Id));
+            builder.Entity<DbDynaNpc>(e => e.HasKey(x => x.Id));
+            builder.Entity<DbFriend>(e => e.HasKey(x => x.Id));
+            builder.Entity<DbEnemy>(e => e.HasKey(x => x.Id));
         }
 
         /// <summary>

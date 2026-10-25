@@ -1,6 +1,6 @@
-# Comet 5187 - AutoPatcher & Launcher Wrapper
+# Mystic-Realms (Patch 5187) - AutoPatcher & Launcher Wrapper
 
-مشروع أوتوباتشر ولانشر خفيف مكتوب بـ C# (`.NET 6`) مخصص لربط كلينت **Conquer Online 5187** مع:
+مشروع أوتوباتشر ولانشر خفيف مكتوب بـ C# (`.NET 6`) مخصص لربط كلينت **Mystic-Realms (Conquer Online 5187)** مع:
 1. **Dragon Launcher (`Dragon.Launch.exe`)** الموجود في `tools/DragonLauncher`.
 2. أو **ConquerLoader (`ConquerLoader.exe`)** مباشرة لو حبيت تستخدمه.
 

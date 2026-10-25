@@ -1,4 +1,4 @@
-﻿namespace Comet.Account
+namespace Comet.Account
 {
     using System;
     using System.Collections.Generic;
@@ -6,6 +6,7 @@
     using System.Threading.Tasks;
     using Comet.Account.Database;
     using Comet.Account.Database.Repositories;
+    using Comet.Shared;
 
     /// <summary>
     /// The account server accepts clients and authenticates players from the client's 
@@ -21,11 +22,11 @@
             // claim of ownership, you may include a second copyright above the existing
             // copyright. Do not remove completely to comply with software license. The
             // project name and version may be removed or changed.
-            Console.Title = "Comet, Account Server";
+            Console.Title = GameBranding.AccountServerTitle;
             Console.WriteLine();
-            Console.WriteLine("  Comet: Account Server");
+            Console.WriteLine($"  {GameBranding.GameName}: Account Server");
             Console.WriteLine("  Spirited (C) All Rights Reserved");
-            Console.WriteLine("  Patch 5187");
+            Console.WriteLine($"  Patch {GameBranding.PatchVersion}");
             Console.WriteLine();
 
             // Read configuration file and command-line arguments

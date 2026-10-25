@@ -196,9 +196,14 @@ namespace Comet.Game.States
                 this.SetProvokedTarget(attackerChar.Identity);
 
                 // Retail Conquer per-hit + kill experience calculation
-                ulong exp = CalculateCombatExperience(attackerChar, dealt, killed: this.Life == 0);
+                bool killedMob = this.Life == 0;
+                ulong exp = CalculateCombatExperience(attackerChar, dealt, killed: killedMob);
                 if (exp > 0)
+                {
                     await attackerChar.AwardExperienceAsync(exp);
+                    if (killedMob && attackerChar.Team != null)
+                        await attackerChar.Team.AwardTeamExperienceAsync(attackerChar, this, exp);
+                }
             }
 
             if (this.Life == 0)

@@ -106,6 +106,11 @@ namespace Comet.Game
                     PacketType.MsgPackage => new MsgPackage(),
                     PacketType.MsgDataArray => new MsgDataArray(),
                     PacketType.MsgEquipLock => new MsgEquipLock(),
+                    PacketType.MsgNpc => new MsgNpc(),
+                    PacketType.MsgTaskDialog => new MsgTaskDialog(),
+                    PacketType.MsgTrade => new MsgTrade(),
+                    PacketType.MsgTeam => new MsgTeam(),
+                    PacketType.MsgFriend => new MsgFriend(),
                     _ => null
                 };
 

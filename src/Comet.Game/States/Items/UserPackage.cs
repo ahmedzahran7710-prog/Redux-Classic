@@ -50,6 +50,9 @@ namespace Comet.Game.States.Items
         public List<Item> GetInventoryItems() => this.m_inventory.Values.ToList();
         public List<Item> GetEquipmentItems() => this.m_equipment.Values.ToList();
 
+        public Item FindInventoryItem(uint idItem) =>
+            this.m_inventory.TryGetValue(idItem, out Item item) ? item : null;
+
         public Item FindByIdentityAnywhere(uint idItem)
         {
             Item active = this[idItem];
@@ -560,6 +563,20 @@ namespace Comet.Game.States.Items
             return this.m_storageItems.Values
                 .Where(x => x.OwnerIdentity == idStorageOwner && x.Position == targetPos)
                 .ToList();
+        }
+
+        public async Task SendWarehouseAsync(uint idStorageOwner, MsgPackage.StorageType mode = MsgPackage.StorageType.Storage)
+        {
+            await this.m_user.SendAsync(new MsgUserAttrib(this.m_user.Identity, ClientUpdateType.WhMoney, this.m_user.WarehouseSilver));
+            var msg = new MsgPackage
+            {
+                Identity = idStorageOwner,
+                Action = MsgPackage.WarehouseMode.Query,
+                Mode = mode
+            };
+            foreach (Item item in this.GetStorageItems(idStorageOwner, mode))
+                msg.Items.Add(MsgPackage.ToWarehouseEntry(item));
+            await this.m_user.SendAsync(msg);
         }
 
         public async Task<bool> CheckInWarehouseAsync(uint idStorageOwner, MsgPackage.StorageType mode, Item item)

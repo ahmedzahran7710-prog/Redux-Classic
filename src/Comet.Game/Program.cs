@@ -21,10 +21,10 @@ namespace Comet.Game
         {
             Log.DefaultFileName = "GameServer";
 
-            Console.Title = "Comet - Conquer Online 5187 Game Server";
+            Console.Title = GameBranding.GameServerTitle;
             Console.WriteLine();
-            await Log.WriteLogAsync(LogLevel.Info, "Comet: Game Server (Patch 5187 - Retail Classic)");
-            await Log.WriteLogAsync(LogLevel.Info, $"Copyright 2018-{DateTime.Now:yyyy} Gareth Jensen \"Spirited\" | Redux-Classic");
+            await Log.WriteLogAsync(LogLevel.Info, $"{GameBranding.GameName}: Game Server (Patch {GameBranding.PatchVersion} - Retail Classic)");
+            await Log.WriteLogAsync(LogLevel.Info, $"Copyright 2018-{DateTime.Now:yyyy} Gareth Jensen \"Spirited\" | {GameBranding.GameName}");
             Console.WriteLine();
 
             // Read configuration file and command-line arguments
@@ -65,6 +65,7 @@ namespace Comet.Game
             await MagicManager.InitializeAsync(config.World.GameDataPath);
             ItemScriptEngine.Initialize();
             await MapManager.InitializeAsync(config.World.GameDataPath);
+            await NpcManager.InitializeAsync();
             await MonsterManager.InitializeAsync();
 
             // Start periodic world timer heartbeat
@@ -86,7 +87,7 @@ namespace Comet.Game
                 shutdownCts.Cancel();
             };
 
-            await Log.WriteLogAsync(LogLevel.Info, "Game Server is online and ready for Patch 5187 connections.");
+            await Log.WriteLogAsync(LogLevel.Info, $"{GameBranding.GameName} Game Server is online and ready for Patch 5187 connections.");
 
             try
             {

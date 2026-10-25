@@ -122,7 +122,7 @@ namespace Comet.Game.World.Managers
             await user.SaveAsync();
 
             await RoleManager.BroadcastTalkAsync(
-                $"Congratulations! {user.Name} has achieved {(nextMetem == 1 ? "1st" : "2nd")} Rebirth!",
+                $"[{GameBranding.GameName}] Congratulations! {user.Name} has achieved {(nextMetem == 1 ? "1st" : "2nd")} Rebirth!",
                 MsgTalk.TalkChannel.Center);
 
             return (true, $"Rebirth complete! You received {bonusPoints} attribute points.");

@@ -11,9 +11,11 @@ namespace Comet.Game.States
     using Comet.Game.Packets;
     using Comet.Game.States.Items;
     using Comet.Game.States.Magics;
+    using Comet.Game.States.NPCs;
     using Comet.Game.World.Managers;
     using Comet.Game.World.Maps;
     using Comet.Network.Packets;
+    using Comet.Shared;
 
     /// <summary>
     /// Live in-world player character wrapping <see cref="DbCharacter"/> and extending <see cref="Role"/>.
@@ -28,8 +30,10 @@ namespace Comet.Game.States
         public const byte BLESSED_MAX_ENERGY = 150;
         public const ushort BODY_GHOST_MALE = 98;
         public const ushort BODY_GHOST_FEMALE = 99;
+        public const uint MAX_INVENTORY_SILVER = 2_000_000_000;
 
         private readonly DbCharacter m_dbCharacter;
+        private readonly System.Collections.Generic.HashSet<byte> m_allowedDialogOptions = new();
         private readonly TimeOutMS m_energyTimer = new(2000);
         private readonly TimeOut m_pkDecreaseTimer = new(360);
         private readonly TimeOut m_autoSaveTimer = new(300);
@@ -54,6 +58,7 @@ namespace Comet.Game.States
             this.Screen = new Screen(this);
             this.UserPackage = new UserPackage(this);
             this.MagicData = new MagicData(this);
+            this.Relationships = new RelationshipManager(this);
             this.Energy = DEFAULT_MAX_ENERGY;
 
             this.m_energyTimer.Startup(2000);
@@ -65,6 +70,110 @@ namespace Comet.Game.States
         public Client Client { get; }
         public UserPackage UserPackage { get; }
         public MagicData MagicData { get; }
+        public RelationshipManager Relationships { get; }
+        public Team Team { get; set; }
+        public Trade Trade { get; set; }
+        public uint PendingTradePartnerId { get; set; }
+        public BoothNpc Booth { get; private set; }
+        public uint InteractingNpcId { get; set; }
+        public uint PreviousMapId { get; private set; }
+        public ushort PreviousMapX { get; private set; }
+        public ushort PreviousMapY { get; private set; }
+
+        public void AllowDialogOption(byte option) => this.m_allowedDialogOptions.Add(option);
+        public bool IsDialogOptionAllowed(byte option) => this.m_allowedDialogOptions.Contains(option);
+        public void ClearDialogOptions() => this.m_allowedDialogOptions.Clear();
+
+        public void CancelNpcInteraction()
+        {
+            this.InteractingNpcId = 0;
+            this.m_allowedDialogOptions.Clear();
+        }
+
+        public void SavePreviousMapForMarket()
+        {
+            if (this.MapIdentity != 0 && this.MapIdentity != 1036)
+            {
+                this.PreviousMapId = this.MapIdentity;
+                this.PreviousMapX = this.MapX;
+                this.PreviousMapY = this.MapY;
+            }
+        }
+
+        public Task ReturnFromMarketAsync()
+        {
+            if (this.PreviousMapId != 0 && this.PreviousMapId != 1036)
+                return this.FlyMapAsync(this.PreviousMapId, this.PreviousMapX, this.PreviousMapY);
+            return this.FlyMapAsync(1002, 430, 380);
+        }
+
+        public async Task<bool> CreateBoothAsync()
+        {
+            if (this.Booth != null || !this.IsAlive || this.Map == null || this.Trade != null)
+                return false;
+
+            if (this.MapIdentity != 1036 && !this.IsGm)
+            {
+                await this.SendTalkAsync($"You can only open a player booth inside the {GameBranding.GameName} Market!");
+                return false;
+            }
+
+            // Snap to nearby unoccupied ShopFlag carpet (NPCs 50..120, Type=16) or open at player's tile
+            uint boothUid = (this.Identity % 100_000) + 100_000;
+            ushort bx = (ushort)(this.MapX - 2);
+            ushort by = this.MapY;
+
+            foreach (Role r in this.Map.Query9BlocksByPos(this.MapX, this.MapY))
+            {
+                if (r is Npc flag && flag.IsBoothFlag && this.GetDistance(flag) <= 3)
+                {
+                    bx = flag.MapX;
+                    by = flag.MapY;
+                    break;
+                }
+            }
+
+            this.Action = EntityAction.Sit;
+            var booth = new BoothNpc(this, boothUid, bx, by);
+            this.Booth = booth;
+            await booth.EnterMapAsync();
+            await this.SendAsync(new MsgAction
+            {
+                Identity = boothUid,
+                X = bx,
+                Y = by,
+                Action = MsgAction.ActionType.BoothSpawn
+            });
+            return true;
+        }
+
+        public async Task DestroyBoothAsync()
+        {
+            BoothNpc active = this.Booth;
+            if (active == null)
+                return;
+
+            this.Booth = null;
+            await active.LeaveMapAsync();
+            this.Action = EntityAction.Stand;
+        }
+
+        public async Task OnDisconnectAsync()
+        {
+            this.CancelNpcInteraction();
+            if (this.Trade != null)
+                await this.Trade.CancelAsync();
+            if (this.Booth != null)
+                await this.DestroyBoothAsync();
+            if (this.Team != null)
+            {
+                if (this.Team.IsLeader(this.Identity))
+                    await this.Team.DismissAsync();
+                else
+                    await this.Team.RemoveMemberAsync(this, kicked: false);
+            }
+            await this.Relationships.BroadcastOfflineAsync();
+        }
 
         #region Identity & Appearance
 
@@ -599,6 +708,11 @@ namespace Comet.Game.States
             this.Action = EntityAction.Stand;
             this.IsAway = false;
             this.ClearAutoAttack();
+            this.CancelNpcInteraction();
+            if (this.Booth != null)
+                await this.DestroyBoothAsync();
+            if (this.Trade != null)
+                await this.Trade.CancelAsync();
             this.Map.EnterBlock(this, newX, newY, oldX, oldY);
             this.MapX = newX;
             this.MapY = newY;
@@ -643,6 +757,11 @@ namespace Comet.Game.States
             this.Action = EntityAction.Stand;
             this.IsAway = false;
             this.ClearAutoAttack();
+            this.CancelNpcInteraction();
+            if (this.Booth != null)
+                await this.DestroyBoothAsync();
+            if (this.Trade != null)
+                await this.Trade.CancelAsync();
             this.Map.EnterBlock(this, newX, newY, oldX, oldY);
             this.MapX = (ushort)newX;
             this.MapY = (ushort)newY;
@@ -667,6 +786,12 @@ namespace Comet.Game.States
 
             await this.SendAsync(jumpAck);
             await this.Screen.UpdateAsync(jumpAck);
+
+            if (this.Team != null && this.Team.IsLeader(this.Identity))
+            {
+                foreach (Character m in this.Team.Members)
+                    await this.Team.SendLeaderStarToMemberAsync(m);
+            }
             return true;
         }
 
@@ -675,6 +800,12 @@ namespace Comet.Game.States
             GameMap destMap = MapManager.GetMap(idMap);
             if (destMap == null || !destMap.IsValidPoint(x, y))
                 return false;
+
+            this.CancelNpcInteraction();
+            if (this.Booth != null)
+                await this.DestroyBoothAsync();
+            if (this.Trade != null)
+                await this.Trade.CancelAsync();
 
             GameMap oldMap = this.Map;
             int oldPartition = (int)(oldMap?.Partition ?? 0);
@@ -1209,6 +1340,8 @@ namespace Comet.Game.States
                 return false;
             if (this.PkMode == PkModeType.Peace)
                 return false;
+            if (this.PkMode == PkModeType.Team && this.Team != null && this.Team.IsMember(target.Identity))
+                return false;
             if (this.PkMode == PkModeType.Capture &&
                 (target.StatusFlag & (Monster.STATUS_FLASHING_NAME | Monster.STATUS_BLACK_NAME)) == 0)
             {
@@ -1266,6 +1399,8 @@ namespace Comet.Game.States
             uint dealt = (uint)Math.Min(this.Life, (uint)damage);
             this.Life -= dealt;
             await this.SendAsync(new MsgUserAttrib(this.Identity, ClientUpdateType.Hitpoints, this.Life));
+            if (this.Team != null)
+                await this.Team.SyncMemberLifeAsync(this);
 
             if (this.Life == 0)
                 await this.DieAsync(attacker);
@@ -1276,9 +1411,20 @@ namespace Comet.Game.States
             this.Life = 0;
             this.Action = EntityAction.Stand;
             this.ClearAutoAttack();
+            this.CancelNpcInteraction();
+            if (this.Trade != null)
+                await this.Trade.CancelAsync();
+            if (this.Booth != null)
+                await this.DestroyBoothAsync();
             await this.StatusSet.ClearAllOnDeathAsync();
             this.StatusFlag |= Monster.STATUS_DIE;
             this.m_reviveCooldown.Startup(18);
+
+            // Record PK killer automatically in cq_enemy!
+            if (killer is Character enemyPlayer && enemyPlayer.Identity != this.Identity)
+            {
+                await this.Relationships.AddEnemyAsync(enemyPlayer);
+            }
 
             // Award PK points on unlawful player kill outside FreePK maps
             if (killer is Character killerPlayer &&

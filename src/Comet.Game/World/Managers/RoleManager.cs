@@ -78,6 +78,7 @@ namespace Comet.Game.World.Managers
 
             try
             {
+                await user.OnDisconnectAsync();
                 await user.LeaveMapAsync();
                 await user.SaveAsync();
             }
