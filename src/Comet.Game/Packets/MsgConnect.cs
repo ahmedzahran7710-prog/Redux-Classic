@@ -32,7 +32,15 @@ namespace Comet.Game.Packets
             this.Token = reader.ReadUInt64();
             this.Patch = reader.ReadUInt16();
             this.Language = reader.ReadString(10);
-            this.Version = Convert.ToInt32(reader.ReadInt32().ToString(), 2);
+            int rawVersion = reader.ReadInt32();
+            try
+            {
+                this.Version = Convert.ToInt32(rawVersion.ToString(), 2);
+            }
+            catch
+            {
+                this.Version = rawVersion;
+            }
         }
 
         public override async Task ProcessAsync(Client client)
@@ -46,24 +54,30 @@ namespace Comet.Game.Packets
                 return;
             }
 
-            Kernel.Logins.Remove(this.Token.ToString());
-
             client.AccountIdentity = auth.AccountID;
             client.AuthorityLevel = auth.AuthorityID;
-            await RoleManager.RegisterClientAsync(client);
 
             DbCharacter dbChar = await CharactersRepository.FindAsync(auth.AccountID);
             if (dbChar == null)
             {
+                // Keep token in Kernel.Logins until the character is created and re-sends MsgConnect
                 client.Creation = new Creation { AccountID = auth.AccountID, Token = (uint)this.Token };
                 Kernel.Registration.Add(client.Creation.Token);
+                await Log.WriteLogAsync(LogLevel.Info, $"Account #{auth.AccountID} ({client.IPAddress}) -> opening Character Creation.");
                 await client.SendAsync(MsgTalk.LoginNewRole);
                 return;
             }
 
+            Kernel.Logins.Remove(this.Token.ToString());
+            await RoleManager.RegisterClientAsync(client);
+
             client.Character = new Character(client, dbChar);
             client.Character.SyncPkStatusFlags();
             await RoleManager.LoginUserAsync(client);
+
+            await Log.WriteLogAsync(
+                LogLevel.Info,
+                $"Character '{client.Character.Name}' (#{client.Character.Identity}) logged into map {client.Character.MapIdentity} ({client.Character.MapX},{client.Character.MapY}).");
 
             await client.SendAsync(MsgTalk.LoginOk);
             await client.SendAsync(new MsgUserInfo(client.Character));

@@ -88,6 +88,7 @@ namespace Comet.Account.Packets
 
             ulong token = await server.Rpc.CallAsync<ulong>("TransferAuth", args);
             await LoginsRepository.RecordAsync(client.Account.AccountID, client.IPAddress);
+            System.Console.WriteLine($"[Login] '{this.Username}' authenticated -> redirecting to {server.Name} ({server.GameIPAddress}:{server.GamePort})");
             await client.SendAsync(new MsgConnectEx(server.GameIPAddress, server.GamePort, token));
         }
 
