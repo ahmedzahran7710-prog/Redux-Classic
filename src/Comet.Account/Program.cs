@@ -24,7 +24,7 @@ namespace Comet.Account
             // project name and version may be removed or changed.
             Console.Title = GameBranding.AccountServerTitle;
             Console.WriteLine();
-            Console.WriteLine($"  {GameBranding.GameName}: Account Server [Build v5.3]");
+            Console.WriteLine($"  {GameBranding.GameName}: Account Server [Build v5.4]");
             Console.WriteLine("  Spirited (C) All Rights Reserved");
             Console.WriteLine($"  Patch {GameBranding.PatchVersion}");
             Console.WriteLine();
@@ -66,6 +66,11 @@ namespace Comet.Account
             try
             {
                 var serverTask = server.StartAsync(config.Network.Port, config.Network.IPAddress);
+                await Task.Delay(150);
+                if (serverTask.IsFaulted)
+                {
+                    throw serverTask.Exception!.GetBaseException();
+                }
 
                 // Output all clear and wait for user input
                 Console.WriteLine("Listening for new connections");

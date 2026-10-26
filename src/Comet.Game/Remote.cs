@@ -28,6 +28,23 @@ namespace Comet.Game
         }
 
         /// <summary>
+        /// Returns total TCP sockets accepted by this Game Server instance on Port 5816,
+        /// allowing Account Server to run an automated startup reachability self-test.
+        /// </summary>
+        public long BeginPortProbe(string realmName)
+        {
+            Server.SuppressProbeLog = true;
+            return Interlocked.Read(ref Server.TotalAcceptedConnections);
+        }
+
+        public long EndPortProbe(string realmName)
+        {
+            long total = Interlocked.Read(ref Server.TotalAcceptedConnections);
+            Server.SuppressProbeLog = false;
+            return total;
+        }
+
+        /// <summary>
         /// Transfers authentication information directly from the account server on
         /// successful client login. The game server will generate a new access token,
         /// and return the token to the account server for client redirection. 
@@ -57,7 +74,7 @@ namespace Comet.Game
                 _ = Log.WriteLogAsync(
                     LogLevel.Error,
                     $"[Auth] AccountID={args.AccountID} logged in via an OLD Comet.Account.exe process! " +
-                    "Close ALL Comet.Account windows (and end Comet.Account.exe in Task Manager), Rebuild Solution, and launch Comet.Account [Build v5.3]!");
+                    "Close ALL Comet.Account windows (and end Comet.Account.exe in Task Manager), Rebuild Solution, and launch Comet.Account [Build v5.4]!");
             }
             else
             {
@@ -89,7 +106,7 @@ namespace Comet.Game
                 await Log.WriteLogAsync(
                     LogLevel.Warning,
                     $"[Auth] Client for AccountID={args.AccountID} did NOT reach GameServer port {actualGamePort} within 6s of redirect to {target}! " +
-                    $"Check: (1) AccountServer is [Build v5.3], (2) realm.GameIPAddress is not 127.0.0.1, (3) Windows Firewall allows TCP {actualGamePort}.");
+                    $"Run the PowerShell Windows Firewall Block-Rule cleanup command as Administrator and verify [SelfTest] PASS on Account Server.");
             }
         }
     }
