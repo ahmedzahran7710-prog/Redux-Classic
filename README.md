@@ -1,32 +1,32 @@
-# Mystic-Realms (Patch 5187) — Conquer Online Classic Server
+# MoonQueen — Conquer Online Server (Patch 5187)
 
-مشروع سيرفر **Mystic-Realms (Conquer Online — Patch 5187)** مبني من الصفر بنظافة كاملة على معمارية **Comet** الحديثة (`.NET 6` / Async Sockets / Channels / RPC)، ويستهدف إصدار **5187** الكلاسيكي المتوازن (6 شخصيات حتى الـ **Ninja**).
-
-> 📌 **للمطورين وأي AI Agent:** اقرأ ملف **[`AGENT_HANDOFF.md`](./AGENT_HANDOFF.md)** أولاً — يحتوي على المعمارية الكاملة، القواعد الصارمة لمنع الـ Deadlocks، أرقام الباكتات الخاصة بإصدار 5187، وخارطة الطريق المحدثة خطوة بخطوة.
+سورس سيرفر **MoonQueen** النظيف لإصدار **Conquer Online Patch 5187** (عصر النينجا الكلاسيكي)، مبني من الصفر على نواة **Comet 5187** الخام بـ C# (`.NET 6.0`) ومُجهّز بالكامل للعمل المباشر مع **XAMPP MySQL** و **Hamachi**.
 
 ---
 
-## مكونات المستودع
-
-### 1. مشاريع السيرفر (`src/`)
-* **`Comet.Account`** — سيرفر التحقق من الحسابات وتوجيه اللاعبين للسيرفر (`Port: 9960`).
-* **`Comet.Game`** — سيرفر عالم اللعبة (`Game Port: 5816`, `RPC Port: 5817`).
-* **`Comet.Network`** — طبقة الشبكة اللاتزامنية (`TcpServerListener`, `PacketProcessor` عبر `System.Threading.Channels`, `RPC`, وتشفير `RC5` / `ScanCode` / `Diffie-Hellman` / `Blowfish CFB64`).
-* **`Comet.Core`** — الدوال المساعدة والعمليات الأساسية.
-* **`Comet.Shared`** — العقود والنماذج المشتركة للـ RPC بين السيرفرين.
-
-### 2. قواعد البيانات (`sql/`)
-* **`sql/comet.account.sql`** — قاعدة بيانات الحسابات (`comet.account`).
-* **`sql/comet.game.sql`** — قاعدة بيانات عالم اللعبة (`comet.game`).
-
-### 3. أدوات الكلينت واللودر (`tools/`)
-* **`tools/DragonLauncher/`** — كود اللودر الرسمي **Dragon** (C++ Win32) لتوجيه اتصال الكلينت بدون فك تشفير `Server.dat` + تحميل `Flash.ocx` محلياً على ويندوز 10/11 + منع نوافذ المتصفح المنبثقة.
-* **`tools/Comet.AutoPatcher/`** — أوتوباتشر ولانشر خفيف مكتوب بـ C# لتحديث ملفات الكلينت عبر الإنترنت (مع فحص `SHA-256`) وتشغيل اللودر تلقائياً.
+## المميزات الجاهزة في النسخة التأسيسية (Clean Base)
+- **اسم السورس والسيرفر الموحّد:** `MoonQueen` (`MoonQueen.sln`).
+- **قاعدة بيانات جاهزة لـ XAMPP بضغطة واحدة:** ملف `sql/MoonQueen_Full_Setup.sql` ينشئ قاعدتي `moonqueen_account` و `moonqueen_game` تلقائياً مع حساب أدمن جاهز (`admin` / `123456`).
+- **مُعدّ مسبقاً على آي بي الهاماشي:** `25.21.212.130` (بورت الحسابات `9960`، بورت اللعبة `5816`، وبورت RPC داخلي مؤمّن `127.0.0.1:5817`).
+- **دخول كامل لإصدار 5187 بدون أخطاء:**
+  - تشفير `RC5 + ScanCode` لحزم الحسابات، وتبادل مفاتيح `Diffie-Hellman + Blowfish CFB64` لسيرفر اللعبة.
+  - متوافق 100% مع `ConquerLoader` (`COServer.dat` 32-bit Token) ومع كافة أوفسيتات باكتات `5187` (`MsgConnectEx`, `MsgConnect`, `MsgRegister`, `MsgUserInfo`, `MsgMapInfo`, `MsgAction 10010`, `MsgWalk 10005`, `MsgTalk 1004`).
+  - إنشاء شخصية جديدة بجميع التخصصات الخمسة (`Trojan`, `Warrior`, `Archer`, `Ninja`, `Taoist`) والنزول في منتصف **Twin City (`1002: 430, 380`)** مع مشي وقفز وشات شغالين فوراً.
 
 ---
 
-## متطلبات التشغيل على جهازك لاحقاً
-1. **.NET 6.0 SDK** (أو أحدث مع دعم `net6.0`).
-2. **MariaDB** أو **MySQL 8.0**.
-3. **Conquer Online Client v5187** (خام بدون تعديل).
-4. **Dragon Launcher** (الموجود في `tools/DragonLauncher`) أو **ConquerLoader**.
+## التشغيل السريع (Quick Start)
+1. افتح **XAMPP Control Panel** وشغّل **Apache** و **MySQL** (Port `3306`).
+2. افتح `http://localhost/phpmyadmin` ⬅ اضغط **Import (استيراد)** ⬅ اختر الملف `sql/MoonQueen_Full_Setup.sql` واضغط **Go**.
+3. افتح **`MoonQueen.sln`** في **Visual Studio 2022** واضغط `Build -> Rebuild Solution`.
+4. شغّل **`MoonQueen.Game`** أولاً، ثم شغّل **`MoonQueen.Account`**.
+5. افتح اللعبة عبر `ConquerLoader` على الآي بي `25.21.212.130` وبورت `9960` واسم السيرفر `MoonQueen`، وسجّل دخولك بـ:
+   - **Username:** `admin`
+   - **Password:** `123456`
+
+لشرح تفصيلي مبسّط خطوة بخطوة راجع مجلد **[`قسم معلومات التعديلات/`](./قسم%20معلومات%20التعديلات/)**.
+
+---
+
+## الترخيص وحقوق النواة الأساسية
+مبني على نواة [Spirited's Comet (5187)](https://github.com/conquer-online/comet/tree/5187) وفق ترخيص MIT المرفق في ملف `License`.
