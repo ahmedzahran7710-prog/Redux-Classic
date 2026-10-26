@@ -30,26 +30,35 @@ namespace Comet.Game.Packets
             this.Length = reader.ReadUInt16();
             this.Type = (PacketType)reader.ReadUInt16();
             this.Token = reader.ReadUInt64();
-            this.Patch = reader.ReadUInt16();
-            this.Language = reader.ReadString(10);
-            int rawVersion = reader.ReadInt32();
-            try
+            if (bytes.Length >= 24)
             {
-                this.Version = Convert.ToInt32(rawVersion.ToString(), 2);
+                this.Language = reader.ReadString(6);
+                this.Patch = reader.ReadUInt16();
+                reader.ReadUInt32();
             }
-            catch
+            if (bytes.Length >= 28)
             {
-                this.Version = rawVersion;
+                int rawVersion = reader.ReadInt32();
+                try
+                {
+                    this.Version = Convert.ToInt32(rawVersion.ToString(), 2);
+                }
+                catch
+                {
+                    this.Version = rawVersion;
+                }
             }
         }
 
         public override async Task ProcessAsync(Client client)
         {
-            var auth = Kernel.Logins.Get(this.Token.ToString()) as TransferAuthArgs;
+            string fullKey = this.Token.ToString();
+            string lowKey = ((uint)this.Token).ToString();
+            var auth = (Kernel.Logins.Get(fullKey) ?? Kernel.Logins.Get(lowKey)) as TransferAuthArgs;
             if (auth == null || (StrictAuthentication && auth.IPAddress != client.IPAddress))
             {
                 await client.SendAsync(MsgTalk.LoginInvalid);
-                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid login token from {client.IPAddress}.");
+                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid login token ({this.Token} / low={(uint)this.Token}) from {client.IPAddress}.");
                 client.Disconnect();
                 return;
             }
@@ -68,7 +77,8 @@ namespace Comet.Game.Packets
                 return;
             }
 
-            Kernel.Logins.Remove(this.Token.ToString());
+            Kernel.Logins.Remove(fullKey);
+            Kernel.Logins.Remove(lowKey);
             await RoleManager.RegisterClientAsync(client);
 
             client.Character = new Character(client, dbChar);

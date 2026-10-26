@@ -210,10 +210,9 @@
   * **PR `#4` (`3dc9af9`):** إصلاح كافة أخطاء بناء Visual Studio 2022 (`0 Errors`).
   * **PR `#5` (`59c511b`):** مطابقة قنوات `MsgTalk` لباتش 5187 (`Register = 2100`, `Login = 2101`)، الحفاظ على التوكن في `MsgConnect` عبر مرحلة إنشاء الشخصية `NEW_ROLE`، جعل `MsgRegister` يحفظ الشخصية ومعداتها ومهارات التاويست المبدئية ويرد بـ `ANSWER_OK` ليعيد الكلينت الدخول نظيفاً، وإرجاع باكت `LoginSpawn (74)` في `MsgAction`.
   * **PR `#6` & `#7` (`[Build v5.3]`):** إضافة `ResolveRedirectEndpoint` وكاشف الوصول في `Remote.cs` وتنظيف تحذير `GameMapData` المضلّل عند تحميل 175+ ملف `.DMap` رسمي.
-  * **PR `#8` (`[Build v5.4]`):**
-    * تصحيح جذري في `MsgAccount.ResolveRedirectEndpoint`: كلينت `Conquer.exe` الخام لباتش 5187 يحتوي على فلتر TQ مدمج يرفض عناوين الشبكة الداخلية **RFC1918** (`127.*`, `10.*`, `172.16-31.*`, `192.168.*`) بدون Hook على `ws2_32!connect` بينما يقبل عنوان **Hamachi (`25.x.x.x`)** بشكل طبيعي؛ لذلك أوقفنا تحويل `25.x.x.x` إلى `192.168.x.x` وجعلنا السيرفر يحوّل أي عنوان RFC1918/Loopback خاطئ تلقائياً إلى نفس العنوان غير المحلي الذي دخل منه الكلينت على بورت `9960`.
-    * تفعيل `Socket.ExclusiveAddressUse = true` في `TcpServerListener.cs` لمنع مشاركة/خطف بورت `5816` أو `9960` بصمت على ويندوز، وإصلاح فحص `ceiling` في `TcpServerRegistry.cs`.
-    * إضافة نظام الفحص الذاتي التلقائي عند التشغيل **`[SelfTest]`** في `RealmsRepository.cs` + `Remote.cs` (`BeginPortProbe` / `EndPortProbe`) للتحقق تلقائياً من وصول حزم TCP على `25.x.x.x:5816` إلى نفس عملية `Comet.Game` وكشف قواعد `Action=Block` المخفية في جدار حماية ويندوز لشبكات `Public/Hamachi` فوراً عند التشغيل.
+  * **PR `#8` (`[Build v5.4]`):** إيقاف تحويل عنوان هاماشي `25.x.x.x` إلى `192.168.x.x` في `MsgAccount.cs`، وتفعيل `Socket.ExclusiveAddressUse = true` في `TcpServerListener.cs`، وإضافة فحص `[SelfTest]` التلقائي عند التشغيل في `RealmsRepository.cs` + `Remote.cs` (والذي طبع `[SelfTest] PASS` وأثبت سلامة الشبكة والفايروول وبورت `5816` بنسبة 100%).
+  * **PR `#9` (`[Build v5.5]`):** بمقارنة سورس `Comet 5187` الخام مع `Long V5187` (`darkfoxdeveloper/Long.Game`)، تم إصلاح الأخطاء البرمجية الثلاثة في مرحلة تسليم الكلينت من `Account` إلى `Game`: (1) تغيير توليد التوكن في `Remote.cs` من 8 بايت عشوائية إلى `uint` (4 بايت غير صفرية) حتى تكون البايتات `8..11` (`dwData`) في `MsgConnectEx` مساوية لـ `0` دائماً ولا يحاول `Conquer.exe` الاتصال بـ `BindServerIP` الفارغ في `COServer.dat`، (2) تصحيح حجم `MsgConnectEx.Encode()` إلى `32` بايت بالضبط بحذف `writer.Write((ushort)0)` الزائدة، (3) إغلاق سوكت `9960` نظيفاً (`actor.Disconnect()`) في `Comet.Account/Server.cs` فور استلام باكت `res.dat` ومطابقة أوفستات `MsgConnect.Decode` في `Comet.Game`.
+
 
 
 

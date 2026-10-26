@@ -53,11 +53,21 @@ namespace Comet.Game
         /// <returns>Returns an access token for the game server.</returns>
         public ulong TransferAuth(TransferAuthArgs args)
         {
-            // Generate the access token
-            var bytes = new byte[8];
+            // Generate a non-zero 32-bit uint access token!
+            // CRITICAL FOR PATCH 5187 + ConquerLoader (COServer.dat):
+            // Offset 8..11 (upper 32 bits of Token / dwData in MsgConnectEx) MUST be 0!
+            // When dwData != 0, Patch 5187 Conquer.exe treats it as BindServer mode and attempts
+            // to dial COServer.dat's empty BindServerIP ("":0) instead of MsgConnectEx.IPAddress:Port!
+            var bytes = new byte[4];
+            uint token32 = 0;
             using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(bytes);
-            var token = BitConverter.ToUInt64(bytes);
+            while (token32 == 0)
+            {
+                rng.GetBytes(bytes);
+                token32 = BitConverter.ToUInt32(bytes);
+            }
+
+            ulong token = token32;
 
             // Store in the login cache with a generous 60-second absolute timeout
             var timeoutPolicy = new CacheItemPolicy
@@ -74,13 +84,13 @@ namespace Comet.Game
                 _ = Log.WriteLogAsync(
                     LogLevel.Error,
                     $"[Auth] AccountID={args.AccountID} logged in via an OLD Comet.Account.exe process! " +
-                    "Close ALL Comet.Account windows (and end Comet.Account.exe in Task Manager), Rebuild Solution, and launch Comet.Account [Build v5.4]!");
+                    "Close ALL Comet.Account windows (and end Comet.Account.exe in Task Manager), Rebuild Solution, and launch Comet.Account [Build v5.5]!");
             }
             else
             {
                 _ = Log.WriteLogAsync(
                     LogLevel.Info,
-                    $"[Auth] AccountID={args.AccountID} (Client={args.IPAddress}) -> AccountServer [{args.AccountServerBuild}] redirecting client to {args.RedirectIP}:{args.RedirectPort}");
+                    $"[Auth] AccountID={args.AccountID} (Token={token}, Client={args.IPAddress}) -> AccountServer [{args.AccountServerBuild}] redirecting client to {args.RedirectIP}:{args.RedirectPort}");
 
                 if (args.RedirectPort != 0 && args.RedirectPort != actualGamePort)
                 {
@@ -106,7 +116,7 @@ namespace Comet.Game
                 await Log.WriteLogAsync(
                     LogLevel.Warning,
                     $"[Auth] Client for AccountID={args.AccountID} did NOT reach GameServer port {actualGamePort} within 6s of redirect to {target}! " +
-                    $"Run the PowerShell Windows Firewall Block-Rule cleanup command as Administrator and verify [SelfTest] PASS on Account Server.");
+                    $"Verify ConquerLoader Settings: GameHost={args.RedirectIP}, GamePort={actualGamePort}, UseCustomDLLs=Off.");
             }
         }
     }
