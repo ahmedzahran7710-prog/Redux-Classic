@@ -24,7 +24,7 @@ namespace Comet.Account
             // project name and version may be removed or changed.
             Console.Title = GameBranding.AccountServerTitle;
             Console.WriteLine();
-            Console.WriteLine($"  {GameBranding.GameName}: Account Server [Build v5.2]");
+            Console.WriteLine($"  {GameBranding.GameName}: Account Server [Build v5.3]");
             Console.WriteLine("  Spirited (C) All Rights Reserved");
             Console.WriteLine($"  Patch {GameBranding.PatchVersion}");
             Console.WriteLine();
@@ -61,15 +61,26 @@ namespace Comet.Account
             await Task.WhenAll(tasks.ToArray());
             
             // Start the server listener
-            Console.WriteLine("Launching server listener...");
+            Console.WriteLine($"Launching Account TCP listener on {config.Network.IPAddress}:{config.Network.Port}...");
             var server = new Server(config);
-            var serverTask = server.StartAsync(config.Network.Port, config.Network.IPAddress);
+            try
+            {
+                var serverTask = server.StartAsync(config.Network.Port, config.Network.IPAddress);
 
-            // Output all clear and wait for user input
-            Console.WriteLine("Listening for new connections");
-            Console.WriteLine();
-            
-            await serverTask;
+                // Output all clear and wait for user input
+                Console.WriteLine("Listening for new connections");
+                Console.WriteLine();
+
+                await serverTask;
+            }
+            catch (System.Net.Sockets.SocketException sockEx)
+            {
+                Console.WriteLine();
+                Console.WriteLine($"[ERROR] Port {config.Network.Port} is ALREADY IN USE ({sockEx.SocketErrorCode})!");
+                Console.WriteLine("An older Comet.Account.exe window is still running in the background.");
+                Console.WriteLine("Close ALL Comet.Account windows (or end Comet.Account.exe in Task Manager) and start again.");
+                Console.ReadLine();
+            }
         }
     }
 }

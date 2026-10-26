@@ -19,6 +19,11 @@ namespace Comet.Game.World.Maps
         private static readonly ConcurrentDictionary<uint, GameMapData> s_loadedData = new();
         private static bool s_warnedMissingGameMapDat;
         private static bool s_warnedMissingDMap;
+        private static int s_realDMapsLoaded;
+        private static int s_fallbackGridsUsed;
+
+        public static int RealDMapsLoadedCount => s_realDMapsLoaded;
+        public static int FallbackGridsUsedCount => s_fallbackGridsUsed;
 
         private Tile[,] m_tiles;
 
@@ -62,6 +67,9 @@ namespace Comet.Game.World.Maps
         public static async Task InitializeGameMapDatAsync(string gameDataRoot)
         {
             s_mapDocPaths.Clear();
+            s_loadedData.Clear();
+            s_realDMapsLoaded = 0;
+            s_fallbackGridsUsed = 0;
             string resolvedDat = ResolvePath(gameDataRoot, Path.Combine("ini", "GameMap.dat"));
             if (resolvedDat == null || !File.Exists(resolvedDat))
             {
@@ -119,16 +127,18 @@ namespace Comet.Game.World.Maps
                 try
                 {
                     data.LoadDMap(fullPath, gameDataRoot);
+                    System.Threading.Interlocked.Increment(ref s_realDMapsLoaded);
                 }
                 catch (Exception ex)
                 {
                     await Log.WriteLogAsync(LogLevel.Warning, $"Failed reading DMap '{fullPath}' (Doc {idMapDoc}): {ex.Message}. Using fallback grid.");
                     data.BuildFallbackGrid(1024, 1024);
+                    System.Threading.Interlocked.Increment(ref s_fallbackGridsUsed);
                 }
             }
             else
             {
-                if (!s_warnedMissingDMap)
+                if (!s_warnedMissingDMap && s_mapDocPaths.IsEmpty)
                 {
                     s_warnedMissingDMap = true;
                     await Log.WriteLogAsync(
@@ -137,6 +147,7 @@ namespace Comet.Game.World.Maps
                         "Using fallback 1024x1024 walkable grids until client map/ folder is copied.");
                 }
                 data.BuildFallbackGrid(1024, 1024);
+                System.Threading.Interlocked.Increment(ref s_fallbackGridsUsed);
             }
 
             s_loadedData[idMapDoc] = data;

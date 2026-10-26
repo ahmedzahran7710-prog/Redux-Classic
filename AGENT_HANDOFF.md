@@ -206,4 +206,9 @@
   * إضافة جداول `cq_npc` (458 صف رسمي لباتش 5187)، `cq_dynanpc`، `cq_friend`، و `cq_enemy` إلى `sql/comet.game.sql` (`665 KB` إجمالاً، 21 جدولاً) + نماذج ومستودعات EF Core وتسجيلها في `ServerDbContext`.
   * بناء `Npc`, `DynamicNpc`, `BoothNpc`, `NpcManager`, `NpcScriptEngine` (`NpcDialog` + `[NpcScript]`), `Trade`, `Team`, `RelationshipManager` والباكتات الـ 9 (`MsgNpcInfo 2030`, `MsgNpcInfoEx 1109`, `MsgNpc 2031`, `MsgTaskDialog 2032`, `MsgTrade 1056`, `MsgTeam 1023`, `MsgTeamMember 1026`, `MsgFriend 1019`, `MsgItemInfoEx 1108`) وربطها بالكامل في `Character`, `Monster`, `MsgAction`, `MsgItem`, `MsgTalk`, `Server`, `Program`.
   * توثيق المرحلة 5 ودليل تغيير اسم اللعبة في الكلينت داخل `قسم معلومات التعديلات/`، وفحص شامل لـ 176 ملف C# و21 جدول SQL بنتيجة **0 أخطاء**.
+* **2026-10-26 (تشغيل السيرفر فعلياً على ويندوز وإصلاحات الدخول لباتش 5187 — PRs `#4` إلى `#7` `[Build v5.3]`):**
+  * **PR `#4` (`3dc9af9`):** إصلاح كافة أخطاء بناء Visual Studio 2022 (`0 Errors`).
+  * **PR `#5` (`59c511b`):** مطابقة قنوات `MsgTalk` لباتش 5187 (`Register = 2100`, `Login = 2101`)، الحفاظ على التوكن في `MsgConnect` عبر مرحلة إنشاء الشخصية `NEW_ROLE`، جعل `MsgRegister` يحفظ الشخصية ومعداتها ومهارات التاويست المبدئية ويرد بـ `ANSWER_OK` ليعيد الكلينت الدخول نظيفاً، وإرجاع باكت `LoginSpawn (74)` في `MsgAction`.
+  * **PR `#6` & `#7` (`[Build v5.3]`):** إضافة الإصلاح التلقائي الذكي (`ResolveRedirectEndpoint`) في `MsgAccount.cs` لمعالجة رفض `Conquer.exe` لعنوان `127.0.0.1` في `MsgConnectEx` وتجاوز حظر جدار حماية ويندوز لشبكة `Hamachi (Public)` عند اللعب المحلي عبر التحويل التلقائي للـ Private LAN IP (`192.168.x.x`) وتصحيح أي بورت خاطئ في جدول `realm` تلقائياً إلى `5816`، مع كاشف فوري في `Remote.cs` لأي نافذة `Comet.Account.exe` قديمة لا تزال تعمل في الخلفية، وتنظيف تحذير `GameMapData` المضلّل عند تحميل 184 ملف `.DMap` رسمي.
+
 

@@ -66,7 +66,7 @@ namespace Comet.Game.World.Managers
 
             await Log.WriteLogAsync(
                 LogLevel.Info,
-                $"Initialized {loaded} active GameMaps ({allPassways.Count} passways, {allPortals.Count} portals, {allRegions.Count} regions).");
+                $"Initialized {loaded} active GameMaps ({GameMapData.RealDMapsLoadedCount} retail .DMap files loaded, {GameMapData.FallbackGridsUsedCount} unused legacy maps on fallback grid; {allPassways.Count} passways, {allPortals.Count} portals, {allRegions.Count} regions).");
         }
 
         public static GameMap GetMap(uint idMap) =>
