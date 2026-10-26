@@ -49,14 +49,14 @@ namespace Comet.Account.Packets
             // Brute-force password protection keyed per client IP (prevents attackers from locking out Admin's own IP)
             if (IsIpTemporarilyLockedOut(clientIp))
             {
-                await client.SendAsync(new MsgConnectEx(RejectionCode.TryAgainLater));
+                await client.SendAsync(new MsgConnectEx(RejectionCode.AccountMaxLoginAttempts));
                 client.Disconnect();
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(this.Username) || this.Password == null || this.Password.Length != 16)
             {
-                await client.SendAsync(new MsgConnectEx(RejectionCode.InvalidAccount));
+                await client.SendAsync(new MsgConnectEx(RejectionCode.InvalidPassword));
                 client.Disconnect();
                 return;
             }
