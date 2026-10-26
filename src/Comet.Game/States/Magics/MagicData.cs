@@ -715,7 +715,7 @@ namespace Comet.Game.States.Magics
                 return;
 
             // Cannot Fly inside indoor / NoFly maps
-            if (statusId == StatusSet.FLY && this.m_owner.Map.Flag.HasFlag(World.Maps.MapTypeFlags.FlyDisable))
+            if (statusId == StatusSet.FLY && this.m_owner.Map.Flag.HasFlag(World.Maps.MapTypeFlags.WingDisable))
                 return;
 
             // Offensive debuff check (e.g. Ninja PoisonStar 6002)

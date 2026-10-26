@@ -217,9 +217,9 @@ namespace Comet.Game.Packets
                 case ActionType.LoginComplete:      // 132 - Welcome player into Mystic-Realms!
                 {
                     await user.SendAsync(this);
-                    await user.SendTalkAsync(GameBranding.WelcomeMessage, MsgTalk.TalkChannel.Talk, Color.Cyan);
+                    await user.SendTalkAsync(GameBranding.WelcomeMessage, MsgTalk.TalkChannel.Talk, System.Drawing.Color.Cyan);
                     if (user.Level == 1 && user.Metempsychosis == 0)
-                        await user.SendTalkAsync(GameBranding.NewbornMessage, MsgTalk.TalkChannel.Talk, Color.Lime);
+                        await user.SendTalkAsync(GameBranding.NewbornMessage, MsgTalk.TalkChannel.Talk, System.Drawing.Color.Lime);
                     break;
                 }
 

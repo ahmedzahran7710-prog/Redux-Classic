@@ -76,7 +76,7 @@ namespace Comet.Game.World.Threading
             this.m_channels[partition]?.Writer.TryWrite(task);
         }
 
-        protected async Task DequeueAsync(int partition, Channel<Func<Task>> channel)
+        private async Task DequeueAsync(int partition, Channel<Func<Task>> channel)
         {
             while (!this.m_cancelReads.IsCancellationRequested)
             {

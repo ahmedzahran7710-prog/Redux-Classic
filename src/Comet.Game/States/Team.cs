@@ -7,6 +7,7 @@ namespace Comet.Game.States
     using System.Linq;
     using System.Threading.Tasks;
     using Comet.Game.Packets;
+    using Comet.Game.World.Managers;
     using Comet.Game.World.Maps;
     using Comet.Network.Packets;
     using Comet.Shared;
@@ -50,7 +51,7 @@ namespace Comet.Game.States
 
             var team = new Team(leader);
             leader.Team = team;
-            await leader.AttachStatusAsync(StatusSet.TEAM_LEADER, 0, 86400 * 7);
+            await leader.StatusSet.AttachAsync(StatusSet.TEAM_LEADER, 0, 86400 * 7);
             await leader.SendAsync(new MsgTeam
             {
                 Identity = leader.Identity,
@@ -108,7 +109,7 @@ namespace Comet.Game.States
         public async Task DismissAsync()
         {
             if (this.Leader != null)
-                await this.Leader.DetachStatusAsync(StatusSet.TEAM_LEADER);
+                await this.Leader.StatusSet.DetachAsync(StatusSet.TEAM_LEADER);
 
             var dismissMsg = new MsgTeam
             {

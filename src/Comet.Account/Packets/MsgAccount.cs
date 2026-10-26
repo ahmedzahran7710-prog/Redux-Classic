@@ -1,6 +1,7 @@
 namespace Comet.Account.Packets
 {
     using System.IO;
+    using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
     using Comet.Account.Database.Repositories;
@@ -58,9 +59,12 @@ namespace Comet.Account.Packets
                 return;
             }
 
-            // Connect to the game server
+            // Connect to the game server (also fall back to the sole configured realm if client Server.dat still has another label)
             Database.Models.DbRealm server;
-            if (!Kernel.Realms.TryGetValue(this.Realm, out server) || !server.Rpc.Online)
+            if (!Kernel.Realms.TryGetValue(this.Realm, out server) && Kernel.Realms.Count == 1)
+                server = Kernel.Realms.Values.FirstOrDefault();
+
+            if (server == null || !server.Rpc.Online)
             {
                 await client.SendAsync(new MsgConnectEx(RejectionCode.ServerDown));
                 client.Socket.Disconnect(false);
