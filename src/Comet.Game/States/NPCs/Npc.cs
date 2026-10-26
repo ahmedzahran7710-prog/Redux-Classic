@@ -71,7 +71,7 @@ namespace Comet.Game.States.NPCs
                 {
                     Identity = user.Identity,
                     Command = 4, // Warehouse window ID
-                    Data = user.WarehouseSilver,
+                    Argument = user.WarehouseSilver,
                     X = user.MapX,
                     Y = user.MapY,
                     Action = MsgAction.ActionType.ClientDialog

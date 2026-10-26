@@ -59,10 +59,13 @@ namespace Comet.Game
 
                 actor.DiffieHellman.ComputePrivateKey(msg.ClientKey);
 
-                (actor.Cipher as BlowfishCipher).GenerateKeys(
-                    actor.DiffieHellman.PrivateKey.ToByteArrayUnsigned(),
-                    actor.DiffieHellman.EncryptionIV,
-                    actor.DiffieHellman.DecryptionIV);
+                actor.Cipher.GenerateKeys(new object[]
+                {
+                    actor.DiffieHellman.PrivateKey.ToByteArrayUnsigned()
+                });
+                (actor.Cipher as BlowfishCipher).SetIVs(
+                    actor.DiffieHellman.DecryptionIV,
+                    actor.DiffieHellman.EncryptionIV);
                 actor.DiffieHellman = null;
                 return true;
             }

@@ -203,8 +203,8 @@ namespace Comet.Game.World.Managers
             if (string.IsNullOrWhiteSpace(root))
                 return 0;
 
-            string datPath = GameMapData.ResolveCaseInsensitivePath(root, "ini/magictype.dat")
-                          ?? GameMapData.ResolveCaseInsensitivePath(root, "ini/magictype.txt");
+            string datPath = GameMapData.ResolvePath(root, "ini/magictype.dat")
+                          ?? GameMapData.ResolvePath(root, "ini/magictype.txt");
             if (datPath == null || !File.Exists(datPath))
                 return 0;
 

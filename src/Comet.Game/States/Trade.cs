@@ -57,7 +57,7 @@ namespace Comet.Game.States
                 bucket.Count >= MAX_TRADE_ITEMS ||
                 item.IsBound ||
                 item.IsLocked() ||
-                (item.Monopoly & Item.ITEM_TRADE_MASK) != 0 ||
+                (item.Monopoly & Item.ITEM_MONOPOLY_MASK) != 0 ||
                 !partner.UserPackage.IsPackSpare(bucket.Count + 1))
             {
                 await sender.SendAsync(new MsgTrade { Data = itemId, Action = MsgTrade.TradeAction.AddItemFail });

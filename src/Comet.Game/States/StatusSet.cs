@@ -222,8 +222,9 @@ namespace Comet.Game.States
             this.RemainingTicks = ticks;
 
             int durationSec = ticks > 0 ? Math.Max(seconds, seconds * ticks) : seconds;
-            this.m_keepTimer = new TimeOutMS(Math.Max(1000L, durationSec * 1000L));
-            this.m_keepTimer.Startup(Math.Max(1000L, durationSec * 1000L));
+            int durationMs = Math.Max(1000, durationSec * 1000);
+            this.m_keepTimer = new TimeOutMS(durationMs);
+            this.m_keepTimer.Startup(durationMs);
 
             this.TickTimer = new TimeOut(Math.Max(1, seconds));
             if (ticks > 0)
@@ -243,7 +244,7 @@ namespace Comet.Game.States
         public void ExtendSeconds(int addSec, int maxRemainSec)
         {
             long remainMs = Math.Max(0L, this.m_keepTimer.GetRemain());
-            long nextMs = Math.Min(maxRemainSec * 1000L, remainMs + (addSec * 1000L));
+            int nextMs = (int)Math.Min(maxRemainSec * 1000L, remainMs + (addSec * 1000L));
             this.m_keepTimer.Startup(nextMs);
             this.KoCount++;
         }
