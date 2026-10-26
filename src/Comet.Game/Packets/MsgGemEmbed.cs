@@ -57,11 +57,11 @@ namespace Comet.Game.Packets
         public override async Task ProcessAsync(Client client)
         {
             Character user = client?.Character;
-            if (user == null || this.Identity != user.Identity)
+            if (user == null || user.Trade != null || this.Identity != user.Identity)
                 return;
 
             Item main = user.UserPackage[this.MainIdentity];
-            if (main == null)
+            if (main == null || user.IsItemLockedInBooth(main.Identity))
                 return;
 
             switch (this.Action)
@@ -69,7 +69,7 @@ namespace Comet.Game.Packets
                 case EmbedAction.Embed:
                 {
                     Item gemItem = user.UserPackage[this.MinorIdentity];
-                    if (gemItem == null || gemItem.GetItemSubType() != 700)
+                    if (gemItem == null || gemItem.GetItemSubType() != 700 || user.IsItemLockedInBooth(gemItem.Identity))
                         return;
 
                     var gem = (Item.SocketGem)(gemItem.Type % 1000);

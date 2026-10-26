@@ -31,6 +31,9 @@ namespace Comet.Game.States
         public const ushort BODY_GHOST_MALE = 98;
         public const ushort BODY_GHOST_FEMALE = 99;
         public const uint MAX_INVENTORY_SILVER = 2_000_000_000;
+        public const uint MAX_CONQUER_POINTS = 2_000_000_000;
+
+        public byte CompletedLoginStages { get; set; }
 
         private readonly DbCharacter m_dbCharacter;
         private readonly System.Collections.Generic.HashSet<byte> m_allowedDialogOptions = new();
@@ -492,16 +495,19 @@ namespace Comet.Game.States
                 ? (uint)Math.Max(0, (this.m_dbCharacter.HeavenBlessing.Value - DateTime.UtcNow).TotalSeconds)
                 : 0u;
 
-        public bool IsGm => (this.Client?.AuthorityLevel ?? 1) >= 2 ||
-                            this.Name.EndsWith("[GM]", StringComparison.OrdinalIgnoreCase) ||
-                            this.Name.EndsWith("[PM]", StringComparison.OrdinalIgnoreCase);
+        public bool IsModerator => (this.Client?.AuthorityLevel ?? 1) >= 2;
 
-        public bool IsPm => (this.Client?.AuthorityLevel ?? 1) >= 3 ||
-                            this.Name.EndsWith("[PM]", StringComparison.OrdinalIgnoreCase);
+        // Strictly rely on database account_authority (3=GM, 4=PM, 5=Admin) — never grant privileges from character name suffix alone
+        public bool IsGm => (this.Client?.AuthorityLevel ?? 1) >= 3;
+
+        public bool IsPm => (this.Client?.AuthorityLevel ?? 1) >= 4;
+
+        public bool IsItemLockedInBooth(uint itemId) =>
+            this.Booth != null && itemId != 0 && this.Booth.Items.ContainsKey(itemId);
 
         public async Task<bool> SpendSilverAsync(int amount)
         {
-            if (amount <= 0) return true;
+            if (amount <= 0) return false;
             if (this.Silver < (uint)amount) return false;
 
             this.Silver -= (uint)amount;
@@ -512,14 +518,14 @@ namespace Comet.Game.States
         public async Task AwardSilverAsync(int amount)
         {
             if (amount <= 0) return;
-            ulong next = Math.Min(2_000_000_000UL, (ulong)this.Silver + (uint)amount);
+            ulong next = Math.Min(MAX_INVENTORY_SILVER, (ulong)this.Silver + (uint)amount);
             this.Silver = (uint)next;
             await this.SendAsync(new MsgUserAttrib(this.Identity, ClientUpdateType.Money, this.Silver));
         }
 
         public async Task<bool> SpendConquerPointsAsync(int amount)
         {
-            if (amount <= 0) return true;
+            if (amount <= 0) return false;
             if (this.ConquerPoints < (uint)amount) return false;
 
             this.ConquerPoints -= (uint)amount;
@@ -530,7 +536,7 @@ namespace Comet.Game.States
         public async Task AwardConquerPointsAsync(int amount)
         {
             if (amount <= 0) return;
-            ulong next = Math.Min(2_000_000_000UL, (ulong)this.ConquerPoints + (uint)amount);
+            ulong next = Math.Min(MAX_CONQUER_POINTS, (ulong)this.ConquerPoints + (uint)amount);
             this.ConquerPoints = (uint)next;
             await this.SendAsync(new MsgUserAttrib(this.Identity, ClientUpdateType.ConquerPoints, this.ConquerPoints));
         }

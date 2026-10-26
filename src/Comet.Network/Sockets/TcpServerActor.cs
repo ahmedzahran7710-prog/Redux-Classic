@@ -77,7 +77,16 @@ namespace Comet.Network.Sockets
                     if (e.SocketErrorCode < SocketError.ConnectionAborted ||
                         e.SocketErrorCode > SocketError.Shutdown)
                         Console.WriteLine(e);
-                    return Task.FromException(e);
+                    return Task.CompletedTask;
+                }
+                catch (ObjectDisposedException)
+                {
+                    return Task.CompletedTask;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"[Socket] SendAsync error ({this.IPAddress}): {e.Message}");
+                    return Task.CompletedTask;
                 }
             }
         }
@@ -95,11 +104,27 @@ namespace Comet.Network.Sockets
         }
 
         /// <summary>
-        /// Force closes the client connection.
+        /// Gracefully shuts down and closes the client socket without throwing on
+        /// already-closed connections or resetting buffered outbound packets (such as MsgConnectEx).
         /// </summary>
         public virtual void Disconnect()
         {
-            this.Socket?.Disconnect(false);
+            try
+            {
+                Socket sock = this.Socket;
+                if (sock != null)
+                {
+                    if (sock.Connected)
+                    {
+                        try { sock.Shutdown(SocketShutdown.Both); } catch { }
+                    }
+                    sock.Close();
+                }
+            }
+            catch
+            {
+                // Ignore race conditions when both sides close simultaneously
+            }
         }
     }    
 }

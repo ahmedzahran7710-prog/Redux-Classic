@@ -44,9 +44,9 @@ namespace Comet.Game.Packets
             this.Length = reader.ReadUInt16();
             this.Type = (PacketType)reader.ReadUInt16();
             this.Action = (DataArrayMode)reader.ReadByte();
-            this.Count = reader.ReadByte();
+            this.Count = Math.Min((byte)20, reader.ReadByte());
             _ = reader.ReadUInt16();
-            for (int i = 0; i < this.Count; i++)
+            for (int i = 0; i < this.Count && reader.BaseStream.Position + 4 <= bytes.Length; i++)
                 this.Items.Add(reader.ReadUInt32());
         }
 
@@ -65,11 +65,11 @@ namespace Comet.Game.Packets
         public override async Task ProcessAsync(Client client)
         {
             Character user = client?.Character;
-            if (user == null || this.Items.Count == 0)
+            if (user == null || user.Trade != null || this.Items.Count == 0)
                 return;
 
             Item target = user.UserPackage[this.Items[0]];
-            if (target == null)
+            if (target == null || user.IsItemLockedInBooth(target.Identity))
                 return;
 
             byte oldPlus = target.Plus;
@@ -84,7 +84,8 @@ namespace Comet.Game.Packets
                     for (int i = 1; i < this.Items.Count && target.Plus < 12; i++)
                     {
                         Item minor = user.UserPackage[this.Items[i]];
-                        if (minor == null || minor.Identity == target.Identity || minor.Position != Item.ItemPosition.Inventory)
+                        if (minor == null || minor.Identity == target.Identity || minor.Position != Item.ItemPosition.Inventory ||
+                            minor.IsLocked() || user.IsItemLockedInBooth(minor.Identity))
                             continue;
 
                         bool isStone = minor.Type >= Item.TYPE_STONE1 && minor.Type <= Item.TYPE_STONE8;
@@ -128,14 +129,22 @@ namespace Comet.Game.Packets
                     for (int i = 1; i < this.Items.Count; i++)
                     {
                         Item minor = user.UserPackage[this.Items[i]];
-                        if (minor == null || minor.Identity == target.Identity || !minor.IsMount() || minor.Position != Item.ItemPosition.Inventory)
+                        if (minor == null || minor.Identity == target.Identity || !minor.IsMount() ||
+                            minor.Position != Item.ItemPosition.Inventory || minor.IsLocked() || user.IsItemLockedInBooth(minor.Identity))
+                            continue;
+
+                        byte minorPlus = minor.Plus;
+                        uint minorRgb = minor.SocketProgress;
+
+                        // Consume sacrifice steed FIRST so duplicate IDs in packet array can never grant free +points!
+                        if (!await user.UserPackage.SpendItemAsync(minor, 1))
                             continue;
 
                         if (this.Action == DataArrayMode.CompositionSteedNew)
                         {
                             // Official TQ 90% main + 10% minor RGB steed coat lineage blending
                             int c1 = (int)target.SocketProgress;
-                            int c2 = (int)minor.SocketProgress;
+                            int c2 = (int)minorRgb;
                             int g1 = c1 & 0xFF, g2 = c2 & 0xFF;
                             int b1 = (c1 >> 8) & 0xFF, b2 = (c2 >> 8) & 0xFF;
                             int r1 = (c1 >> 16) & 0xFF, r2 = (c2 >> 16) & 0xFF;
@@ -152,7 +161,7 @@ namespace Comet.Game.Packets
 
                         if (target.Plus < 12)
                         {
-                            target.CompositionProgress += GetMinorComposePoints(minor.Plus, isSteed: true);
+                            target.CompositionProgress += GetMinorComposePoints(minorPlus, isSteed: true);
                             while (target.Plus < 12)
                             {
                                 uint req = GetRequiredComposePoints(target.Plus, isSteed: true);
@@ -164,8 +173,6 @@ namespace Comet.Game.Packets
                             if (target.Plus >= 12)
                                 target.CompositionProgress = 0;
                         }
-
-                        await user.UserPackage.SpendItemAsync(minor, 1);
                     }
                     break;
                 }

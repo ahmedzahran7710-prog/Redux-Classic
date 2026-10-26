@@ -34,8 +34,8 @@ namespace Comet.Network.Sockets
         /// <param name="maxActiveConn">Maximum active connections alive at any given time</param>
         /// <param name="maxAttemptsPerMinute">Maximum connection attempts per minute</param>
         public TcpServerRegistry(
-            int banMinutes = 15,
-            int maxActiveConn = 50, 
+            int banMinutes = 2,
+            int maxActiveConn = 30, 
             int maxAttemptsPerMinute = 60)
         {
             this.Active = new Dictionary<string, int>();
@@ -88,6 +88,10 @@ namespace Comet.Network.Sockets
         /// <returns>True if the connection is allowed.</returns>
         public bool AddActiveClient(string ip)
         {
+            // Never rate-limit loopback self-tests or same-machine probes
+            if (ip == "127.0.0.1" || ip == "::1")
+                return true;
+
             // Check for blocked IP addresses
             if (this.Blocks.ContainsKey(ip))
             {
@@ -122,7 +126,10 @@ namespace Comet.Network.Sockets
                 count++;
                 if (count > ceiling)
                 {
-                    this.Blocks.TryAdd(ip, DateTime.UtcNow.AddMinutes(this.BanMinutes));
+                    if (this.Blocks.TryAdd(ip, DateTime.UtcNow.AddMinutes(this.BanMinutes)))
+                    {
+                        Console.WriteLine($"[AntiFlood] Temporarily blocked IP {ip} for {this.BanMinutes} minute(s) (exceeded {ceiling} limit).");
+                    }
                     return false;
                 }
 

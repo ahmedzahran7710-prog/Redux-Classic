@@ -72,8 +72,8 @@ namespace Comet.Account
         /// <param name="packet">An individual data packet to be processed</param>
         private async Task ProcessAsync(Client actor, byte[] packet) 
         {
-            // Validate connection
-            if (!actor.Socket.Connected)
+            // Validate connection and minimum TQ header length
+            if (actor?.Socket == null || !actor.Socket.Connected || packet == null || packet.Length < 4)
                 return;
 
             // Read in TQ's binary header
@@ -116,7 +116,8 @@ namespace Comet.Account
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Console.WriteLine($"[Account] Packet error from {actor.IPAddress}: {e.Message}");
+                actor.Disconnect();
             }
         }
 

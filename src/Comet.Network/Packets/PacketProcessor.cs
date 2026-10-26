@@ -90,10 +90,23 @@ namespace Comet.Network.Packets
         {
             while (!this.CancelReads.IsCancellationRequested)
             {
-                var msg = await channel.Reader.ReadAsync(this.CancelReads);
-                if (msg != null) 
-                { 
-                    await this.Process(msg.Actor, msg.Packet).ConfigureAwait(false); 
+                Message msg = null;
+                try
+                {
+                    msg = await channel.Reader.ReadAsync(this.CancelReads);
+                    if (msg != null)
+                    {
+                        await this.Process(msg.Actor, msg.Packet).ConfigureAwait(false);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[PacketProcessor] Unhandled packet exception from {msg?.Actor?.IPAddress ?? "unknown"}: {ex.Message}");
+                    try { msg?.Actor?.Disconnect(); } catch { }
                 }
             }
         }

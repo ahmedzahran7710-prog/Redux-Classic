@@ -119,6 +119,9 @@ namespace Comet.Game.States.NPCs
             if (buyer == null || this.m_seller == null || buyer.Identity == this.m_seller.Identity)
                 return false;
 
+            if (buyer.Trade != null || this.m_seller.Trade != null)
+                return false;
+
             if (buyer.Map != this.Map || buyer.GetDistance(this) > Screen.VIEW_SIZE)
                 return false;
 
@@ -134,12 +137,21 @@ namespace Comet.Game.States.NPCs
                 return false;
             }
 
+            if (boothItem.Price == 0 || boothItem.Price > 1_000_000_000)
+                return false;
+
             Item sellerItem = this.m_seller.UserPackage.FindInventoryItem(itemIdentity);
             if (sellerItem == null || sellerItem.IsLocked() || sellerItem.IsBound)
                 return false;
 
             if (boothItem.IsSilver)
             {
+                if ((ulong)this.m_seller.Silver + boothItem.Price > Character.MAX_INVENTORY_SILVER)
+                {
+                    this.Items[itemIdentity] = boothItem;
+                    await buyer.SendTalkAsync("The seller cannot carry any more Silver right now.");
+                    return false;
+                }
                 if (!await buyer.SpendSilverAsync((int)boothItem.Price))
                 {
                     this.Items[itemIdentity] = boothItem;
@@ -150,6 +162,12 @@ namespace Comet.Game.States.NPCs
             }
             else
             {
+                if ((ulong)this.m_seller.ConquerPoints + boothItem.Price > Character.MAX_CONQUER_POINTS)
+                {
+                    this.Items[itemIdentity] = boothItem;
+                    await buyer.SendTalkAsync("The seller cannot carry any more Conquer Points right now.");
+                    return false;
+                }
                 if (!await buyer.SpendConquerPointsAsync((int)boothItem.Price))
                 {
                     this.Items[itemIdentity] = boothItem;
@@ -159,11 +177,17 @@ namespace Comet.Game.States.NPCs
                 await this.m_seller.AwardConquerPointsAsync((int)boothItem.Price);
             }
 
-            // Transfer item ownership atomically
+            // Transfer item ownership atomically and persist both characters immediately
             await this.m_seller.UserPackage.RemoveFromInventoryAsync(sellerItem.Identity, deleteFromDb: false);
             await buyer.UserPackage.AddItemAsync(sellerItem, syncClient: true);
+            await this.m_seller.SaveAsync();
+            await buyer.SaveAsync();
 
             string currName = boothItem.IsSilver ? "Silver" : "CPs";
+            await Comet.Shared.Log.WriteLogAsync(
+                "Logs/Economy",
+                Comet.Shared.LogLevel.Info,
+                $"[Booth] '{buyer.Name}'(#{buyer.Identity}) bought '{sellerItem.Itemtype.Name}'(#{sellerItem.Identity}) from '{this.m_seller.Name}'(#{this.m_seller.Identity}) for {boothItem.Price} {currName}");
             await this.m_seller.SendTalkAsync(
                 $"[Mystic-Realms Market] {buyer.Name} bought your {sellerItem.Itemtype.Name} for {boothItem.Price:N0} {currName}!",
                 MsgTalk.TalkChannel.Talk,

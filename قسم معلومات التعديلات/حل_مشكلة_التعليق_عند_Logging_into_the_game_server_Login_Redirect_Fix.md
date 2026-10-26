@@ -1,4 +1,4 @@
-# الحل النهائي لمشكلة التعليق عند `Logging into the game server..` (`[Build v5.5]`)
+# الحل النهائي لمشكلة التعليق عند `Logging into the game server..` (`[Build v5.6]`)
 
 ## 1. كيف كشف فحص `[SelfTest] PASS` السبب البرمجي الحقيقي في باكت `MsgConnectEx`؟
 في تجربة **`[Build v5.4]`** ظهر في نافذة `Account Server` الدليل الحاسم:
@@ -25,12 +25,12 @@
 
 ---
 
-## 2. كيف تطبّق تحديث `[Build v5.5]` على جهازك؟
+## 2. كيف تطبّق تحديث `[Build v5.6]` على جهازك؟
 بما أن الفايروول والشبكة عندك أصبحوا مضبوطين خلاص (`[SelfTest] PASS` ✅)، لن تحتاج لأي أوامر PowerShell جديدة! فقط:
 1. اقفل نافذتي `Account Server` و `Game Server` الحاليتين.
-2. اسحب آخر تحديث من GitHub (`main`) مع الاحتفاظ بملفي `Comet.Account.config` و `Comet.Game.config`.
-3. في **Visual Studio 2022**: اضغط **Build -> Rebuild Solution** ثم شغّل السيرفرين وتأكد من ظهور **`[Build v5.5]`** في النافذتين وظهور `[SelfTest] PASS`.
-4. ادخل من `ConquerLoader` وسجّل دخولك!
+2. اسحب آخر تحديث من GitHub (`main`) — تأكد فقط من كلمة مرور MySQL ومسار `GameDataPath` داخل `Comet.Account.config` و `Comet.Game.config` (أو احتفظ بنسختيك وتأكد أن `"RpcNetwork"` مضبوط على `"127.0.0.1"` و `"StrictAuthPass": true`).
+3. في **Visual Studio 2022**: اضغط **Build -> Rebuild Solution** ثم شغّل السيرفرين وتأكد من ظهور **`[Build v5.6]`** في النافذتين وظهور `[SelfTest] PASS`.
+4. ادخل من `ConquerLoader` وسجّل دخولك! (ملاحظة: إذا كنت قد استوردت `comet.account.sql` سابقاً، تأكد من إنشاء حسابك الخاص في جدول `account` بـ `AuthorityID = 5`).
 
 ---
 

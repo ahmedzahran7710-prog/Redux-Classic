@@ -84,7 +84,7 @@ namespace Comet.Game
                 _ = Log.WriteLogAsync(
                     LogLevel.Error,
                     $"[Auth] AccountID={args.AccountID} logged in via an OLD Comet.Account.exe process! " +
-                    "Close ALL Comet.Account windows (and end Comet.Account.exe in Task Manager), Rebuild Solution, and launch Comet.Account [Build v5.5]!");
+                    "Close ALL Comet.Account windows (and end Comet.Account.exe in Task Manager), Rebuild Solution, and launch Comet.Account [Build v5.6]!");
             }
             else
             {
