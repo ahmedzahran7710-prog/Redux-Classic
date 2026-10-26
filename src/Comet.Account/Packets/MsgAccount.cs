@@ -88,8 +88,21 @@ namespace Comet.Account.Packets
 
             ulong token = await server.Rpc.CallAsync<ulong>("TransferAuth", args);
             await LoginsRepository.RecordAsync(client.Account.AccountID, client.IPAddress);
-            System.Console.WriteLine($"[Login] '{this.Username}' authenticated -> redirecting to {server.Name} ({server.GameIPAddress}:{server.GamePort})");
-            await client.SendAsync(new MsgConnectEx(server.GameIPAddress, server.GamePort, token));
+
+            string redirectIp = server.GameIPAddress;
+            if (string.IsNullOrWhiteSpace(redirectIp) ||
+                redirectIp == "127.0.0.1" ||
+                redirectIp == "0.0.0.0" ||
+                redirectIp.Equals("localhost", System.StringComparison.OrdinalIgnoreCase))
+            {
+                var localEp = client.Socket?.LocalEndPoint as System.Net.IPEndPoint;
+                string localIp = localEp?.Address.MapToIPv4().ToString();
+                if (!string.IsNullOrWhiteSpace(localIp) && localIp != "127.0.0.1" && localIp != "0.0.0.0")
+                    redirectIp = localIp;
+            }
+
+            System.Console.WriteLine($"[Login] '{this.Username}' authenticated -> redirecting to {server.Name} ({redirectIp}:{server.GamePort})");
+            await client.SendAsync(new MsgConnectEx(redirectIp, server.GamePort, token));
         }
 
         /// <summary>
