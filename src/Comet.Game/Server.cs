@@ -32,7 +32,7 @@ namespace Comet.Game
             footerLength: 8)
         {
             this.Processor = new PacketProcessor<Client>(this.ProcessAsync);
-            this.Processor.StartAsync(CancellationToken.None).ConfigureAwait(false);
+            _ = this.Processor.StartAsync(CancellationToken.None);
         }
 
         protected override async Task<Client> AcceptedAsync(Socket socket, Memory<byte> buffer)
