@@ -145,20 +145,21 @@ namespace Comet.Game.Packets
                 return;
             }
 
-            client.Character = new Character(client, character);
-            await AwardStarterItemsAsync(client.Character);
-            await RoleManager.LoginUserAsync(client);
+            var createdChar = new Character(client, character);
+            await AwardStarterItemsAsync(createdChar);
 
+            await Comet.Shared.Log.WriteLogAsync(
+                Comet.Shared.LogLevel.Info,
+                $"Created new character '{character.Name}' (#{character.CharacterID}, Class={character.CurrentClass}).");
+
+            // Retail Patch 5187: send ANSWER_OK on Register channel (2100); client immediately follows up with MsgConnect to enter world.
             await client.SendAsync(MsgTalk.RegisterOk);
-            await client.SendAsync(new MsgUserInfo(client.Character));
-            await client.SendAsync(new MsgData(DateTime.Now));
         }
 
         private static async Task AwardStarterItemsAsync(Character user)
         {
-            // Retail starter Tunic + Class weapon + 3 Stancher HP potions
-            var coat = await States.Items.Item.CreateAsync(user, 132005, States.Items.Item.ItemPosition.Armor);
-            _ = coat;
+            // Retail starter Tunic + Class weapon + potions (and starter Taoist spells)
+            await States.Items.Item.CreateAsync(user, 132005, States.Items.Item.ItemPosition.Armor);
 
             uint starterWeapon = user.Profession switch
             {
@@ -170,7 +171,18 @@ namespace Comet.Game.Packets
             await States.Items.Item.CreateAsync(user, starterWeapon, States.Items.Item.ItemPosition.RightHand);
 
             if (user.Profession == 40)
+            {
                 await States.Items.Item.CreateAsync(user, 1050000, States.Items.Item.ItemPosition.LeftHand);
+                for (int i = 0; i < 3; i++)
+                    await States.Items.Item.CreateAsync(user, 1050000, States.Items.Item.ItemPosition.Inventory);
+            }
+            else if (user.Profession == 100)
+            {
+                for (int i = 0; i < 3; i++)
+                    await States.Items.Item.CreateAsync(user, 1001000, States.Items.Item.ItemPosition.Inventory);
+                await MagicRepository.SaveAsync(new DbMagic { OwnerId = user.Identity, Type = 1000, Level = 0 }); // Thunder
+                await MagicRepository.SaveAsync(new DbMagic { OwnerId = user.Identity, Type = 1005, Level = 0 }); // Cure
+            }
 
             for (int i = 0; i < 3; i++)
                 await States.Items.Item.CreateAsync(user, 1000000, States.Items.Item.ItemPosition.Inventory);

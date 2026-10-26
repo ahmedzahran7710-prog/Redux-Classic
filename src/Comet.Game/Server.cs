@@ -47,6 +47,7 @@ namespace Comet.Game
 
             await handshakeRequest.RandomizeAsync();
             await client.SendAsync(handshakeRequest);
+            await Log.WriteLogAsync(LogLevel.Info, $"Accepted Game TCP connection from {client.IPAddress}, sent DH handshake.");
             return client;
         }
 

@@ -80,7 +80,7 @@ namespace Comet.Game.Packets
         {
             var writer = new PacketWriter();
             writer.Write((ushort)this.Type);
-            writer.Write(this.Color.ToArgb());
+            writer.Write(Color.FromArgb(0, this.Color).ToArgb());
             writer.Write((ushort)this.Channel);
             writer.Write((ushort)this.Style);
             writer.Write(this.CharacterID);
@@ -229,12 +229,13 @@ namespace Comet.Game.Packets
             Tip = 2015,
             World = 2021,
             Arena = 2022,
-            Login = 2100,
-            Register = 2101,
-            Entrance = 2102,
-            Shop = 2104,
-            Vendor = 2108,
+            Register = 2100,
+            Login = 2101,
+            Shop = 2102,
+            Pet = 2103,
+            Vendor = 2104,
             Website = 2105,
+            Entrance = 2106,
             GuildWarRight1 = 2108,
             GuildWarRight2 = 2109,
             Offline = 2110,

@@ -632,7 +632,7 @@ namespace Comet.Game.States
             set => this.m_dbCharacter.RecordY = value;
         }
 
-        public async Task EnterMapAsync()
+        public async Task EnterMapAsync(bool sendTeleportPacket = true)
         {
             GameMap map = MapManager.GetMap(this.MapIdentity);
             if (map == null)
@@ -655,7 +655,7 @@ namespace Comet.Game.States
                 this.RecordMapY = this.MapY;
             }
 
-            await map.AddAsync(this);
+            await map.AddAsync(this, sendTeleportPacket);
             await this.Screen.UpdateAsync();
         }
 

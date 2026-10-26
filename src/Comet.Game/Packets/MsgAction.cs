@@ -144,7 +144,7 @@ namespace Comet.Game.Packets
 
             switch (this.Action)
             {
-                case ActionType.LoginSpawn: // 74 - Enter initial map
+                case ActionType.LoginSpawn: // 74 - Enter initial map & echo LoginSpawn (74) so client advances login bar
                 {
                     GameMap targetMap = MapManager.GetMap(user.MapIdentity)
                                         ?? MapManager.GetMap(user.RecordMapIdentity)
@@ -154,7 +154,14 @@ namespace Comet.Game.Packets
                     {
                         Kernel.Services.Processor.Queue((int)targetMap.Partition, async () =>
                         {
-                            await user.EnterMapAsync();
+                            await user.EnterMapAsync(sendTeleportPacket: false);
+
+                            this.Identity = user.Identity;
+                            this.Command = user.MapIdentity;
+                            this.X = user.MapX;
+                            this.Y = user.MapY;
+                            this.Direction = (ushort)user.Direction;
+                            await user.SendAsync(this);
 
                             var attrib = new MsgUserAttrib(user.Identity, ClientUpdateType.Stamina, user.Energy);
                             attrib.Append(ClientUpdateType.MaxHitpoints, user.MaxLife);
@@ -355,7 +362,8 @@ namespace Comet.Game.Packets
                 }
 
                 default:
-                    // Echo non-critical UI state queries cleanly without disconnecting client
+                    // Echo non-critical login/UI state queries (e.g. OfflineMessages 134, PartnerInfo 152) cleanly
+                    await user.SendAsync(this);
                     break;
             }
         }

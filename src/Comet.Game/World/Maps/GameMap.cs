@@ -260,7 +260,7 @@ namespace Comet.Game.World.Maps
             return true;
         }
 
-        public async Task<bool> AddAsync(Role role)
+        public async Task<bool> AddAsync(Role role, bool sendTeleportPacket = true)
         {
             if (role == null) return false;
 
@@ -271,7 +271,7 @@ namespace Comet.Game.World.Maps
             if (role is Character user)
             {
                 this.Users[user.Identity] = user;
-                await this.SendMapInfoAsync(user);
+                await this.SendMapInfoAsync(user, sendTeleportPacket);
             }
 
             return true;
@@ -326,20 +326,23 @@ namespace Comet.Game.World.Maps
             return result;
         }
 
-        public async Task SendMapInfoAsync(Character user)
+        public async Task SendMapInfoAsync(Character user, bool sendTeleportPacket = true)
         {
             if (user == null) return;
 
             // Patch 5187 map status + MapDoc + 64-bit flags + map light color + weather
-            await user.SendAsync(new MsgAction
+            if (sendTeleportPacket)
             {
-                Identity = user.Identity,
-                Command = this.Identity,
-                X = user.MapX,
-                Y = user.MapY,
-                Action = MsgAction.ActionType.MapTeleport,
-                Direction = (ushort)user.Direction
-            });
+                await user.SendAsync(new MsgAction
+                {
+                    Identity = user.Identity,
+                    Command = this.Identity,
+                    X = user.MapX,
+                    Y = user.MapY,
+                    Action = MsgAction.ActionType.MapTeleport,
+                    Direction = (ushort)user.Direction
+                });
+            }
 
             await user.SendAsync(new MsgMapInfo(this.Identity, this.MapDoc, this.RawFlags));
 
