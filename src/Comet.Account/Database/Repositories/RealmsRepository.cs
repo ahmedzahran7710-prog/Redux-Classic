@@ -96,7 +96,7 @@ namespace Comet.Account.Database.Repositories
             }
             catch (Exception rpcEx)
             {
-                Console.WriteLine($"[SelfTest] RPC version mismatch with Game Server ({rpcEx.Message}). Rebuild BOTH Comet.Account and Comet.Game to [Build v5.4]!");
+                Console.WriteLine($"[SelfTest] RPC version mismatch with Game Server ({rpcEx.Message}). Rebuild BOTH Comet.Account and Comet.Game to [Build v5.5]!");
                 return;
             }
 

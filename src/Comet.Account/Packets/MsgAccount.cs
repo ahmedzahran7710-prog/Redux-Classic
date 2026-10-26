@@ -96,14 +96,15 @@ namespace Comet.Account.Packets
                 IPAddress = client.IPAddress,
                 RedirectIP = redirectIp,
                 RedirectPort = redirectPort,
-                AccountServerBuild = "v5.4"
+                AccountServerBuild = "v5.5"
             };
 
             ulong token = await server.Rpc.CallAsync<ulong>("TransferAuth", args);
             await LoginsRepository.RecordAsync(client.Account.AccountID, client.IPAddress);
 
-            Console.WriteLine($"[Login] '{this.Username}' authenticated -> redirecting to {server.Name} ({redirectIp}:{redirectPort})");
-            await client.SendAsync(new MsgConnectEx(redirectIp, redirectPort, token));
+            var reply = new MsgConnectEx(redirectIp, redirectPort, token);
+            Console.WriteLine($"[Login] '{this.Username}' authenticated -> sending 32-byte MsgConnectEx (Token={token}, Target={redirectIp}:{redirectPort})");
+            await client.SendAsync(reply);
         }
 
         private static (string Ip, uint Port) ResolveRedirectEndpoint(Client client, Database.Models.DbRealm server)

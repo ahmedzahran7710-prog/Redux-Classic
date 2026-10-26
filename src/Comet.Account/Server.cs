@@ -95,8 +95,12 @@ namespace Comet.Account
                         return;
 
                     case PacketType.MsgConnect:
-                        // Sent by Patch 5187 Conquer.exe with "res.dat" before closing Account socket & dialing Game Server
-                        Console.WriteLine($"[Login] Client {actor.IPAddress} acknowledged MsgConnectEx (res.dat) -> switching to Game Server.");
+                        // Sent by Patch 5187 Conquer.exe with "res.dat" right before switching to Game Server.
+                        // Close the Account socket cleanly so Conquer.exe immediately tears down 9960 and dials 5816.
+                        uint ackId = packet.Length >= 8 ? BitConverter.ToUInt32(packet, 4) : 0;
+                        uint ackData = packet.Length >= 12 ? BitConverter.ToUInt32(packet, 8) : 0;
+                        Console.WriteLine($"[Login] Client {actor.IPAddress} acknowledged MsgConnectEx (Token={ackId}, Data={ackData}) -> closing 9960 & switching to Game Server.");
+                        actor.Disconnect();
                         return;
 
                     default:

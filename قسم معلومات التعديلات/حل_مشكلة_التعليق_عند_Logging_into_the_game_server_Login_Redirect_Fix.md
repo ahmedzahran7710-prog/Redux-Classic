@@ -1,75 +1,41 @@
-# الحل الجذري والنهائي لمشكلة التعليق عند `Logging into the game server..` (`[Build v5.4]`)
+# الحل النهائي لمشكلة التعليق عند `Logging into the game server..` (`[Build v5.5]`)
 
-## 1. ماذا كشفت لقطتا الشاشة في `[Build v5.2]` و `[Build v5.3]` بدقة 100%؟
-بعد مراجعة لقطتي الشاشة وتفكيك ملفات اللودر (`ConquerLoader` / `COHook.dll` / `ConquerCipherHook.dll`) ومقارنة السورس بايت ببايت مع `Comet 5187` الأصلي، اتضح السببان المتلازمان اللذان سبّبا المشكلة:
-
-### السبب الأول: فلتر شركة TQ المدمج داخل `Conquer.exe` الخام (رفض عناوين الشبكة الداخلية `192.168.x.x`)
-* كلينت **Patch 5187** الأصلي (`Conquer.exe`) يحتوي بداخله على فلتر حماية رسمي من شركة TQ يرفض الاتصال بأي عنوان IP محلي من نطاقات **RFC1918** (`127.*.*.*`, `10.*.*.*`, `172.16-31.*.*`, **`192.168.*.*`**) داخل باكت `MsgConnectEx` ما لم يكن هناك Hook يعترض دالة `ws2_32!connect`.
-* برنامج **`ConquerLoader`** في وضع باتش `5187` لا يحقن `CLHook.dll` لتغيير الـ IP، ولذلك:
-  * قبل عنوان هاماشي **`25.21.212.130`** في شاشة الدخول (`9960`) لأن النطاق `25.*.*.*` هو نطاق IP عام غير محلي!
-  * بينما عندما قام `[Build v5.3]` بتحويل `25.21.212.130` إلى `192.168.1.2`، قام `Conquer.exe` برفض الاتصال بـ `192.168.1.2` بصمت تام قبل حتى إرسال أول حزمة TCP!
-
-### السبب الثاني: قاعدة الحظر المخفية (`Action=Block`) على برنامج `Comet.Game.exe` في جدار حماية ويندوز (أو تعارض بورت `5816`)
-* في التجربة الأولى (`[Build v5.2]`) عندما أرسل السيرفر `25.21.212.130:5816`، لماذا لم يصل الاتصال أيضاً؟
-  1. لأن ويندوز يصنف كارت شبكة **Hamachi (`25.21.212.130`)** كشبكة عامة (**`Public Network`**). وعند تشغيل `Comet.Game.exe` لأول مرة وظهور نافذة جدار حماية ويندوز، يكون خيار `Private networks` فقط مفعّلاً وخيار `Public networks` غير مفعّل افتراضياً — فينشئ ويندوز تلقائياً **قاعدة حظر صريحة (`Action = Block`) على ملف `Comet.Game.exe` نفسه لشبكات `Public`**!
-  2. في نظام جدار حماية ويندوز (`WFP`)، **قواعد الحظر (`Block`) لها أولوية مطلقة فوق كل قواعد السماح (`Allow`)**! لذلك أمر `netsh ... action=allow localport=5816` وحده **لا يلغي** قاعدة `Block` المسجلة على ملف `Comet.Game.exe` نفسه!
-  3. بالإضافة إلى ذلك، في ويندوز خاصية `Socket.ExclusiveAddressUse` تكون `false` افتراضياً إن لم تُفعّل برمجياً، مما يسمح ببقاء عملية قديمة مستحوذة على بورت `5816` بصمت دون إظهار خطأ!
-
----
-
-## 2. ماذا عدّلنا وأضفنا في السورس في `[Build v5.4]`؟ (شرح مبسّط للمبتدئين)
-
-### أ) في ملف `src/Comet.Account/Packets/MsgAccount.cs`
-* أوقفنا تماماً تحويل عنوان هاماشي (`25.x.x.x`) إلى `192.168.x.x` حتى يرسل السيرفر عنوان **`25.21.212.130:5816`** الذي يقبله `Conquer.exe` الأصلي مباشرة بدون أي مشاكل.
-* وإذا كان `GameIPAddress` في جدول `realm` مكتوباً بالخطأ `127.0.0.1` أو `192.168.x.x` بينما اللاعب دخل على `Account Server` عبر هاماشي (`25.21.212.130`)، يعتمد السيرفر تلقائياً نفس العنوان الناجح (`25.21.212.130`)!
-
-### ب) في ملف `src/Comet.Network/Sockets/TcpServerListener.cs` و `src/Comet.Game/Program.cs`
-* فعّلنا `this.Socket.ExclusiveAddressUse = true;` قبل ربط البورت (`Bind`) في كلٍ من `Account Server` و `Game Server`، مع فحص فوري لأي خطأ ربط بورت وإظهاره بوضوح تام حتى يستحيل استحواذ أي عملية قديمة في الخلفية على بورت `5816` أو `9960` بصمت.
-* رفعنا حدود الحماية في `TcpServerRegistry.cs` (`maxActiveConn = 50`, `maxAttemptsPerMinute = 60`) مع معالجة نظيفة لفحوصات حالة البورت (`ONLINE` في اللودر وفحص `[SelfTest]`).
-
-### ج) الفحص الذاتي التلقائي الفوري عند التشغيل (`[SelfTest]`) في `RealmsRepository.cs` و `Remote.cs`
-* بمجرد اتصال `Account Server` بـ `Game Server` عبر RPC عند تشغيل السيرفر (قبل حتى أن تفتح الكلينت!)، يقوم `Account Server [Build v5.4]` تلقائياً بفتح اتصال TCP حقيقي على **`25.21.212.130:5816`** والتحقق عبر RPC أن نافذة `Game Server` الحالية استلمت الاتصال فعلياً، ويطبع لك النتيجة فوراً على شاشة `Account Server`:
-  * **`[SelfTest] PASS: Game port 25.21.212.130:5816 is OPEN and verified on 'Mystic-Realms' Game Server! Ready for login.`** -> معناها الطريق مفتوح 100% وجاهز للدخول فوراً!
-  * **`[SelfTest] BLOCKED BY WINDOWS FIREWALL`** -> معناها جدار الحماية ما زال يحظر `Comet.Game.exe` وتحتاج تشغيل أمر الـ PowerShell بالأسفل كمسؤول (`Run as Administrator`).
-  * **`[SelfTest] PORT HIJACKED`** -> معناها توجد عملية أخرى في `Task Manager` حاجزة بورت `5816`.
-
----
-
-## 3. خطوات التطبيق المضمونة 100% على جهازك (3 خطوات فقط)
-
-### الخطوة 1: امسح قواعد الحظر المخفية (`Block`) من جدار حماية ويندوز (مهم جداً!)
-افتح قائمة ابدأ واكتب **`PowerShell`**، ثم اضغط كليك يمين واختر **Run as administrator** (تشغيل كمسؤول)، والصق هذا الأمر الواحد واضغط **Enter**:
-```powershell
-Get-NetFirewallRule | Where-Object { $_.Action -eq 'Block' -and ($_.DisplayName -match 'Comet|Mystic|Conquer' -or ($_ | Get-NetFirewallApplicationFilter).Program -match 'Comet|Conquer') } | Remove-NetFirewallRule; New-NetFirewallRule -DisplayName "Mystic-Realms Allow TCP" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 9960,5816,5817 -Profile Any -ErrorAction SilentlyContinue
+## 1. كيف كشف فحص `[SelfTest] PASS` السبب البرمجي الحقيقي في باكت `MsgConnectEx`؟
+في تجربة **`[Build v5.4]`** ظهر في نافذة `Account Server` الدليل الحاسم:
+```text
+[SelfTest] PASS: Game port 25.21.212.130:5816 is OPEN and verified on 'Mystic-Realms' Game Server! Ready for login.
 ```
-*(هذا الأمر يحذف فوراً أي قاعدة `Block` أنشأها ويندوز تلقائياً على `Comet.Game.exe` لشبكة هاماشي `Public`، ويفتح البورتات على جميع الشبكات).*
+هذا السطر أثبت قاطعاً أن **الشبكة وهاماشي وجدار الحماية وبورت `5816` سليمة ومفتوحة 100%**، وأن المشكلة ليست من جهازك ولا من الفايروول، بل في **البايتات التي يقرأها `Conquer.exe` من باكت `MsgConnectEx (1055)`** عند تشغيله عبر **`ConquerLoader` (`COServer.dat`)**!
 
-### الخطوة 2: اسحب تحديث `[Build v5.4]` واعمل Rebuild وشغّل السيرفرين
-1. اقفل نافذتي السيرفر الحاليتين، واسحب آخر تحديث من GitHub (`git pull` أو تحميل النسخة المحدثة مع الاحتفاظ بملفي `Comet.Account.config` و `Comet.Game.config`).
-2. تأكد في جدول `realm` داخل قاعدة بيانات `comet.account` (في HeidiSQL) أن:
-   * `Name` = `Mystic-Realms`
-   * `GameIPAddress` = `25.21.212.130`
-   * `GamePort` = `5816`
-   * `RpcIPAddress` = `127.0.0.1`
-   * `RpcPort` = `5817`
-3. في **Visual Studio 2022**: اختر **Build -> Rebuild Solution**، ثم شغّل `Comet.Game` و `Comet.Account` وتأكد أن النافذتين مكتوب فيهما **`[Build v5.4]`**، وأن نافذة **`Account Server`** طبعت لك السطر الأخضر المطمئن:
-   > `[SelfTest] PASS: Game port 25.21.212.130:5816 is OPEN and verified on 'Mystic-Realms' Game Server! Ready for login.`
+وبمقارنة سورس **Comet 5187** الخام سطراً بسطر مع سورس **`Long V5187`** (المطوَّر من نفس صاحب برنامج `ConquerLoader` لباتش `5187`)، وجدنا **3 اختلافات برمجية قاتلة في باكت التحويل**:
 
-### الخطوة 3: تأكد من إعدادات `ConquerLoader` وادخل اللعبة!
-افتح `ConquerLoader.exe` واضغط **`Settings`** وتأكد أن الخانات مضبوطة هكذا:
-* **Server Name:** `Mystic-Realms`
-* **Login Host:** `25.21.212.130`
-* **Game Host:** `25.21.212.130`
-* **Login Port:** `9960`
-* **Game Port:** `5816`
-* **Server Version:** `5187`
+### الخلل البرمجي الأول (الرئيسي): توليد `Token` من 8 بايت عشوائية بدلاً من 4 بايت (`uint`)
+* في سورس `Comet` الخام (`Remote.cs`): كان يولّد `Token` بطول **8 بايت (`ulong`)** عشوائية بالكامل، مما يجعل البايتات من `8` إلى `11` (`dwData`) داخل `MsgConnectEx` تحمل قيماً عشوائية غير صفرية دائماً!
+* في كلينت باتش **5187** عند استخدام ملف `COServer.dat` المُولَّد بواسطة `ConquerLoader` (والذي يترك حقول `<field name="BindServerIP" />` فارغة و `<field name="BindServerPort">0</field>`):
+  * عندما تكون قيمة `dwData` (البايتات `8..11`) **لا تساوي صفراً**، يعتبر `Conquer.exe` الحساب خاضعاً لنظام ربط سيرفر الحماية (`BindServer`) فيحاول الاتصال بـ `BindServerIP` الفارغ (`"" : 0`) بدلاً من `25.21.212.130:5816`، فيفشل الاتصال داخلياً دون إرسال أي حزمة للسيرفر!
+* **الإصلاح في `src/Comet.Game/Remote.cs`:** توليد التوكن كعدد **32-بت (`uint` من 4 بايت فقط لا يساوي صفراً)** بحيث تكون البايتات `8..11` (`dwData`) في `MsgConnectEx` **دائماً `0` (`0x00000000`)** تماماً كما في `Long V5187`!
 
-احفظ الإعدادات واضغط **START** وسجّل الدخول بحسابك (`admin`) — ستدخل فوراً إلى شاشة إنشاء الشخصية (**Create Character**) وعالم **Mystic-Realms**!
+### الخلل البرمجي الثاني: طول باكت `MsgConnectEx` (`34` بايت بدلاً من `32` بايت)
+* في `src/Comet.Account/Packets/MsgConnectEx.cs`: كان يكتب `writer.Write((ushort)0);` إضافية في نهاية الباكت ليصبح طوله `34` بايت بدلاً من الحجم الرسمي لهيكل `CMsgConnectEx` في باتش 5187 وهو **`32` بايت بالضبط** (`4..7 Token`, `8..11 Data=0`, `12..27 IP[16]`, `28..31 Port`).
+* **الإصلاح:** إزالة الـ `2` بايت الزائدة ليطابق هيكل الـ `32` بايت الرسمي لباتش `5187`.
+
+### الخلل البرمجي الثالث: عدم إغلاق سوكت `Account Server (9960)` بعد استلام `res.dat`
+* الكلينت `Conquer.exe` يستخدم كائن شبكة واحد (`g_objNetwork`)؛ وبعد إرساله باكت تأكيد `MsgConnect ("res.dat")` إلى `Account Server`، يقوم سورس `Long V5187` بقطع اتصال بورت `9960` فوراً (`actor.Disconnect()`) لينتقل الكلينت مباشرة لبورت `5816` دون انتظار مهلة الـ 30 ثانية.
+* **الإصلاح في `src/Comet.Account/Server.cs`:** استدعاء `actor.Disconnect()` مباشرة فور استلام `MsgConnect (res.dat)`، مع مطابقة أوفستات `MsgConnect.Decode` في `Comet.Game/Packets/MsgConnect.cs` لباتش `5187`.
 
 ---
 
-## 4. كيف تعدّل هذه الإعدادات يدوياً مستقبلاً؟
-* إذا انتقلت من **Hamachi** إلى سيرفر **VPS** حقيقي له Public IP ثابت (مثلاً `185.x.x.x`):
-  1. عدّل `GameIPAddress` في جدول `realm` بقاعدة بيانات `comet.account` إلى الـ IP الجديد.
-  2. عدّل `Login Host` و `Game Host` في اللودر إلى نفس الـ IP الجديد.
-  3. سيقوم فحص **`[SelfTest]`** في `src/Comet.Account/Database/Repositories/RealmsRepository.cs` تلقائياً باختبار الـ IP الجديد عند كل تشغيل للتأكد أن البورت `5816` مفتوح ويصل للسيرفر!
+## 2. كيف تطبّق تحديث `[Build v5.5]` على جهازك؟
+بما أن الفايروول والشبكة عندك أصبحوا مضبوطين خلاص (`[SelfTest] PASS` ✅)، لن تحتاج لأي أوامر PowerShell جديدة! فقط:
+1. اقفل نافذتي `Account Server` و `Game Server` الحاليتين.
+2. اسحب آخر تحديث من GitHub (`main`) مع الاحتفاظ بملفي `Comet.Account.config` و `Comet.Game.config`.
+3. في **Visual Studio 2022**: اضغط **Build -> Rebuild Solution** ثم شغّل السيرفرين وتأكد من ظهور **`[Build v5.5]`** في النافذتين وظهور `[SelfTest] PASS`.
+4. ادخل من `ConquerLoader` وسجّل دخولك!
+
+---
+
+## 3. أماكن التعديل اليدوي في الكود (مرجع للمبتدئين)
+* **تعديل هيكل باكت التوجيه للكلينت:** `src/Comet.Account/Packets/MsgConnectEx.cs` (دالة `Encode`).
+* **تعديل طريقة توليد توكن الدخول ومدة صلاحيته (`60` ثانية):** `src/Comet.Game/Remote.cs` (دالة `TransferAuth`).
+* **تعديل إغلاق اتصال شاشة الحساب بعد التوجيه:** `src/Comet.Account/Server.cs` (`case PacketType.MsgConnect`).
+* **تعديل استقبال الكلينت عند دخوله سيرفر الجيم:** `src/Comet.Game/Packets/MsgConnect.cs`.

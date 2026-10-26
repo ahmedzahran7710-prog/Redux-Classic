@@ -61,11 +61,12 @@ namespace Comet.Account.Packets
             }
             else
             {
-                // Successful login
-                writer.Write(this.Token);
+                // Successful login (exact 32-byte Patch 5187 CMsgConnectEx layout:
+                // 4..7 = uint Token, 8..11 = uint Data (0), 12..27 = char[16] IP, 28..31 = uint Port)
+                writer.Write((uint)this.Token);
+                writer.Write((uint)(this.Token >> 32));
                 writer.Write(this.IPAddress, 16);
                 writer.Write(this.Port);
-                writer.Write((ushort)0);
             }
             
             return writer.ToArray();
