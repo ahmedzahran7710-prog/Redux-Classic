@@ -35,8 +35,8 @@ namespace Comet.Network.Sockets
         /// <param name="maxAttemptsPerMinute">Maximum connection attempts per minute</param>
         public TcpServerRegistry(
             int banMinutes = 15,
-            int maxActiveConn = 10, 
-            int maxAttemptsPerMinute = 15)
+            int maxActiveConn = 50, 
+            int maxAttemptsPerMinute = 60)
         {
             this.Active = new Dictionary<string, int>();
             this.Attempts = new Dictionary<string, int>();
@@ -120,7 +120,7 @@ namespace Comet.Network.Sockets
             if (collection.TryGetValue(ip, out int count))
             {
                 count++;
-                if (count > this.MaxActiveConnections)
+                if (count > ceiling)
                 {
                     this.Blocks.TryAdd(ip, DateTime.UtcNow.AddMinutes(this.BanMinutes));
                     return false;

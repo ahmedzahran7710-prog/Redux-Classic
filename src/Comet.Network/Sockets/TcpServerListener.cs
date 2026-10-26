@@ -50,6 +50,7 @@ namespace Comet.Network.Sockets
         {
             // Initialize and configure server socket
             this.Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            this.Socket.ExclusiveAddressUse = true;
             this.Socket.LingerState = new LingerOption(false, 0);
             this.Socket.NoDelay = !delay;
             this.ShutdownToken = new CancellationTokenSource();
@@ -106,7 +107,8 @@ namespace Comet.Network.Sockets
                     var ip = (socket.RemoteEndPoint as IPEndPoint).Address.MapToIPv4().ToString();
                     if (!this.Registry.AddActiveClient(ip))
                     {
-                        socket.Disconnect(false);
+                        Console.WriteLine($"[Security] Rejected TCP connection from {ip} (rate-limit / active-connection cap).");
+                        socket.Close();
                         this.AcceptanceSemaphore.Release();
                         continue;
                     }
@@ -162,7 +164,7 @@ namespace Comet.Network.Sockets
                     examined = await receiveOperation;
                     if (examined == 0) 
                     {
-                        Console.WriteLine($"[Handshake] {actor.IPAddress} closed socket before sending DH reply (0 bytes). Verify clean Patch 5187 Conquer.exe.");
+                        // Normal TCP port-availability probe (e.g. AccountServer [SelfTest] or ConquerLoader status check)
                         actor.Disconnect();
                         this.Disconnecting(actor);
                         return; 
@@ -171,6 +173,15 @@ namespace Comet.Network.Sockets
                 }
                 catch (Exception e)
                 {
+                    if (e is SocketException sockReset &&
+                        (sockReset.SocketErrorCode == SocketError.ConnectionReset ||
+                         sockReset.SocketErrorCode == SocketError.ConnectionAborted))
+                    {
+                        actor.Disconnect();
+                        this.Disconnecting(actor);
+                        return;
+                    }
+
                     Console.WriteLine($"[Handshake] {actor.IPAddress} receive failed during DH exchange: {e.Message}");
                     if (e is SocketException)
                     {

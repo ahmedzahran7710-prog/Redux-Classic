@@ -21,6 +21,8 @@ namespace Comet.Game
     internal sealed class Server : TcpServerListener<Client>
     {
         public static long TotalAcceptedConnections;
+        public static long TotalCompletedHandshakes;
+        public static volatile bool SuppressProbeLog;
 
         private readonly PacketProcessor<Client> Processor;
 
@@ -50,7 +52,10 @@ namespace Comet.Game
 
             await handshakeRequest.RandomizeAsync();
             await client.SendAsync(handshakeRequest);
-            await Log.WriteLogAsync(LogLevel.Info, $"Accepted Game TCP connection from {client.IPAddress}, sent DH handshake.");
+            if (!SuppressProbeLog)
+            {
+                await Log.WriteLogAsync(LogLevel.Info, $"Accepted Game TCP connection from {client.IPAddress}, sent DH handshake.");
+            }
             return client;
         }
 
@@ -71,6 +76,7 @@ namespace Comet.Game
                     actor.DiffieHellman.DecryptionIV,
                     actor.DiffieHellman.EncryptionIV);
                 actor.DiffieHellman = null;
+                Interlocked.Increment(ref TotalCompletedHandshakes);
                 return true;
             }
             catch (Exception e)

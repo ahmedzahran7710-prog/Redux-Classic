@@ -23,7 +23,7 @@ namespace Comet.Game
 
             Console.Title = GameBranding.GameServerTitle;
             Console.WriteLine();
-            await Log.WriteLogAsync(LogLevel.Info, $"{GameBranding.GameName}: Game Server [Build v5.3] (Patch {GameBranding.PatchVersion} - Retail Classic)");
+            await Log.WriteLogAsync(LogLevel.Info, $"{GameBranding.GameName}: Game Server [Build v5.4] (Patch {GameBranding.PatchVersion} - Retail Classic)");
             await Log.WriteLogAsync(LogLevel.Info, $"Copyright 2018-{DateTime.Now:yyyy} Gareth Jensen \"Spirited\" | {GameBranding.GameName}");
             Console.WriteLine();
 
@@ -74,12 +74,32 @@ namespace Comet.Game
             // Start the RPC server listener (Account <-> Game auth bridge on Port 5817)
             await Log.WriteLogAsync(LogLevel.Info, $"Launching RPC listener on {config.RpcNetwork.IPAddress}:{config.RpcNetwork.Port}...");
             var rpcServer = new RpcServerListener(new Remote());
-            _ = rpcServer.StartAsync(config.RpcNetwork.Port, config.RpcNetwork.IPAddress);
+            try
+            {
+                _ = rpcServer.StartAsync(config.RpcNetwork.Port, config.RpcNetwork.IPAddress);
+            }
+            catch (System.Net.Sockets.SocketException rpcEx)
+            {
+                await Log.WriteLogAsync(LogLevel.Error, $"[ERROR] RPC Port {config.RpcNetwork.Port} is ALREADY IN USE ({rpcEx.SocketErrorCode})! Close any older Comet.Game.exe in Task Manager and start again.");
+                Console.ReadLine();
+                return;
+            }
 
             // Start the Game TCP listener (Port 5816)
             await Log.WriteLogAsync(LogLevel.Info, $"Launching Game listener on {config.GameNetwork.IPAddress}:{config.GameNetwork.Port}...");
             var server = new Server(config);
             var serverTask = server.StartAsync(config.GameNetwork.Port, config.GameNetwork.IPAddress);
+
+            // Brief check to catch immediate Socket.Bind conflicts before announcing online
+            await Task.Delay(150);
+            if (serverTask.IsFaulted)
+            {
+                var baseEx = serverTask.Exception?.GetBaseException();
+                await Log.WriteLogAsync(LogLevel.Error, $"[ERROR] Game Port {config.GameNetwork.Port} FAILED TO BIND: {baseEx?.Message}");
+                await Log.WriteLogAsync(LogLevel.Error, $"Close ALL other Conquer / Comet.Game processes holding Port {config.GameNetwork.Port} in Task Manager and start again.");
+                Console.ReadLine();
+                return;
+            }
 
             Console.CancelKeyPress += (_, eventArgs) =>
             {
@@ -91,7 +111,12 @@ namespace Comet.Game
 
             try
             {
-                await Task.WhenAny(serverTask, Task.Delay(Timeout.Infinite, shutdownCts.Token));
+                var finished = await Task.WhenAny(serverTask, Task.Delay(Timeout.Infinite, shutdownCts.Token));
+                if (finished == serverTask && serverTask.IsFaulted)
+                {
+                    await Log.WriteLogAsync(LogLevel.Error, $"[ERROR] Game listener stopped unexpectedly: {serverTask.Exception?.GetBaseException().Message}");
+                    Console.ReadLine();
+                }
             }
             catch (OperationCanceledException)
             {

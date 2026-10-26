@@ -47,6 +47,7 @@ namespace Comet.Network.RPC
                 catch (IOException) { }
                 catch (SocketException) { }
                 catch (Exception e) { Console.WriteLine(e); }
+                this.Rpc = null;
                 Thread.Sleep(1000);
             }
         }
@@ -54,7 +55,7 @@ namespace Comet.Network.RPC
         /// <summary>
         /// Returns true if the RPC server is online and the client is connected.
         /// </summary>
-        public bool Online => this.BaseClient.Connected;
+        public bool Online => this.BaseClient != null && this.BaseClient.Connected && this.Rpc != null;
 
         /// <summary>
         /// Invoke a method on the server and do not wait for a result.

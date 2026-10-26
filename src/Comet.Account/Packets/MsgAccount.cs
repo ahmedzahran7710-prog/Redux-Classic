@@ -96,7 +96,7 @@ namespace Comet.Account.Packets
                 IPAddress = client.IPAddress,
                 RedirectIP = redirectIp,
                 RedirectPort = redirectPort,
-                AccountServerBuild = "v5.3"
+                AccountServerBuild = "v5.4"
             };
 
             ulong token = await server.Rpc.CallAsync<ulong>("TransferAuth", args);
@@ -112,97 +112,37 @@ namespace Comet.Account.Packets
             string redirectIp = configuredIp;
             uint redirectPort = server.GamePort;
 
-            var activeLocalIps = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            string preferredPrivateLanIp = null;
-            string anyPrivateLanIp = null;
-
-            try
-            {
-                foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
-                {
-                    if (nic.OperationalStatus != OperationalStatus.Up ||
-                        nic.NetworkInterfaceType == NetworkInterfaceType.Loopback ||
-                        nic.NetworkInterfaceType == NetworkInterfaceType.Tunnel)
-                        continue;
-
-                    bool isPhysicalLan =
-                        nic.NetworkInterfaceType == NetworkInterfaceType.Ethernet ||
-                        nic.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 ||
-                        nic.NetworkInterfaceType == NetworkInterfaceType.GigabitEthernet;
-
-                    foreach (UnicastIPAddressInformation uni in nic.GetIPProperties().UnicastAddresses)
-                    {
-                        if (uni.Address.AddressFamily != AddressFamily.InterNetwork)
-                            continue;
-
-                        string ip = uni.Address.ToString();
-                        if (ip.StartsWith("127.") || ip.StartsWith("169.254.") || ip == "0.0.0.0")
-                            continue;
-
-                        activeLocalIps.Add(ip);
-
-                        if (IsPrivateLanIPv4(ip))
-                        {
-                            anyPrivateLanIp ??= ip;
-                            if (isPhysicalLan && preferredPrivateLanIp == null)
-                                preferredPrivateLanIp = ip;
-                        }
-                    }
-                }
-            }
-            catch
-            {
-                // Ignore NIC enumeration errors and fall back to socket endpoint
-            }
-
-            preferredPrivateLanIp ??= anyPrivateLanIp ?? activeLocalIps.FirstOrDefault();
-
             var localEp = client.Socket?.LocalEndPoint as IPEndPoint;
             string socketLocalIp = localEp?.Address.MapToIPv4().ToString();
             bool socketLocalIsUsable =
                 !string.IsNullOrWhiteSpace(socketLocalIp) &&
                 !socketLocalIp.StartsWith("127.") &&
+                !socketLocalIp.StartsWith("169.254.") &&
                 socketLocalIp != "0.0.0.0";
 
-            string rpcIp = (server.RpcIPAddress ?? string.Empty).Trim();
-            bool isLocalRealm =
-                string.IsNullOrWhiteSpace(rpcIp) ||
-                rpcIp.StartsWith("127.") ||
-                rpcIp == "0.0.0.0" ||
-                rpcIp.Equals("localhost", StringComparison.OrdinalIgnoreCase) ||
-                activeLocalIps.Contains(rpcIp);
-
-            string clientIp = (client.IPAddress ?? string.Empty).Trim();
-            bool isSameMachineClient =
-                clientIp.StartsWith("127.") ||
-                activeLocalIps.Contains(clientIp);
-
-            if (string.IsNullOrWhiteSpace(redirectIp) ||
+            // IMPORTANT: Clean Patch 5187 Conquer.exe has TQ Digital's hardcoded anti-local-IP filter
+            // that silently rejects 127.*.*.*, 10.*.*.*, 172.16-31.*.*, and 192.168.*.* in MsgConnectEx
+            // unless a Winsock connect() detour (DragonLauncher / CLHook) is injected.
+            // Hamachi's 25.*.*.* block IS accepted natively by Clean 5187 Conquer.exe!
+            // Therefore, NEVER rewrite a valid non-RFC1918 IP (like 25.21.212.130) to 192.168.*.*.
+            // Conversely, if realm.GameIPAddress in MySQL is accidentally set to 127.0.0.1 / 0.0.0.0 / RFC1918
+            // while the client connected to Account Server via a non-RFC1918 IP (like Hamachi 25.x.x.x),
+            // automatically use that proven client-reachable socketLocalIp!
+            bool configuredInvalidOrLoopback =
+                string.IsNullOrWhiteSpace(redirectIp) ||
                 redirectIp.StartsWith("127.") ||
                 redirectIp == "0.0.0.0" ||
-                redirectIp.Equals("localhost", StringComparison.OrdinalIgnoreCase))
-            {
-                string replacement = (socketLocalIsUsable && !socketLocalIp.StartsWith("25."))
-                    ? socketLocalIp
-                    : (preferredPrivateLanIp ?? (socketLocalIsUsable ? socketLocalIp : redirectIp));
+                redirectIp.Equals("localhost", StringComparison.OrdinalIgnoreCase);
 
-                if (!string.IsNullOrWhiteSpace(replacement) && !replacement.StartsWith("127."))
-                {
-                    Console.WriteLine($"[AutoFix] Replaced loopback realm.GameIPAddress '{configuredIp}' -> '{replacement}' (Conquer.exe rejects 127.0.0.1 in MsgConnectEx).");
-                    redirectIp = replacement;
-                }
-            }
-            else if (isLocalRealm && activeLocalIps.Count > 0 && !activeLocalIps.Contains(redirectIp))
+            if (configuredInvalidOrLoopback && socketLocalIsUsable)
             {
-                string replacement = preferredPrivateLanIp ?? (socketLocalIsUsable ? socketLocalIp : redirectIp);
-                Console.WriteLine($"[AutoFix] realm.GameIPAddress '{configuredIp}' is not active on any UP network adapter -> switched to '{replacement}'.");
-                redirectIp = replacement;
+                Console.WriteLine($"[AutoFix] Replaced loopback realm.GameIPAddress '{configuredIp}' -> '{socketLocalIp}'.");
+                redirectIp = socketLocalIp;
             }
-            else if (isLocalRealm && isSameMachineClient && redirectIp.StartsWith("25.") &&
-                     !string.IsNullOrWhiteSpace(preferredPrivateLanIp) && !preferredPrivateLanIp.StartsWith("25."))
+            else if (IsPrivateLanIPv4(redirectIp) && socketLocalIsUsable && !IsPrivateLanIPv4(socketLocalIp))
             {
-                Console.WriteLine($"[AutoFix] Same-PC login via Hamachi IP '{configuredIp}' -> routing locally via Private LAN IP '{preferredPrivateLanIp}' to avoid Windows Public Firewall block on Port 5816.");
-                redirectIp = preferredPrivateLanIp;
+                Console.WriteLine($"[AutoFix] Replaced RFC1918 realm.GameIPAddress '{configuredIp}' -> '{socketLocalIp}' (Clean 5187 Conquer.exe blocks 192.168.x.x/10.x.x.x without connect hook).");
+                redirectIp = socketLocalIp;
             }
 
             if (redirectPort == 0 ||
