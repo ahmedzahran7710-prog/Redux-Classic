@@ -11,5 +11,8 @@ namespace Comet.Shared.Models
         public uint AccountID { get; set; }
         public ushort AuthorityID { get; set; }
         public string AuthorityName { get; set; }
+        public string RedirectIP { get; set; }
+        public uint RedirectPort { get; set; }
+        public string AccountServerBuild { get; set; }
     }
 }

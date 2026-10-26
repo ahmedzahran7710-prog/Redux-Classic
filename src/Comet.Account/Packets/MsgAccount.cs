@@ -1,7 +1,12 @@
 namespace Comet.Account.Packets
 {
+    using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Net;
+    using System.Net.NetworkInformation;
+    using System.Net.Sockets;
     using System.Text;
     using System.Threading.Tasks;
     using Comet.Account.Database.Repositories;
@@ -79,30 +84,152 @@ namespace Comet.Account.Packets
                 return;
             }
 
+            // Resolve safe, reachable Game Server IP & Port before issuing token
+            (string redirectIp, uint redirectPort) = ResolveRedirectEndpoint(client, server);
+
             // Get an access token from the server
-            var args = new TransferAuthArgs();
-            args.AccountID = client.Account.AccountID;
-            args.AuthorityID = client.Account.AuthorityID;
-            args.AuthorityName = client.Account.Authority.AuthorityName;
-            args.IPAddress = client.IPAddress;
+            var args = new TransferAuthArgs
+            {
+                AccountID = client.Account.AccountID,
+                AuthorityID = client.Account.AuthorityID,
+                AuthorityName = client.Account.Authority.AuthorityName,
+                IPAddress = client.IPAddress,
+                RedirectIP = redirectIp,
+                RedirectPort = redirectPort,
+                AccountServerBuild = "v5.3"
+            };
 
             ulong token = await server.Rpc.CallAsync<ulong>("TransferAuth", args);
             await LoginsRepository.RecordAsync(client.Account.AccountID, client.IPAddress);
 
-            string redirectIp = server.GameIPAddress;
-            if (string.IsNullOrWhiteSpace(redirectIp) ||
-                redirectIp == "127.0.0.1" ||
-                redirectIp == "0.0.0.0" ||
-                redirectIp.Equals("localhost", System.StringComparison.OrdinalIgnoreCase))
+            Console.WriteLine($"[Login] '{this.Username}' authenticated -> redirecting to {server.Name} ({redirectIp}:{redirectPort})");
+            await client.SendAsync(new MsgConnectEx(redirectIp, redirectPort, token));
+        }
+
+        private static (string Ip, uint Port) ResolveRedirectEndpoint(Client client, Database.Models.DbRealm server)
+        {
+            string configuredIp = (server.GameIPAddress ?? string.Empty).Trim();
+            string redirectIp = configuredIp;
+            uint redirectPort = server.GamePort;
+
+            var activeLocalIps = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            string preferredPrivateLanIp = null;
+            string anyPrivateLanIp = null;
+
+            try
             {
-                var localEp = client.Socket?.LocalEndPoint as System.Net.IPEndPoint;
-                string localIp = localEp?.Address.MapToIPv4().ToString();
-                if (!string.IsNullOrWhiteSpace(localIp) && localIp != "127.0.0.1" && localIp != "0.0.0.0")
-                    redirectIp = localIp;
+                foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
+                {
+                    if (nic.OperationalStatus != OperationalStatus.Up ||
+                        nic.NetworkInterfaceType == NetworkInterfaceType.Loopback ||
+                        nic.NetworkInterfaceType == NetworkInterfaceType.Tunnel)
+                        continue;
+
+                    bool isPhysicalLan =
+                        nic.NetworkInterfaceType == NetworkInterfaceType.Ethernet ||
+                        nic.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 ||
+                        nic.NetworkInterfaceType == NetworkInterfaceType.GigabitEthernet;
+
+                    foreach (UnicastIPAddressInformation uni in nic.GetIPProperties().UnicastAddresses)
+                    {
+                        if (uni.Address.AddressFamily != AddressFamily.InterNetwork)
+                            continue;
+
+                        string ip = uni.Address.ToString();
+                        if (ip.StartsWith("127.") || ip.StartsWith("169.254.") || ip == "0.0.0.0")
+                            continue;
+
+                        activeLocalIps.Add(ip);
+
+                        if (IsPrivateLanIPv4(ip))
+                        {
+                            anyPrivateLanIp ??= ip;
+                            if (isPhysicalLan && preferredPrivateLanIp == null)
+                                preferredPrivateLanIp = ip;
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore NIC enumeration errors and fall back to socket endpoint
             }
 
-            System.Console.WriteLine($"[Login] '{this.Username}' authenticated -> redirecting to {server.Name} ({redirectIp}:{server.GamePort})");
-            await client.SendAsync(new MsgConnectEx(redirectIp, server.GamePort, token));
+            preferredPrivateLanIp ??= anyPrivateLanIp ?? activeLocalIps.FirstOrDefault();
+
+            var localEp = client.Socket?.LocalEndPoint as IPEndPoint;
+            string socketLocalIp = localEp?.Address.MapToIPv4().ToString();
+            bool socketLocalIsUsable =
+                !string.IsNullOrWhiteSpace(socketLocalIp) &&
+                !socketLocalIp.StartsWith("127.") &&
+                socketLocalIp != "0.0.0.0";
+
+            string rpcIp = (server.RpcIPAddress ?? string.Empty).Trim();
+            bool isLocalRealm =
+                string.IsNullOrWhiteSpace(rpcIp) ||
+                rpcIp.StartsWith("127.") ||
+                rpcIp == "0.0.0.0" ||
+                rpcIp.Equals("localhost", StringComparison.OrdinalIgnoreCase) ||
+                activeLocalIps.Contains(rpcIp);
+
+            string clientIp = (client.IPAddress ?? string.Empty).Trim();
+            bool isSameMachineClient =
+                clientIp.StartsWith("127.") ||
+                activeLocalIps.Contains(clientIp);
+
+            if (string.IsNullOrWhiteSpace(redirectIp) ||
+                redirectIp.StartsWith("127.") ||
+                redirectIp == "0.0.0.0" ||
+                redirectIp.Equals("localhost", StringComparison.OrdinalIgnoreCase))
+            {
+                string replacement = (socketLocalIsUsable && !socketLocalIp.StartsWith("25."))
+                    ? socketLocalIp
+                    : (preferredPrivateLanIp ?? (socketLocalIsUsable ? socketLocalIp : redirectIp));
+
+                if (!string.IsNullOrWhiteSpace(replacement) && !replacement.StartsWith("127."))
+                {
+                    Console.WriteLine($"[AutoFix] Replaced loopback realm.GameIPAddress '{configuredIp}' -> '{replacement}' (Conquer.exe rejects 127.0.0.1 in MsgConnectEx).");
+                    redirectIp = replacement;
+                }
+            }
+            else if (isLocalRealm && activeLocalIps.Count > 0 && !activeLocalIps.Contains(redirectIp))
+            {
+                string replacement = preferredPrivateLanIp ?? (socketLocalIsUsable ? socketLocalIp : redirectIp);
+                Console.WriteLine($"[AutoFix] realm.GameIPAddress '{configuredIp}' is not active on any UP network adapter -> switched to '{replacement}'.");
+                redirectIp = replacement;
+            }
+            else if (isLocalRealm && isSameMachineClient && redirectIp.StartsWith("25.") &&
+                     !string.IsNullOrWhiteSpace(preferredPrivateLanIp) && !preferredPrivateLanIp.StartsWith("25."))
+            {
+                Console.WriteLine($"[AutoFix] Same-PC login via Hamachi IP '{configuredIp}' -> routing locally via Private LAN IP '{preferredPrivateLanIp}' to avoid Windows Public Firewall block on Port 5816.");
+                redirectIp = preferredPrivateLanIp;
+            }
+
+            if (redirectPort == 0 ||
+                redirectPort == server.RpcPort ||
+                (redirectPort >= 9950 && redirectPort <= 9970) ||
+                redirectPort == 3306)
+            {
+                Console.WriteLine($"[AutoFix] Invalid realm.GamePort={redirectPort} in database -> overriding to 5816!");
+                redirectPort = 5816;
+            }
+
+            return (redirectIp, redirectPort);
+        }
+
+        private static bool IsPrivateLanIPv4(string ip)
+        {
+            if (ip.StartsWith("192.168.") || ip.StartsWith("10."))
+                return true;
+
+            if (ip.StartsWith("172."))
+            {
+                string[] parts = ip.Split('.');
+                if (parts.Length == 4 && int.TryParse(parts[1], out int secondOctet))
+                    return secondOctet >= 16 && secondOctet <= 31;
+            }
+
+            return false;
         }
 
         /// <summary>

@@ -20,6 +20,8 @@ namespace Comet.Game
     /// </summary>
     internal sealed class Server : TcpServerListener<Client>
     {
+        public static long TotalAcceptedConnections;
+
         private readonly PacketProcessor<Client> Processor;
 
         public Server(ServerConfiguration config) : base(
@@ -33,6 +35,7 @@ namespace Comet.Game
 
         protected override async Task<Client> AcceptedAsync(Socket socket, Memory<byte> buffer)
         {
+            Interlocked.Increment(ref TotalAcceptedConnections);
             uint partition = this.Processor.SelectPartition();
             var client = new Client(socket, buffer, partition);
 
@@ -93,6 +96,9 @@ namespace Comet.Game
 
             try
             {
+                if (type == PacketType.MsgPCNum)
+                    return;
+
                 MsgBase<Client> msg = type switch
                 {
                     PacketType.MsgRegister => new MsgRegister(),

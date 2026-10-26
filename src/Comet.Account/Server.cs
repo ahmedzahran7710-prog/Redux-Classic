@@ -86,13 +86,24 @@ namespace Comet.Account
                 MsgBase<Client> msg = null;
                 switch (type)
                 {
-                    case PacketType.MsgAccount: msg = new MsgAccount(); break;
+                    case PacketType.MsgAccount:
+                        msg = new MsgAccount();
+                        break;
+
+                    case PacketType.MsgPCNum:
+                        // Sent by Patch 5187 Conquer.exe on the Account socket right after MsgConnectEx
+                        return;
+
+                    case PacketType.MsgConnect:
+                        // Sent by Patch 5187 Conquer.exe with "res.dat" before closing Account socket & dialing Game Server
+                        Console.WriteLine($"[Login] Client {actor.IPAddress} acknowledged MsgConnectEx (res.dat) -> switching to Game Server.");
+                        return;
 
                     default:
                         Console.WriteLine(
                             "Missing packet {0}, Length {1}\n{2}", 
                             type, length, PacketDump.Hex(packet));
-                    return;
+                        return;
                 }
 
                 // Decode packet bytes into the structure and process
