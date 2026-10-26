@@ -55,13 +55,14 @@ namespace Comet.Game.States
             if (item == null ||
                 bucket.ContainsKey(itemId) ||
                 bucket.Count >= MAX_TRADE_ITEMS ||
+                sender.IsItemLockedInBooth(itemId) ||
                 item.IsBound ||
                 item.IsLocked() ||
                 (item.Monopoly & Item.ITEM_MONOPOLY_MASK) != 0 ||
                 !partner.UserPackage.IsPackSpare(bucket.Count + 1))
             {
                 await sender.SendAsync(new MsgTrade { Data = itemId, Action = MsgTrade.TradeAction.AddItemFail });
-                await sender.SendTalkAsync("This item cannot be traded (bound, locked, or partner's bag is full).");
+                await sender.SendTalkAsync("This item cannot be traded (bound, locked, listed in booth, or partner's bag is full).");
                 return;
             }
 
@@ -77,11 +78,11 @@ namespace Comet.Game.States
 
         public async Task AddMoneyAsync(Character sender, uint amount)
         {
-            if (amount == 0 || sender.Silver < amount)
+            if (amount == 0 || amount > Character.MAX_INVENTORY_SILVER || sender.Silver < amount)
                 return;
 
             Character partner = this.GetPartner(sender);
-            if (partner.Silver + amount > Character.MAX_INVENTORY_SILVER)
+            if ((ulong)partner.Silver + amount > Character.MAX_INVENTORY_SILVER)
             {
                 await sender.SendTalkAsync($"{partner.Name} cannot hold that much Silver.");
                 return;
@@ -102,10 +103,16 @@ namespace Comet.Game.States
 
         public async Task AddConquerPointsAsync(Character sender, uint amount)
         {
-            if (amount == 0 || sender.ConquerPoints < amount)
+            if (amount == 0 || amount > Character.MAX_CONQUER_POINTS || sender.ConquerPoints < amount)
                 return;
 
             Character partner = this.GetPartner(sender);
+            if ((ulong)partner.ConquerPoints + amount > Character.MAX_CONQUER_POINTS)
+            {
+                await sender.SendTalkAsync($"{partner.Name} cannot hold that many Conquer Points.");
+                return;
+            }
+
             lock (this.m_syncRoot)
             {
                 if (sender.Identity == this.m_user1.Identity)
@@ -166,16 +173,22 @@ namespace Comet.Game.States
             List<Item> list2 = this.m_items2.Values.ToList();
 
             bool valid =
+                this.m_silver1 <= Character.MAX_INVENTORY_SILVER &&
+                this.m_silver2 <= Character.MAX_INVENTORY_SILVER &&
+                this.m_cps1 <= Character.MAX_CONQUER_POINTS &&
+                this.m_cps2 <= Character.MAX_CONQUER_POINTS &&
                 this.m_user1.Silver >= this.m_silver1 &&
                 this.m_user2.Silver >= this.m_silver2 &&
                 this.m_user1.ConquerPoints >= this.m_cps1 &&
                 this.m_user2.ConquerPoints >= this.m_cps2 &&
-                this.m_user1.Silver - this.m_silver1 + this.m_silver2 <= Character.MAX_INVENTORY_SILVER &&
-                this.m_user2.Silver - this.m_silver2 + this.m_silver1 <= Character.MAX_INVENTORY_SILVER &&
+                ((ulong)this.m_user1.Silver - this.m_silver1 + this.m_silver2) <= Character.MAX_INVENTORY_SILVER &&
+                ((ulong)this.m_user2.Silver - this.m_silver2 + this.m_silver1) <= Character.MAX_INVENTORY_SILVER &&
+                ((ulong)this.m_user1.ConquerPoints - this.m_cps1 + this.m_cps2) <= Character.MAX_CONQUER_POINTS &&
+                ((ulong)this.m_user2.ConquerPoints - this.m_cps2 + this.m_cps1) <= Character.MAX_CONQUER_POINTS &&
                 (this.m_user1.UserPackage.InventoryCount - list1.Count + list2.Count) <= UserPackage.MAX_INVENTORY_CAPACITY &&
                 (this.m_user2.UserPackage.InventoryCount - list2.Count + list1.Count) <= UserPackage.MAX_INVENTORY_CAPACITY &&
-                list1.All(it => this.m_user1.UserPackage.FindInventoryItem(it.Identity) != null && !it.IsBound && !it.IsLocked()) &&
-                list2.All(it => this.m_user2.UserPackage.FindInventoryItem(it.Identity) != null && !it.IsBound && !it.IsLocked());
+                list1.All(it => this.m_user1.UserPackage.FindInventoryItem(it.Identity) != null && !it.IsBound && !it.IsLocked() && !this.m_user1.IsItemLockedInBooth(it.Identity)) &&
+                list2.All(it => this.m_user2.UserPackage.FindInventoryItem(it.Identity) != null && !it.IsBound && !it.IsLocked() && !this.m_user2.IsItemLockedInBooth(it.Identity));
 
             if (!valid)
             {
@@ -216,6 +229,16 @@ namespace Comet.Game.States
                 await this.m_user2.UserPackage.AddItemAsync(it, syncClient: true);
             foreach (Item it in list2)
                 await this.m_user1.UserPackage.AddItemAsync(it, syncClient: true);
+
+            // 4. Persist both characters immediately to prevent crash-rollback duping
+            await this.m_user1.SaveAsync();
+            await this.m_user2.SaveAsync();
+
+            await Log.WriteLogAsync(
+                "Logs/Economy",
+                LogLevel.Info,
+                $"[Trade] '{this.m_user1.Name}'(#{this.m_user1.Identity}) [Silver={this.m_silver1}, CPs={this.m_cps1}, Items={list1.Count}] <-> " +
+                $"'{this.m_user2.Name}'(#{this.m_user2.Identity}) [Silver={this.m_silver2}, CPs={this.m_cps2}, Items={list2.Count}]");
 
             await this.SendCloseAsync(success: true);
             await this.m_user1.SendTalkAsync($"[{GameBranding.GameName}] Trade completed successfully!", MsgTalk.TalkChannel.Talk, Color.Lime);

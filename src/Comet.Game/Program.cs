@@ -23,7 +23,7 @@ namespace Comet.Game
 
             Console.Title = GameBranding.GameServerTitle;
             Console.WriteLine();
-            await Log.WriteLogAsync(LogLevel.Info, $"{GameBranding.GameName}: Game Server [Build v5.5] (Patch {GameBranding.PatchVersion} - Retail Classic)");
+            await Log.WriteLogAsync(LogLevel.Info, $"{GameBranding.GameName}: Game Server [Build v5.6] (Patch {GameBranding.PatchVersion} - Retail Classic)");
             await Log.WriteLogAsync(LogLevel.Info, $"Copyright 2018-{DateTime.Now:yyyy} Gareth Jensen \"Spirited\" | {GameBranding.GameName}");
             Console.WriteLine();
 

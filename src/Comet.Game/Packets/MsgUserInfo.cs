@@ -117,16 +117,18 @@ namespace Comet.Game.Packets
             writer.Write(this.HealthPoints);
             writer.Write(this.ManaPoints);
             writer.Write(this.KillPoints);
-            writer.Write(this.Level);
-            writer.Write(this.CurrentClass);
-            writer.Write(this.PreviousClass);
-            writer.Write(this.Rebirths);
-            writer.Write(this.AncestorClass);
-            writer.Write(this.QuizPoints);
-            writer.Write(this.EnlightenPoints);
-            writer.BaseStream.Seek(8, SeekOrigin.Current);
-            writer.Write(this.VIPLevel);
-            writer.Write(new List<string>
+            writer.Write(this.Level);           // 66
+            writer.Write(this.CurrentClass);    // 67
+            writer.Write(this.PreviousClass);   // 68
+            writer.Write(this.Rebirths);        // 69
+            writer.Write((byte)1);              // 70 - NameDisplayed (true in Patch 5187)
+            writer.Write(this.QuizPoints);      // 71..74
+            writer.Write(this.EnlightenPoints); // 75..76
+            writer.Write(0u);                   // 77..80 - EnlightenExp
+            writer.Write((ushort)0);            // 81..82 - Padding
+            writer.Write(this.VIPLevel);        // 83..86 - VIPLevel
+            writer.Write((ushort)0);            // 87..88 - UserTitle
+            writer.Write(new List<string>       // 89+    - CharacterName, SpouseName
             {
                 this.CharacterName ?? string.Empty,
                 this.SpouseName ?? "None"

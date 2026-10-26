@@ -46,7 +46,10 @@ namespace Comet.Network.Sockets
             int bufferSize = 4096, 
             bool delay = false,
             bool exchange = false,
-            int footerLength = 0)
+            int footerLength = 0,
+            int banMinutes = 2,
+            int maxActiveConn = 30,
+            int maxConnAttempts = 60)
         {
             // Initialize and configure server socket
             this.Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -61,7 +64,7 @@ namespace Comet.Network.Sockets
             this.EnableKeyExchange = exchange;
             this.FooterLength = footerLength;
             this.ReceiveTasks = new TaskFactory(this.ShutdownToken.Token);
-            this.Registry = new TcpServerRegistry();
+            this.Registry = new TcpServerRegistry(banMinutes, maxActiveConn, maxConnAttempts);
 
             // Initialize preallocated buffer pool
             for (int i = 0; i < maxConn; i++)
@@ -147,6 +150,13 @@ namespace Comet.Network.Sockets
             var actor = state as TActor;
             var timeout = new CancellationTokenSource();
             int consumed = 0, examined = 0, remaining = 0;
+
+            if (!actor.Socket.Connected || this.ShutdownToken.IsCancellationRequested)
+            {
+                actor.Disconnect();
+                this.Disconnecting(actor);
+                return;
+            }
 
             if (actor.Socket.Connected && !this.ShutdownToken.IsCancellationRequested)
             {
@@ -292,6 +302,7 @@ namespace Comet.Network.Sockets
                     if (examined == 0) break;
                 }
                 catch (OperationCanceledException) { break; }
+                catch (ObjectDisposedException) { break; }
                 catch (SocketException e)
                 {
                     if (e.SocketErrorCode < SocketError.ConnectionAborted ||
@@ -302,6 +313,7 @@ namespace Comet.Network.Sockets
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
+                    break;
                 }
 
                 // Decrypt traffic
@@ -321,7 +333,8 @@ namespace Comet.Network.Sockets
                 actor.Buffer.Slice(consumed, remaining).CopyTo(actor.Buffer);
             }
 
-            // Disconnect the client
+            // Ensure socket handle is closed and reclaim resources
+            actor.Disconnect();
             this.Disconnecting(actor);
         }
 
@@ -342,9 +355,9 @@ namespace Comet.Network.Sockets
             while (consumed + 2 < examined)
             {
                 var length = BitConverter.ToUInt16(buffer[consumed..]);
-                if (length == 0) return false;
+                if (length < 4 || length > 1024) return false;
                 var expected = consumed + length + this.FooterLength;
-                if (length > buffer.Length) return false;
+                if (length + this.FooterLength > buffer.Length) return false;
                 if (expected > examined) break;
 
                 this.Received(actor, buffer.Slice(consumed, length + this.FooterLength));

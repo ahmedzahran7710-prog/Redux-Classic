@@ -24,7 +24,7 @@ namespace Comet.Account
             // project name and version may be removed or changed.
             Console.Title = GameBranding.AccountServerTitle;
             Console.WriteLine();
-            Console.WriteLine($"  {GameBranding.GameName}: Account Server [Build v5.5]");
+            Console.WriteLine($"  {GameBranding.GameName}: Account Server [Build v5.6]");
             Console.WriteLine("  Spirited (C) All Rights Reserved");
             Console.WriteLine($"  Patch {GameBranding.PatchVersion}");
             Console.WriteLine();

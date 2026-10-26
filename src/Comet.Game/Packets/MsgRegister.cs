@@ -62,12 +62,15 @@ namespace Comet.Game.Packets
             }
 
             if (string.IsNullOrEmpty(this.CharacterName) ||
+                this.CharacterName.Length < 3 ||
                 this.CharacterName.Length > 15 ||
                 this.CharacterName.IndexOfAny(InvalidCharacters) >= 0 ||
+                !IsPrintableAscii(this.CharacterName) ||
                 this.CharacterName.Contains('[') ||
                 this.CharacterName.Contains(']') ||
                 this.CharacterName.Contains("GM", StringComparison.OrdinalIgnoreCase) ||
                 this.CharacterName.Contains("PM", StringComparison.OrdinalIgnoreCase) ||
+                this.CharacterName.Contains("ADMIN", StringComparison.OrdinalIgnoreCase) ||
                 this.CharacterName.Contains("SYSTEM", StringComparison.OrdinalIgnoreCase))
             {
                 await client.SendAsync(MsgTalk.RegisterInvalidCharacters);
@@ -83,6 +86,15 @@ namespace Comet.Game.Packets
             if (Array.IndexOf(ValidClasses, this.Class) < 0)
             {
                 await client.SendAsync(MsgTalk.RegisterInvalidProfession);
+                return;
+            }
+
+            // Prevent race-condition double character creation on the same account
+            if (await CharactersRepository.FindAsync(client.Creation.AccountID) != null)
+            {
+                Kernel.Registration.Remove(client.Creation.Token);
+                client.Creation = null;
+                await client.SendAsync(MsgTalk.RegisterInvalid);
                 return;
             }
 
@@ -186,6 +198,15 @@ namespace Comet.Game.Packets
 
             for (int i = 0; i < 3; i++)
                 await States.Items.Item.CreateAsync(user, 1000000, States.Items.Item.ItemPosition.Inventory);
+        }
+        private static bool IsPrintableAscii(string s)
+        {
+            foreach (char c in s)
+            {
+                if (c < 33 || c > 126)
+                    return false;
+            }
+            return true;
         }
     }
 }

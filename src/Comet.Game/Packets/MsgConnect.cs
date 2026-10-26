@@ -1,6 +1,10 @@
 namespace Comet.Game.Packets
 {
     using System;
+    using System.Collections.Generic;
+    using System.Net;
+    using System.Net.NetworkInformation;
+    using System.Net.Sockets;
     using System.Threading.Tasks;
     using Comet.Game.Database.Models;
     using Comet.Game.Database.Repositories;
@@ -55,10 +59,10 @@ namespace Comet.Game.Packets
             string fullKey = this.Token.ToString();
             string lowKey = ((uint)this.Token).ToString();
             var auth = (Kernel.Logins.Get(fullKey) ?? Kernel.Logins.Get(lowKey)) as TransferAuthArgs;
-            if (auth == null || (StrictAuthentication && auth.IPAddress != client.IPAddress))
+            if (auth == null || (StrictAuthentication && !IsSameClientOrigin(auth.IPAddress, client.IPAddress)))
             {
                 await client.SendAsync(MsgTalk.LoginInvalid);
-                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid login token ({this.Token} / low={(uint)this.Token}) from {client.IPAddress}.");
+                await Log.WriteLogAsync(LogLevel.Warning, $"Invalid or mismatched-IP login token ({this.Token}) from {client.IPAddress} (expected {auth?.IPAddress ?? "none"}).");
                 client.Disconnect();
                 return;
             }
@@ -77,6 +81,7 @@ namespace Comet.Game.Packets
                 return;
             }
 
+            // Single-use token consumption: immediately purge token so it can never be replayed
             Kernel.Logins.Remove(fullKey);
             Kernel.Logins.Remove(lowKey);
             await RoleManager.RegisterClientAsync(client);
@@ -92,6 +97,45 @@ namespace Comet.Game.Packets
             await client.SendAsync(MsgTalk.LoginOk);
             await client.SendAsync(new MsgUserInfo(client.Character));
             await client.SendAsync(new MsgData(DateTime.Now));
+        }
+
+        /// <summary>
+        /// Enforces strict IP matching between AccountServer login and GameServer token handoff
+        /// for all external internet players, while allowing local-PC multi-interface testing
+        /// (e.g. 127.0.0.1 <-> LAN 192.168.x.x <-> Hamachi 25.x.x.x on the server host itself).
+        /// </summary>
+        private static bool IsSameClientOrigin(string authIp, string gameIp)
+        {
+            if (string.Equals(authIp, gameIp, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            HashSet<string> localHostIps = GetLocalHostIPv4Set();
+            return localHostIps.Contains(authIp ?? string.Empty) &&
+                   localHostIps.Contains(gameIp ?? string.Empty);
+        }
+
+        private static HashSet<string> GetLocalHostIPv4Set()
+        {
+            var ips = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "127.0.0.1", "::1" };
+            try
+            {
+                foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
+                {
+                    if (ni.OperationalStatus != OperationalStatus.Up)
+                        continue;
+
+                    foreach (UnicastIPAddressInformation ua in ni.GetIPProperties().UnicastAddresses)
+                    {
+                        if (ua.Address.AddressFamily == AddressFamily.InterNetwork)
+                            ips.Add(ua.Address.ToString());
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore interface enumeration errors
+            }
+            return ips;
         }
     }
 }

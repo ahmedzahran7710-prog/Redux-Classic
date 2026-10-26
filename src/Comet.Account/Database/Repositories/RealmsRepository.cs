@@ -3,6 +3,8 @@ namespace Comet.Account.Database.Repositories
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Net;
+    using System.Net.NetworkInformation;
     using System.Net.Sockets;
     using System.Threading.Tasks;
     using Comet.Account.Database;
@@ -96,16 +98,19 @@ namespace Comet.Account.Database.Repositories
             }
             catch (Exception rpcEx)
             {
-                Console.WriteLine($"[SelfTest] RPC version mismatch with Game Server ({rpcEx.Message}). Rebuild BOTH Comet.Account and Comet.Game to [Build v5.5]!");
+                Console.WriteLine($"[SelfTest] RPC version mismatch with Game Server ({rpcEx.Message}). Rebuild BOTH Comet.Account and Comet.Game to [Build v5.6]!");
                 return;
             }
+
+            bool isLocalInterfaceIp = IsLocalMachineIp(host);
+            string probeHost = isLocalInterfaceIp ? host : "127.0.0.1";
 
             bool tcpConnected = false;
             string tcpError = null;
             try
             {
                 using var probe = new TcpClient();
-                var connectTask = probe.ConnectAsync(host, port);
+                var connectTask = probe.ConnectAsync(probeHost, port);
                 var finished = await Task.WhenAny(connectTask, Task.Delay(2000)).ConfigureAwait(false);
                 if (finished == connectTask && !connectTask.IsFaulted && probe.Connected)
                 {
@@ -136,19 +141,52 @@ namespace Comet.Account.Database.Repositories
 
             if (!tcpConnected)
             {
-                Console.WriteLine($"[SelfTest] BLOCKED BY WINDOWS FIREWALL: TCP {host}:{port} FAILED ({tcpError})!");
-                Console.WriteLine($"[SelfTest] -> Windows Defender Firewall has a BLOCK rule on Comet.Game.exe (Public/Hamachi profile)!");
-                Console.WriteLine($"[SelfTest] -> Run the PowerShell Firewall Block-Rule cleanup command as Administrator, then restart Comet.Game.");
+                Console.WriteLine($"[SelfTest] BLOCKED BY FIREWALL: TCP {probeHost}:{port} FAILED ({tcpError})!");
+                Console.WriteLine($"[SelfTest] -> Ensure Windows Firewall allows Comet.Game.exe (TCP {port}) and Comet.Account.exe (TCP 9960).");
             }
             else if (after <= before)
             {
-                Console.WriteLine($"[SelfTest] PORT HIJACKED: TCP {host}:{port} connected, but THIS Game Server received 0 connections!");
+                Console.WriteLine($"[SelfTest] PORT HIJACKED: TCP {probeHost}:{port} connected, but THIS Game Server received 0 connections!");
                 Console.WriteLine($"[SelfTest] -> Another process on Windows is holding Port {port}. Close all Conquer / Comet processes in Task Manager!");
+            }
+            else if (!isLocalInterfaceIp)
+            {
+                Console.WriteLine($"[SelfTest] PASS (Cloud/Router NAT Mode): Local Game listener 127.0.0.1:{port} verified -> External players will be redirected to Public IP {host}:{port}.");
+                Console.WriteLine($"[SelfTest] -> Make sure ONLY TCP 9960 & {port} are open in your Cloud Security Group / Router Port Forwarding (keep 3306 & 5817 CLOSED to internet!).");
             }
             else
             {
                 Console.WriteLine($"[SelfTest] PASS: Game port {host}:{port} is OPEN and verified on '{realm.Name}' Game Server! Ready for login.");
             }
+        }
+
+        private static bool IsLocalMachineIp(string ip)
+        {
+            if (!IPAddress.TryParse(ip, out IPAddress target))
+                return false;
+            if (IPAddress.IsLoopback(target))
+                return true;
+
+            try
+            {
+                foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
+                {
+                    if (ni.OperationalStatus != OperationalStatus.Up)
+                        continue;
+
+                    foreach (UnicastIPAddressInformation ua in ni.GetIPProperties().UnicastAddresses)
+                    {
+                        if (ua.Address.AddressFamily == AddressFamily.InterNetwork && ua.Address.Equals(target))
+                            return true;
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore interface enumeration errors
+            }
+
+            return false;
         }
     }
 }

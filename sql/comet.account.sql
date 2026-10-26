@@ -51,7 +51,6 @@ CREATE TABLE `account` (
 
 LOCK TABLES `account` WRITE;
 /*!40000 ALTER TABLE `account` DISABLE KEYS */;
-INSERT INTO `account` VALUES (1,'Spirited','9ef5afd9eb73933ffc8ecd558014d94d8fb4b8ae','83d6f3dec10a59b07b16a330c9e5522c',1,1,NULL,NULL,NULL,'2018-09-26 00:17:40');
 /*!40000 ALTER TABLE `account` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;

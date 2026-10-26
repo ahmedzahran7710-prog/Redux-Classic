@@ -56,9 +56,39 @@ namespace Comet.Game.World.Managers
                 }
             }
 
-            // GM / PM restricted commands
-            if (!user.IsGm)
+            // Staff restricted commands:
+            // Authority 2 = Moderator (/goto, /kick, /help)
+            // Authority 3 = Game Manager (World support, teleports, /bring, /bc, /heal, /revive, /weather)
+            // Authority 4..5 = Project Manager / Administrator (Economy, items, CPs, silver, levels, skills, rates)
+            if (!user.IsModerator)
                 return false;
+
+            // Immutable audit trail of EVERY staff command in Logs/GmAudit/
+            await Log.WriteLogAsync(
+                "Logs/GmAudit",
+                LogLevel.Warning,
+                $"[StaffCmd] Auth={user.Client?.AuthorityLevel ?? 1} Account=#{user.Client?.AccountIdentity ?? 0} " +
+                $"Char='{user.Name}'(#{user.Identity}) IP={user.Client?.IPAddress ?? "?"} Map={user.MapIdentity}({user.MapX},{user.MapY}) -> /{trimmed}");
+
+            // Moderator-only check (Authority == 2 cannot use GM/PM commands)
+            if (!user.IsGm && cmd != "goto" && cmd != "trace" && cmd != "kick" && cmd != "help" && cmd != "commands")
+            {
+                await user.SendTalkAsync("Insufficient authority: Moderator rank only permits /goto and /kick.");
+                return true;
+            }
+
+            // Economy & progression commands strictly require PM / Administrator (Authority >= 4)
+            bool isEconomyOrPowerCmd = cmd is
+                "item" or "clearinv" or "syncitemsdb" or "money" or "silver" or "cps" or "emoney" or
+                "level" or "lvl" or "exp" or "pro" or "prof" or "reborn" or "rebirth" or
+                "str" or "agi" or "vit" or "spi" or "points" or "vip" or
+                "skill" or "allskills" or "wskill" or "xp" or "spawnmob" or "mob" or "rates";
+
+            if (isEconomyOrPowerCmd && !user.IsPm)
+            {
+                await user.SendTalkAsync("Insufficient authority: Economy & character modification commands require PM/Admin (Authority >= 4).");
+                return true;
+            }
 
             switch (cmd)
             {
@@ -397,6 +427,13 @@ namespace Comet.Game.World.Managers
                         return true;
                     }
 
+                    if ((target.Client?.AuthorityLevel ?? 1) >= (user.Client?.AuthorityLevel ?? 1) &&
+                        target.Identity != user.Identity)
+                    {
+                        await user.SendTalkAsync("Cannot summon a staff member of equal or higher authority.");
+                        return true;
+                    }
+
                     uint destMap = user.MapIdentity;
                     ushort destX = user.MapX;
                     ushort destY = user.MapY;
@@ -672,6 +709,13 @@ namespace Comet.Game.World.Managers
                     if (target == null)
                     {
                         await user.SendTalkAsync($"Player '{parts[1]}' is not online.");
+                        return true;
+                    }
+
+                    if ((target.Client?.AuthorityLevel ?? 1) >= (user.Client?.AuthorityLevel ?? 1) &&
+                        target.Identity != user.Identity)
+                    {
+                        await user.SendTalkAsync("Cannot kick a staff member of equal or higher authority.");
                         return true;
                     }
 

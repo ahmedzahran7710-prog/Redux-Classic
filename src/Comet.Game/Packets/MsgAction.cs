@@ -146,6 +146,10 @@ namespace Comet.Game.Packets
             {
                 case ActionType.LoginSpawn: // 74 - Enter initial map & echo LoginSpawn (74) so client advances login bar
                 {
+                    if ((user.CompletedLoginStages & 0x01) != 0)
+                        return;
+                    user.CompletedLoginStages |= 0x01;
+
                     GameMap targetMap = MapManager.GetMap(user.MapIdentity)
                                         ?? MapManager.GetMap(user.RecordMapIdentity)
                                         ?? MapManager.GetMap(1002u);
@@ -188,6 +192,10 @@ namespace Comet.Game.Packets
 
                 case ActionType.LoginInventory:     // 75 - Load & send equipment + inventory + warehouse silver
                 {
+                    if ((user.CompletedLoginStages & 0x02) != 0)
+                        return;
+                    user.CompletedLoginStages |= 0x02;
+
                     await user.UserPackage.InitializeAsync();
                     await user.UserPackage.SendAllAsync();
                     await user.RecalculateEquipmentStatsAsync(broadcastAppearance: true);
@@ -198,6 +206,10 @@ namespace Comet.Game.Packets
 
                 case ActionType.LoginProficiencies: // 77 - Load & send weapon proficiencies
                 {
+                    if ((user.CompletedLoginStages & 0x04) != 0)
+                        return;
+                    user.CompletedLoginStages |= 0x04;
+
                     await user.MagicData.LoadAsync();
                     foreach (var ws in user.MagicData.WeaponSkills.Values)
                         await user.SendAsync(new MsgWeaponSkill(ws));
@@ -207,6 +219,10 @@ namespace Comet.Game.Packets
 
                 case ActionType.LoginSpells:        // 78 - Send all learned class & weapon spells
                 {
+                    if ((user.CompletedLoginStages & 0x08) != 0)
+                        return;
+                    user.CompletedLoginStages |= 0x08;
+
                     foreach (var m in user.MagicData.Magics.Values)
                         await user.SendAsync(new MsgMagicInfo(m));
                     await user.SendAsync(this);
@@ -215,6 +231,10 @@ namespace Comet.Game.Packets
 
                 case ActionType.LoginRelationships: // 76 - Load & send Friends and Enemies
                 {
+                    if ((user.CompletedLoginStages & 0x10) != 0)
+                        return;
+                    user.CompletedLoginStages |= 0x10;
+
                     await user.Relationships.InitializeAsync();
                     await user.Relationships.SendAllAsync();
                     await user.SendAsync(this);
@@ -223,6 +243,10 @@ namespace Comet.Game.Packets
 
                 case ActionType.LoginComplete:      // 132 - Welcome player into Mystic-Realms!
                 {
+                    if ((user.CompletedLoginStages & 0x20) != 0)
+                        return;
+                    user.CompletedLoginStages |= 0x20;
+
                     await user.SendAsync(this);
                     await user.SendTalkAsync(GameBranding.WelcomeMessage, MsgTalk.TalkChannel.Talk, System.Drawing.Color.Cyan);
                     if (user.Level == 1 && user.Metempsychosis == 0)
@@ -347,10 +371,15 @@ namespace Comet.Game.Packets
                     break;
                 }
 
-                case ActionType.ChangeFace: // 151 - Change face avatar (500 silver retail fee in Phase 2/4)
+                case ActionType.ChangeFace: // 151 - Change face avatar (500 silver retail fee)
                 {
                     if (this.Command > 0 && this.Command < 500)
                     {
+                        if (!await user.SpendSilverAsync(500))
+                        {
+                            await user.SendTalkAsync("Changing your avatar costs 500 silver.");
+                            return;
+                        }
                         user.Avatar = (ushort)this.Command;
                         await user.BroadcastRoomMsgAsync(
                             new MsgUserAttrib(user.Identity, ClientUpdateType.Mesh, user.Mesh),

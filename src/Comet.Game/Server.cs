@@ -94,7 +94,7 @@ namespace Comet.Game
 
         private async Task ProcessAsync(Client actor, byte[] packet)
         {
-            if (actor.Socket == null || !actor.Socket.Connected)
+            if (actor?.Socket == null || !actor.Socket.Connected || packet == null || packet.Length < 4)
                 return;
 
             var length = BitConverter.ToUInt16(packet, 0);
@@ -104,6 +104,22 @@ namespace Comet.Game
             {
                 if (type == PacketType.MsgPCNum)
                     return;
+
+                // Enforce strict pre-authentication / post-authentication state machine:
+                // 1) Unauthenticated sockets may ONLY send MsgConnect (or MsgRegister during character creation).
+                // 2) Already logged-in characters may NEVER re-send MsgConnect or MsgRegister on the same socket.
+                if (actor.Character == null)
+                {
+                    if (type != PacketType.MsgConnect &&
+                        !(type == PacketType.MsgRegister && actor.Creation != null))
+                    {
+                        return;
+                    }
+                }
+                else if (type == PacketType.MsgConnect || type == PacketType.MsgRegister)
+                {
+                    return;
+                }
 
                 MsgBase<Client> msg = type switch
                 {

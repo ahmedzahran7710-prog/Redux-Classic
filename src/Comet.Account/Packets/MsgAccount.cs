@@ -1,6 +1,7 @@
 namespace Comet.Account.Packets
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
@@ -20,11 +21,15 @@ namespace Comet.Account.Packets
     /// <summary>
     /// Message containing login credentials from the login screen. This is the first
     /// packet sent to the account server from the client on login. The server checks the
-    /// encrypted password against the hashed password in the database, the responds with
+    /// encrypted password against the hashed password in the database, then responds with
     /// <see cref="MsgConnectEx"/> with either a pass or fail.
     /// </summary>
     public sealed class MsgAccount : MsgBase<Client>
     {
+        private const int MaxFailedPasswordAttempts = 6;
+        private static readonly TimeSpan FailedAttemptWindow = TimeSpan.FromMinutes(3);
+        private static readonly ConcurrentDictionary<string, (int Count, DateTime WindowExpiresUtc)> FailedLoginTracker = new();
+
         // Packet Properties
         public string Username { get; private set; }
         public byte[] Password { get; private set; }
@@ -39,28 +44,49 @@ namespace Comet.Account.Packets
         /// <param name="client">Client requesting packet processing</param>
         public override async Task ProcessAsync(Client client)
         {
+            string clientIp = client.IPAddress ?? "unknown";
+
+            // Brute-force password protection keyed per client IP (prevents attackers from locking out Admin's own IP)
+            if (IsIpTemporarilyLockedOut(clientIp))
+            {
+                await client.SendAsync(new MsgConnectEx(RejectionCode.TryAgainLater));
+                client.Disconnect();
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(this.Username) || this.Password == null || this.Password.Length != 16)
+            {
+                await client.SendAsync(new MsgConnectEx(RejectionCode.InvalidAccount));
+                client.Disconnect();
+                return;
+            }
+
             // Fetch account info from the database
             client.Account = await AccountsRepository.FindAsync(this.Username).ConfigureAwait(false);
             if (client.Account == null || !AccountsRepository.CheckPassword(
                 this.DecryptPassword(this.Password, client.Seed), client.Account.Password, client.Account.Salt))
             {
+                RecordFailedLoginAttempt(clientIp, this.Username);
                 await client.SendAsync(new MsgConnectEx(RejectionCode.InvalidPassword));
-                client.Socket.Disconnect(false);
+                client.Disconnect();
                 return;
             }
+
+            // Clear failed-attempt history for this IP upon valid password
+            FailedLoginTracker.TryRemove(clientIp, out _);
 
             // Enforce account ban / lock status (from account_status table)
             if (client.Account.StatusID == 5)
             {
                 await client.SendAsync(new MsgConnectEx(RejectionCode.AccountBanned));
-                client.Socket.Disconnect(false);
+                client.Disconnect();
                 return;
             }
 
             if (client.Account.StatusID == 4)
             {
                 await client.SendAsync(new MsgConnectEx(RejectionCode.AccountLocked));
-                client.Socket.Disconnect(false);
+                client.Disconnect();
                 return;
             }
 
@@ -72,7 +98,7 @@ namespace Comet.Account.Packets
             if (server == null || !server.Rpc.Online)
             {
                 await client.SendAsync(new MsgConnectEx(RejectionCode.ServerDown));
-                client.Socket.Disconnect(false);
+                client.Disconnect();
                 return;
             }
 
@@ -80,7 +106,7 @@ namespace Comet.Account.Packets
             if (client.Account.AuthorityID < server.AuthorityID)
             {
                 await client.SendAsync(new MsgConnectEx(RejectionCode.ServerLocked));
-                client.Socket.Disconnect(false);
+                client.Disconnect();
                 return;
             }
 
@@ -96,7 +122,7 @@ namespace Comet.Account.Packets
                 IPAddress = client.IPAddress,
                 RedirectIP = redirectIp,
                 RedirectPort = redirectPort,
-                AccountServerBuild = "v5.5"
+                AccountServerBuild = "v5.6"
             };
 
             ulong token = await server.Rpc.CallAsync<ulong>("TransferAuth", args);
@@ -105,6 +131,40 @@ namespace Comet.Account.Packets
             var reply = new MsgConnectEx(redirectIp, redirectPort, token);
             Console.WriteLine($"[Login] '{this.Username}' authenticated -> sending 32-byte MsgConnectEx (Token={token}, Target={redirectIp}:{redirectPort})");
             await client.SendAsync(reply);
+        }
+
+        private static bool IsIpTemporarilyLockedOut(string ip)
+        {
+            if (ip == "127.0.0.1" || ip == "::1")
+                return false;
+
+            if (FailedLoginTracker.TryGetValue(ip, out var entry))
+            {
+                if (DateTime.UtcNow < entry.WindowExpiresUtc)
+                    return entry.Count >= MaxFailedPasswordAttempts;
+
+                FailedLoginTracker.TryRemove(ip, out _);
+            }
+            return false;
+        }
+
+        private static void RecordFailedLoginAttempt(string ip, string username)
+        {
+            if (ip == "127.0.0.1" || ip == "::1")
+                return;
+
+            DateTime now = DateTime.UtcNow;
+            var updated = FailedLoginTracker.AddOrUpdate(
+                ip,
+                _ => (1, now.Add(FailedAttemptWindow)),
+                (_, prev) => now >= prev.WindowExpiresUtc
+                    ? (1, now.Add(FailedAttemptWindow))
+                    : (prev.Count + 1, now.Add(FailedAttemptWindow)));
+
+            if (updated.Count == MaxFailedPasswordAttempts)
+            {
+                Console.WriteLine($"[SECURITY] Brute-force login protection: temporarily locked IP {ip} for {FailedAttemptWindow.TotalMinutes:0}m after {updated.Count} failed attempts (last user='{username}').");
+            }
         }
 
         private static (string Ip, uint Port) ResolveRedirectEndpoint(Client client, Database.Models.DbRealm server)
@@ -181,6 +241,9 @@ namespace Comet.Account.Packets
         /// <param name="bytes">Bytes from the packet processor or client socket</param>
         public override void Decode(byte[] bytes)
         {
+            if (bytes == null || bytes.Length < 276)
+                throw new InvalidDataException($"Invalid MsgAccount length ({bytes?.Length ?? 0} < 276).");
+
             var reader = new PacketReader(bytes);
             this.Length = reader.ReadUInt16();
             this.Type = (PacketType)reader.ReadUInt16();

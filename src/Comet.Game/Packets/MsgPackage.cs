@@ -4,6 +4,9 @@ namespace Comet.Game.Packets
     using System.Threading.Tasks;
     using Comet.Game.States;
     using Comet.Game.States.Items;
+    using Comet.Game.States.NPCs;
+    using Comet.Game.World.Managers;
+    using Comet.Game.World.Maps;
     using Comet.Network.Packets;
 
     /// <remarks>Packet Type 1102</remarks>
@@ -120,10 +123,10 @@ namespace Comet.Game.Packets
         public override async Task ProcessAsync(Client client)
         {
             Character user = client?.Character;
-            if (user == null)
+            if (user == null || user.Trade != null)
                 return;
 
-            // Enforce VIP level requirements when opening remote VIP warehouses
+            // Enforce official warehouse IDs, NPC distance, or VIP remote warehouse level
             if (!CanAccessWarehouse(user, this.Identity))
                 return;
 
@@ -156,7 +159,7 @@ namespace Comet.Game.Packets
                 case WarehouseMode.CheckIn:
                 {
                     Item item = user.UserPackage[this.Param];
-                    if (item == null || item.Position != Item.ItemPosition.Inventory)
+                    if (item == null || item.Position != Item.ItemPosition.Inventory || user.IsItemLockedInBooth(item.Identity))
                         return;
 
                     if (await user.UserPackage.CheckInWarehouseAsync(this.Identity, this.Mode, item))
@@ -195,19 +198,29 @@ namespace Comet.Game.Packets
             if (user.IsGm)
                 return true;
 
-            // Standard town warehouse NPCs (Twin=8, Market=44, Desert=10011, Phoenix=10012, Bird=10027, Ape=10028, Stone=4101)
-            // When player is in another map using VIP remote warehouse buttons, verify VIP tier:
-            return warehouseId switch
+            // Only allow the 7 official Patch 5187 town warehouses (rejects forged warehouseId infinite-storage exploit!)
+            byte requiredVip = warehouseId switch
             {
-                8 when user.MapIdentity != 1002 => user.VipLevel >= 1,
-                44 when user.MapIdentity != 1036 => user.VipLevel >= 1,
-                10011 when user.MapIdentity != 1000 => user.VipLevel >= 2,
-                10028 when user.MapIdentity != 1020 => user.VipLevel >= 3,
-                10027 when user.MapIdentity != 1015 => user.VipLevel >= 4,
-                10012 when user.MapIdentity != 1011 => user.VipLevel >= 5,
-                4101 when user.MapIdentity != 1213 => user.VipLevel >= 6,
-                _ => true
+                8 => 1,     // Twin City (1002)
+                44 => 1,    // Market (1036)
+                10011 => 2, // Desert City (1000)
+                10028 => 3, // Ape City (1020)
+                10027 => 4, // Bird Island (1015)
+                10012 => 5, // Phoenix Castle (1011)
+                4101 => 6,  // Stone City (1213 / 1002)
+                _ => 255
             };
+
+            if (requiredVip == 255)
+                return false;
+
+            // VIP remote warehouse access from anywhere
+            if (user.VipLevel >= requiredVip)
+                return true;
+
+            // Non-VIP local access requires standing within view range of the Warehouseman NPC
+            Npc npc = NpcManager.GetNpc(warehouseId);
+            return npc != null && npc.Map == user.Map && npc.GetDistance(user) <= Screen.VIEW_SIZE;
         }
 
         public static WarehouseItem ToWarehouseEntry(Item item) =>

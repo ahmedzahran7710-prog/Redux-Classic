@@ -116,6 +116,15 @@ namespace Comet.Game.Packets
             if (user == null)
                 return;
 
+            // Block all inventory/currency/booth mutations while an active P2P Trade window is open
+            if (user.Trade != null &&
+                this.Action != ItemActionType.ClientPing &&
+                this.Action != ItemActionType.BankQuery &&
+                this.Action != ItemActionType.BoothQuery)
+            {
+                return;
+            }
+
             switch (this.Action)
             {
                 case ItemActionType.ClientPing: // 27
@@ -126,6 +135,18 @@ namespace Comet.Game.Packets
 
                 case ItemActionType.ShopPurchase: // 1 - Buy from NPC or Shopping Mall (2888)
                 {
+                    // Verify player is near the shop NPC (unless Shopping Mall 2888, VIP remote pharmacy, or GM)
+                    if (this.Identity != 2888 && !user.IsGm)
+                    {
+                        Npc shopNpc = NpcManager.GetNpc(this.Identity);
+                        bool vipRemoteShop = user.VipLevel >= 3 && (this.Identity == 2888 || shopNpc != null);
+                        if (!vipRemoteShop && (shopNpc == null || shopNpc.Map != user.Map || shopNpc.GetDistance(user) > World.Maps.Screen.VIEW_SIZE))
+                        {
+                            await user.SendTalkAsync("You are too far away from that shopkeeper.");
+                            return;
+                        }
+                    }
+
                     DbGoods good = ItemManager.FindShopGood(this.Identity, this.Command);
                     if (good == null)
                     {
@@ -194,8 +215,15 @@ namespace Comet.Game.Packets
                 case ItemActionType.ShopSell: // 2 - Sell item to NPC shop for 1/3 retail price
                 {
                     Item item = user.UserPackage[this.Command];
-                    if (item == null || item.Position != Item.ItemPosition.Inventory)
+                    if (item == null || item.Position != Item.ItemPosition.Inventory || user.IsItemLockedInBooth(item.Identity))
                         return;
+
+                    if (!user.IsGm && user.VipLevel < 3)
+                    {
+                        Npc shopNpc = NpcManager.GetNpc(this.Identity);
+                        if (shopNpc == null || shopNpc.Map != user.Map || shopNpc.GetDistance(user) > World.Maps.Screen.VIEW_SIZE)
+                            return;
+                    }
 
                     if (!item.CanBeDroppedOrTraded() || (item.Monopoly & Item.ITEM_SELL_DISABLE_MASK) != 0)
                     {
@@ -220,7 +248,7 @@ namespace Comet.Game.Packets
                 case ItemActionType.InventoryEquip: // 4 - Use consumable or equip item
                 {
                     Item item = user.UserPackage[this.Identity];
-                    if (item == null || item.Position != Item.ItemPosition.Inventory)
+                    if (item == null || item.Position != Item.ItemPosition.Inventory || user.IsItemLockedInBooth(item.Identity))
                         return;
 
                     if (this.Command == 0)
@@ -249,7 +277,7 @@ namespace Comet.Game.Packets
                 case ItemActionType.EquipmentSplit: // 7 - Split stackable item
                 {
                     Item item = user.UserPackage[this.Identity];
-                    if (item != null && item.Position == Item.ItemPosition.Inventory)
+                    if (item != null && item.Position == Item.ItemPosition.Inventory && !user.IsItemLockedInBooth(item.Identity))
                         await user.UserPackage.SplitItemAsync(item, (ushort)this.Command);
                     break;
                 }
@@ -258,7 +286,9 @@ namespace Comet.Game.Packets
                 {
                     Item src = user.UserPackage[this.Identity];
                     Item dst = user.UserPackage[this.Command];
-                    if (src != null && dst != null)
+                    if (src != null && dst != null &&
+                        !user.IsItemLockedInBooth(src.Identity) &&
+                        !user.IsItemLockedInBooth(dst.Identity))
                         await user.UserPackage.CombineItemAsync(src, dst);
                     break;
                 }
@@ -272,7 +302,7 @@ namespace Comet.Game.Packets
 
                 case ItemActionType.BankDeposit: // 10 - Deposit silver into warehouse
                 {
-                    if (this.Command == 0 || this.Command > user.Silver)
+                    if (this.Command == 0 || this.Command > Character.MAX_INVENTORY_SILVER || this.Command > user.Silver)
                         return;
 
                     if ((ulong)user.WarehouseSilver + this.Command > 1_000_000_000UL)
@@ -294,7 +324,7 @@ namespace Comet.Game.Packets
 
                 case ItemActionType.BankWithdraw: // 11 - Withdraw silver from warehouse
                 {
-                    if (this.Command == 0 || this.Command > user.WarehouseSilver)
+                    if (this.Command == 0 || this.Command > Character.MAX_INVENTORY_SILVER || this.Command > user.WarehouseSilver)
                         return;
 
                     if ((ulong)user.Silver + this.Command > 2_000_000_000UL)
@@ -314,7 +344,7 @@ namespace Comet.Game.Packets
 
                 case ItemActionType.InventoryDropSilver: // 12 - Drop silver pile on map
                 {
-                    if (user.Map == null || this.Identity < 100 || this.Identity > user.Silver)
+                    if (user.Map == null || this.Identity < 100 || this.Identity > Character.MAX_INVENTORY_SILVER || this.Identity > user.Silver)
                     {
                         await user.SendTalkAsync("You must drop at least 100 silver.");
                         return;
@@ -332,7 +362,7 @@ namespace Comet.Game.Packets
                 case ItemActionType.InventoryDropItem: // 37 - Drop item (with confirmation)
                 {
                     Item item = user.UserPackage[this.Identity];
-                    if (item == null || item.Position != Item.ItemPosition.Inventory || user.Map == null)
+                    if (item == null || item.Position != Item.ItemPosition.Inventory || user.Map == null || user.IsItemLockedInBooth(item.Identity))
                         return;
 
                     if (!item.CanBeDroppedOrTraded())
@@ -390,7 +420,8 @@ namespace Comet.Game.Packets
                 {
                     Item target = user.UserPackage[this.Identity];
                     Item dbItem = user.UserPackage[this.Command];
-                    if (target == null || dbItem == null || dbItem.Type != Item.TYPE_DRAGONBALL)
+                    if (target == null || dbItem == null || dbItem.Type != Item.TYPE_DRAGONBALL ||
+                        user.IsItemLockedInBooth(target.Identity) || user.IsItemLockedInBooth(dbItem.Identity))
                         return;
 
                     uint nextQualityId = target.GetNextQualityType();
@@ -422,6 +453,7 @@ namespace Comet.Game.Packets
                     Item target = user.UserPackage[this.Identity];
                     Item meteor = user.UserPackage[this.Command];
                     if (target == null || meteor == null ||
+                        user.IsItemLockedInBooth(target.Identity) || user.IsItemLockedInBooth(meteor.Identity) ||
                         (meteor.Type != Item.TYPE_METEOR && meteor.Type != Item.TYPE_METEOR_TEAR))
                         return;
 
@@ -477,7 +509,8 @@ namespace Comet.Game.Packets
                 {
                     Item target = user.UserPackage[this.Identity];
                     Item gem = user.UserPackage[this.Command];
-                    if (target == null || gem == null || gem.GetItemSubType() != 700 || target.Enchantment >= 255)
+                    if (target == null || gem == null || gem.GetItemSubType() != 700 || target.Enchantment >= 255 ||
+                        user.IsItemLockedInBooth(target.Identity) || user.IsItemLockedInBooth(gem.Identity))
                         return;
 
                     if (!await user.UserPackage.SpendItemAsync(gem, 1))
@@ -508,7 +541,8 @@ namespace Comet.Game.Packets
                 {
                     Item talisman = user.UserPackage[this.Identity];
                     Item sacrifice = user.UserPackage[this.Command];
-                    if (talisman == null || sacrifice == null || !talisman.IsTalisman())
+                    if (talisman == null || sacrifice == null || !talisman.IsTalisman() ||
+                        user.IsItemLockedInBooth(talisman.Identity) || user.IsItemLockedInBooth(sacrifice.Identity))
                         return;
                     if (sacrifice.IsTalisman() || sacrifice.IsMount() || sacrifice.GetQuality() < 6 || !sacrifice.CanBeDroppedOrTraded())
                         return;
@@ -549,7 +583,7 @@ namespace Comet.Game.Packets
                 case ItemActionType.TalismanProgressEmoney: // 36 - Open Talisman socket using CPs
                 {
                     Item talisman = user.UserPackage[this.Identity];
-                    if (talisman == null || !talisman.IsTalisman())
+                    if (talisman == null || !talisman.IsTalisman() || user.IsItemLockedInBooth(talisman.Identity))
                         return;
 
                     if (talisman.SocketOne == Item.SocketGem.NoSocket)
