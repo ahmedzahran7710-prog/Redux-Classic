@@ -24,7 +24,7 @@ namespace Comet.Account
             // project name and version may be removed or changed.
             Console.Title = GameBranding.AccountServerTitle;
             Console.WriteLine();
-            Console.WriteLine($"  {GameBranding.GameName}: Account Server");
+            Console.WriteLine($"  {GameBranding.GameName}: Account Server [Build v5.2]");
             Console.WriteLine("  Spirited (C) All Rights Reserved");
             Console.WriteLine($"  Patch {GameBranding.PatchVersion}");
             Console.WriteLine();
@@ -50,6 +50,10 @@ namespace Comet.Account
             var tasks = new List<Task>();
             tasks.Add(RealmsRepository.LoadAsync());
             await Task.WhenAll(tasks.ToArray());
+            foreach (var r in Kernel.Realms.Values)
+            {
+                Console.WriteLine($"  Loaded Realm '{r.Name}' -> Game={r.GameIPAddress}:{r.GamePort}, RPC={r.RpcIPAddress}:{r.RpcPort}");
+            }
             
             // Start background services
             tasks = new List<Task>();

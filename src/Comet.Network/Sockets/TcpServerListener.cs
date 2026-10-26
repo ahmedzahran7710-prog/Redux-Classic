@@ -162,6 +162,7 @@ namespace Comet.Network.Sockets
                     examined = await receiveOperation;
                     if (examined == 0) 
                     {
+                        Console.WriteLine($"[Handshake] {actor.IPAddress} closed socket before sending DH reply (0 bytes). Verify clean Patch 5187 Conquer.exe.");
                         actor.Disconnect();
                         this.Disconnecting(actor);
                         return; 
@@ -170,6 +171,7 @@ namespace Comet.Network.Sockets
                 }
                 catch (Exception e)
                 {
+                    Console.WriteLine($"[Handshake] {actor.IPAddress} receive failed during DH exchange: {e.Message}");
                     if (e is SocketException)
                     {
                         SocketException socketEx = e as SocketException;
@@ -192,6 +194,7 @@ namespace Comet.Network.Sockets
                 consumed = BitConverter.ToUInt16(actor.Buffer.Span.Slice(7, 2)) + 7;
                 if (consumed > examined)
                 {
+                    Console.WriteLine($"[Handshake] {actor.IPAddress} invalid Blowfish DH length (consumed={consumed}, examined={examined}). Verify clean Patch 5187 Conquer.exe (not a custom private-server exe).");
                     actor.Disconnect();
                     this.Disconnecting(actor);
                     return;
@@ -204,6 +207,7 @@ namespace Comet.Network.Sockets
                 // Process the exchange now that bytes are decrypted
                 if (!this.Exchanged(actor, actor.Buffer[..consumed].Span))
                 {
+                    Console.WriteLine($"[Handshake] {actor.IPAddress} DH key computation failed.");
                     actor.Disconnect();
                     this.Disconnecting(actor);
                     return;
