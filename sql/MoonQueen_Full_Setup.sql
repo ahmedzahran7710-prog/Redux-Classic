@@ -59,9 +59,9 @@ CREATE TABLE `account` (
   CONSTRAINT `fk_account_status` FOREIGN KEY (`StatusID`) REFERENCES `account_status` (`StatusID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- Ready-to-use Administrator account -> Username: admin | Password: 123456
-INSERT INTO `account` (`AccountID`, `Username`, `Password`, `Salt`, `AuthorityID`, `StatusID`, `Name`, `IPAddress`)
-VALUES (1, 'admin', 'ecda5b3edb0989099b26bda2171982f1d705a675', 'a1b2c3d4e5f60718293a4b5c6d7e8f90', 5, 2, 'MoonQueen Admin', '25.21.212.130');
+-- No default account is shipped for security. Create your own admin account
+-- after import (AuthorityID 5); the account_passwordhash trigger below hashes
+-- the password automatically on insert.
 
 DROP TRIGGER IF EXISTS `account_passwordhash`;
 DELIMITER ;;
