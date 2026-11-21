@@ -26,8 +26,8 @@ This file provides complete context so any AI coding agent or developer can cont
   - `MoonQueen.Game.config` -> Game `0.0.0.0:5816`, RPC `127.0.0.1:5817`
 - **XAMPP MySQL (`127.0.0.1:3306`):**
   - Schemas: `moonqueen_account` and `moonqueen_game` (underscore naming avoids phpMyAdmin dot-separator issues).
-  - Credentials: `Username = "root"`, `Password = "7710"` (with automatic fallback in `ServerDbContext.Ping()` to `""` if XAMPP uses the default blank root password).
-  - One-click import file: `sql/MoonQueen_Full_Setup.sql` (includes default Admin account `admin` / `123456`).
+  - Credentials: `Username = "root"`, `Password = ""` (set your own local MySQL password here; `ServerDbContext.Ping()` falls back to `""` for XAMPP's default blank root password).
+  - One-click import file: `sql/MoonQueen_Full_Setup.sql` (ships no default account; create your own admin account after import).
 
 ---
 
